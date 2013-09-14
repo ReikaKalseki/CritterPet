@@ -12,10 +12,16 @@ package Reika.SpiderPet;
 import java.net.URL;
 
 import Reika.DragonAPI.Base.DragonAPIMod;
+import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import cpw.mods.fml.common.network.NetworkMod;
 
+@Mod( modid = "SpiderPet", name="Spider Pet", version="beta", certificateFingerprint = "@GET_FINGERPRINT@", dependencies="after:DragonAPI")
+@NetworkMod(clientSideRequired = true, serverSideRequired = true/*,
+clientPacketHandlerSpec = @SidedPacketHandler(channels = { "SpiderPetData" }, packetHandler = ClientPackets.class),
+serverPacketHandlerSpec = @SidedPacketHandler(channels = { "SpiderPetData" }, packetHandler = ServerPackets.class)*/)
 public class SpiderPet extends DragonAPIMod {
 
 	@Override
