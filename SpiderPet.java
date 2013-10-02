@@ -9,11 +9,10 @@
  ******************************************************************************/
 package Reika.SpiderPet;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 
+import Reika.DragonAPI.DragonAPICore;
 import Reika.DragonAPI.Base.DragonAPIMod;
-import Reika.DragonAPI.Exception.RegistrationException;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
@@ -56,12 +55,7 @@ public class SpiderPet extends DragonAPIMod {
 
 	@Override
 	public URL getDocumentationSite() {
-		try {
-			return new URL("http://www.minecraftforum.net/topic/1969694-");
-		}
-		catch (MalformedURLException e) {
-			throw new RegistrationException(instance, "The mod provided a malformed URL for its documentation site!");
-		}
+		return DragonAPICore.getReikaForumPage(instance);
 	}
 
 	@Override
