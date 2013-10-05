@@ -35,8 +35,7 @@ public abstract class EntitySpiderBase extends EntityLiving {
 		return base != null;
 	}
 
-	@Override
-	public final int getMaxHealth() {
+	public final float getSpiderMaxHealth() {
 		if (this.isVanillaSpider()) {
 			return 16;
 		}

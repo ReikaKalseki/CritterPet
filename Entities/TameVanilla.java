@@ -9,7 +9,7 @@
  ******************************************************************************/
 package Reika.SpiderPet.Entities;
 
-import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.world.World;
 import Reika.SpiderPet.EntitySpiderBase;
 
@@ -21,8 +21,8 @@ public class TameVanilla extends EntitySpiderBase {
 
 	@Override
 	public void updateRider() {
-		if (riddenByEntity instanceof EntityLiving) {
-			EntityLiving rider = (EntityLiving)riddenByEntity;
+		if (riddenByEntity instanceof EntityLivingBase) {
+			EntityLivingBase rider = (EntityLivingBase)riddenByEntity;
 		}
 	}
 }

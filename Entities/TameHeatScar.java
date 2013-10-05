@@ -9,7 +9,7 @@
  ******************************************************************************/
 package Reika.SpiderPet.Entities;
 
-import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.world.World;
@@ -24,8 +24,8 @@ public class TameHeatScar extends EntitySpiderBase {
 
 	@Override
 	public void updateRider() {
-		if (riddenByEntity instanceof EntityLiving) {
-			EntityLiving rider = (EntityLiving)riddenByEntity;
+		if (riddenByEntity instanceof EntityLivingBase) {
+			EntityLivingBase rider = (EntityLivingBase)riddenByEntity;
 			rider.addPotionEffect(new PotionEffect(Potion.fireResistance.id, 20, 0));
 		}
 	}
