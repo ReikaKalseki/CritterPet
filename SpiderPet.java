@@ -13,6 +13,7 @@ import java.net.URL;
 
 import Reika.DragonAPI.DragonAPICore;
 import Reika.DragonAPI.Base.DragonAPIMod;
+import Reika.DragonAPI.Instantiable.ModLogger;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
@@ -75,6 +76,11 @@ public class SpiderPet extends DragonAPIMod {
 
 	@Override
 	public String getVersionName() {
+		return null;
+	}
+
+	@Override
+	public ModLogger getModLogger() {
 		return null;
 	}
 
