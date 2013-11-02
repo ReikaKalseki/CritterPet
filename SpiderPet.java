@@ -16,6 +16,7 @@ import net.minecraft.entity.EntityList;
 import Reika.DragonAPI.DragonAPICore;
 import Reika.DragonAPI.Base.DragonAPIMod;
 import Reika.DragonAPI.Instantiable.ModLogger;
+import Reika.DragonAPI.Libraries.ReikaRegistryHelper;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
@@ -40,6 +41,9 @@ public class SpiderPet extends DragonAPIMod {
 	@EventHandler
 	public void preload(FMLPreInitializationEvent evt) {
 		logger = new ModLogger(instance, true, false, false);
+
+		ReikaRegistryHelper.setupModData(instance, evt);
+		ReikaRegistryHelper.setupVersionChecking(evt);
 	}
 
 	@Override
