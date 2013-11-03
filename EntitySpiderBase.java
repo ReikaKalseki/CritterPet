@@ -10,10 +10,10 @@
 package Reika.SpiderPet;
 
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingData;
 import net.minecraft.entity.monster.EntitySpider;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import Reika.DragonAPI.Libraries.IO.ReikaChatHelper;
 
@@ -59,15 +59,24 @@ public abstract class EntitySpiderBase extends EntitySpider {
 	@Override
 	public final void onUpdate() {
 		super.onUpdate();
-		this.findOwner();
 		this.updateRider();
+		if (riddenByEntity != null)
+			this.followOwner();
 	}
 
-	private void findOwner() {
+	private void followOwner() {
 		World world = worldObj;
 		double x = posX;
 		double y = posY;
 		double z = posZ;
+		Vec3 v = riddenByEntity.getLookVec();
+		motionX = v.xCoord/2;
+		motionZ = v.zCoord/2;
+		rotationYaw = 0;
+		rotationYawHead = 0;
+		this.getNavigator().clearPathEntity();
+		//PathEntity path = this.getNavigator().getPathToXYZ(x+v.xCoord*4, y+v.yCoord+4, z+v.zCoord*4);
+		//this.getNavigator().setPath(path, 0.5);
 	}
 
 	@Override
@@ -90,7 +99,7 @@ public abstract class EntitySpiderBase extends EntitySpider {
 	{
 		if (ep.getEntityName().equals(owner)) {
 			if (!worldObj.isRemote) {
-				if (ridingEntity != null && ridingEntity.equals(ep)) {
+				if (riddenByEntity != null && riddenByEntity.equals(ep)) {
 					ep.dismountEntity(this);
 				}
 				else {
@@ -142,13 +151,5 @@ public abstract class EntitySpiderBase extends EntitySpider {
 
 	protected void moveByPlayerCommand() {
 		//horse code?
-	}
-
-	@Override
-	public EntityLivingData onSpawnWithEgg(EntityLivingData eld)
-	{
-		EntityLivingData dat = super.onSpawnWithEgg(eld);
-		//Set owner to user of egg
-		return dat;
 	}
 }
