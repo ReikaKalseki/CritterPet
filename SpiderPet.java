@@ -13,6 +13,10 @@ import java.net.URL;
 
 import net.minecraft.entity.EntityEggInfo;
 import net.minecraft.entity.EntityList;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.Event.Result;
+import net.minecraftforge.event.entity.living.LivingSpawnEvent.AllowDespawn;
 import Reika.DragonAPI.DragonAPICore;
 import Reika.DragonAPI.Base.DragonAPIMod;
 import Reika.DragonAPI.Instantiable.ModLogger;
@@ -20,6 +24,7 @@ import Reika.DragonAPI.Libraries.ReikaRegistryHelper;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
+import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
@@ -37,13 +42,19 @@ public class SpiderPet extends DragonAPIMod {
 
 	private ModLogger logger;
 
+	@SidedProxy(clientSide="Reika.SpiderPet.SpiderClient", serverSide="Reika.SpiderPet.SpiderServer")
+	public static SpiderCommon proxy;
+
 	@Override
 	@EventHandler
 	public void preload(FMLPreInitializationEvent evt) {
 		logger = new ModLogger(instance, true, false, false);
+		MinecraftForge.EVENT_BUS.register(this);
 
 		ReikaRegistryHelper.setupModData(instance, evt);
 		ReikaRegistryHelper.setupVersionChecking(evt);
+
+		proxy.registerSounds();
 	}
 
 	@Override
@@ -58,12 +69,20 @@ public class SpiderPet extends DragonAPIMod {
 			EntityList.entityEggs.put(id, egg);
 			logger.log("Loading Spider Type "+type.getName());
 		}
+		proxy.registerRenderers();
 	}
 
 	@Override
 	@EventHandler
 	public void postload(FMLPostInitializationEvent evt) {
 
+	}
+
+	@EventHandler
+	public void disallowDespawn(AllowDespawn d) {
+		EntityLivingBase e = d.entityLiving;
+		if (e instanceof EntitySpiderBase)
+			d.setResult(Result.DENY);
 	}
 
 	@Override

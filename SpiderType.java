@@ -18,10 +18,10 @@ import Reika.SpiderPet.Entities.TameVanilla;
 
 public enum SpiderType {
 
-	VANILLA(TameVanilla.class, null, 16, 1, "/Reika/SpiderPet/Textures/vanilla.png", 0xffffff, 0x000000),
-	HEATSCAR(TameHeatScar.class, ModList.NATURA, 50, 2, "/Reika/SpiderPet/Textures/heatscar.png", 0xaaaaaa, 0x666666),
-	KING(TameKing.class, ModList.TWILIGHT, 30, 2, "/Reika/SpiderPet/Textures/king.png", 0x666666, 0xaaaaaa),
-	HEDGE(TameHedge.class, ModList.TWILIGHT, 20, 1, "/Reika/SpiderPet/Textures/hedge.png", 0x000000, 0xffffff);
+	VANILLA(TameVanilla.class, null, 16, 1, "/Reika/SpiderPet/Textures/vanilla.png", 0x775533, 0xcc0000),
+	HEATSCAR(TameHeatScar.class, ModList.NATURA, 100, 3.25F, "/Reika/SpiderPet/Textures/heatscar.png", 0x771100, 0x331100),
+	KING(TameKing.class, ModList.TWILIGHT, 60, 2.25F, "/Reika/SpiderPet/Textures/king.png", 0x774400, 0xffdd00),
+	HEDGE(TameHedge.class, ModList.TWILIGHT, 20, 1, "/Reika/SpiderPet/Textures/hedge.png", 0x053305, 0x229922);
 
 	public final Class entityClass;
 	public final ModList sourceMod;

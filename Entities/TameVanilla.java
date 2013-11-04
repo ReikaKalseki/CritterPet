@@ -9,8 +9,8 @@
  ******************************************************************************/
 package Reika.SpiderPet.Entities;
 
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.util.DamageSource;
 import net.minecraft.world.World;
 import Reika.SpiderPet.EntitySpiderBase;
 import Reika.SpiderPet.SpiderType;
@@ -29,7 +29,12 @@ public class TameVanilla extends EntitySpiderBase {
 	}
 
 	@Override
-	protected void applyAttackEffects(Entity e) {
+	protected void applyAttackEffects(EntityLivingBase e) {
 
+	}
+
+	@Override
+	public boolean canBeHurtBy(DamageSource dsc) {
+		return true;
 	}
 }
