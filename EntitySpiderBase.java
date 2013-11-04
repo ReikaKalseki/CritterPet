@@ -42,8 +42,8 @@ public abstract class EntitySpiderBase extends EntitySpider {
 		stepHeight = 1.25F;
 	}
 
-	public EntitySpiderBase setOwner(String ep) {
-		owner = ep;
+	public EntitySpiderBase setOwner(EntityPlayer ep) {
+		owner = ep.getEntityName();
 		return this;
 	}
 
