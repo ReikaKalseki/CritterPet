@@ -9,6 +9,7 @@
  ******************************************************************************/
 package Reika.SpiderPet;
 
+import net.minecraft.item.Item;
 import Reika.DragonAPI.Auxiliary.ModList;
 import Reika.DragonAPI.Libraries.Java.ReikaStringParser;
 import Reika.SpiderPet.Entities.TameHeatScar;
@@ -18,10 +19,10 @@ import Reika.SpiderPet.Entities.TameVanilla;
 
 public enum SpiderType {
 
-	VANILLA(TameVanilla.class, null, 16, 1, "/Reika/SpiderPet/Textures/vanilla.png", 0x775533, 0xcc0000),
-	HEATSCAR(TameHeatScar.class, ModList.NATURA, 100, 3.25F, "/Reika/SpiderPet/Textures/heatscar.png", 0x771100, 0x331100),
-	KING(TameKing.class, ModList.TWILIGHT, 60, 2.25F, "/Reika/SpiderPet/Textures/king.png", 0x774400, 0xffdd00),
-	HEDGE(TameHedge.class, ModList.TWILIGHT, 20, 1, "/Reika/SpiderPet/Textures/hedge.png", 0x053305, 0x229922);
+	VANILLA(TameVanilla.class, null, 16, 1, "/Reika/SpiderPet/Textures/vanilla.png", 0x775533, 0xcc0000, Item.rottenFlesh),
+	HEATSCAR(TameHeatScar.class, ModList.NATURA, 100, 3.25F, "/Reika/SpiderPet/Textures/heatscar.png", 0x771100, 0x331100, Item.blazePowder),
+	KING(TameKing.class, ModList.TWILIGHT, 60, 2.25F, "/Reika/SpiderPet/Textures/king.png", 0x774400, 0xffdd00, Item.ingotGold),
+	HEDGE(TameHedge.class, ModList.TWILIGHT, 20, 1, "/Reika/SpiderPet/Textures/hedge.png", 0x053305, 0x229922, Item.melon);
 
 	public final Class entityClass;
 	public final ModList sourceMod;
@@ -30,10 +31,11 @@ public enum SpiderType {
 	public final float size;
 	public final int eggColor1;
 	public final int eggColor2;
+	public final Item tamingItem;
 
 	public static final SpiderType[] spiderList = values();
 
-	private SpiderType(Class c, ModList mod, int health, float size, String tex, int c1, int c2) {
+	private SpiderType(Class c, ModList mod, int health, float size, String tex, int c1, int c2, Item i) {
 		entityClass = c;
 		sourceMod = mod;
 		maxHealth = health;
@@ -41,6 +43,7 @@ public enum SpiderType {
 		this.size = size;
 		eggColor1 = c1;
 		eggColor2 = c2;
+		tamingItem = i;
 	}
 
 	public String getName() {

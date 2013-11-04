@@ -74,9 +74,15 @@ public abstract class EntitySpiderBase extends EntitySpider {
 
 	@Override
 	public final void onUpdate() {
+		boolean preventDespawn = false;
+		if (!worldObj.isRemote && worldObj.difficultySetting == 0) { //the criteria for mob despawn in peaceful
+			preventDespawn = true;
+			worldObj.difficultySetting = 1;
+		}
 		super.onUpdate();
+		if (preventDespawn)
+			worldObj.difficultySetting = 0;
 		this.updateRider();
-		owner = "Reika_Kalseki";
 		if (entityToAttack != null && entityToAttack.getEntityName().equals(owner))
 			entityToAttack = null;
 		if (riddenByEntity != null)
@@ -118,8 +124,14 @@ public abstract class EntitySpiderBase extends EntitySpider {
 	@Override
 	protected final boolean interact(EntityPlayer ep)
 	{
+		ItemStack is = ep.getCurrentEquippedItem();
+		if (owner == null || owner.isEmpty()) {
+			if (is != null && is.itemID == base.tamingItem.itemID);
+			owner = ep.getEntityName();
+			//ReikaChatHelper.writeString("This spider had no owner! You are now the owner.");
+			return true;
+		}
 		if (ep.getEntityName().equals(owner)) {
-			ItemStack is = ep.getCurrentEquippedItem();
 			if (is != null) {
 				if (is.itemID == Item.beefCooked.itemID && this.getHealth() < this.getMaxHealth()) {
 					this.heal(8);
