@@ -17,6 +17,8 @@ public class TamingController {
 		ItemStack is = ep.getCurrentEquippedItem();
 		if (is == null)
 			return;
+		if (s == null)
+			return;
 		if (is.itemID == s.tamingItem.itemID) {
 			EntitySpiderBase es = null;
 			switch(s) {
