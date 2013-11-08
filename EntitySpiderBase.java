@@ -235,7 +235,7 @@ public abstract class EntitySpiderBase extends EntitySpider {
 
 					}
 					else {
-						motionY += 0.7;
+						motionY += 0.7*Math.pow(base.size, 0.25);
 						this.setJumping(true);
 						ForgeHooks.onLivingJump(this);
 						//this.jump();
@@ -317,5 +317,11 @@ public abstract class EntitySpiderBase extends EntitySpider {
 
 	public boolean isSitting() {
 		return isSitting;
+	}
+
+	@Override
+	protected void fall(float h) {
+		h = Math.max(h-3, 0);
+		super.fall(h);
 	}
 }
