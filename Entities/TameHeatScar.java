@@ -15,7 +15,7 @@ import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.DamageSource;
 import net.minecraft.world.World;
 import Reika.SpiderPet.EntitySpiderBase;
-import Reika.SpiderPet.SpiderType;
+import Reika.SpiderPet.Registry.SpiderType;
 
 public class TameHeatScar extends EntitySpiderBase {
 

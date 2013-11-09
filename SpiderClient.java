@@ -9,6 +9,7 @@
  ******************************************************************************/
 package Reika.SpiderPet;
 
+import Reika.SpiderPet.Registry.SpiderType;
 import net.minecraft.world.World;
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.client.registry.RenderingRegistry;
