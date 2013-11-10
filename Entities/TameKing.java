@@ -27,6 +27,7 @@ public class TameKing extends EntitySpiderBase {
 	protected void updateRider() {
 		if (riddenByEntity instanceof EntityLivingBase) {
 			EntityLivingBase rider = (EntityLivingBase)riddenByEntity;
+			rider.removePotionEffect(Potion.poison.id);
 		}
 	}
 

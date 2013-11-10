@@ -13,7 +13,7 @@ import java.util.List;
 
 import net.minecraft.client.renderer.texture.IconRegister;
 import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -66,12 +66,6 @@ public class ItemTaming extends Item {
 	}
 
 	@Override
-	public boolean onLeftClickEntity(ItemStack stack, EntityPlayer player, Entity entity)
-	{
-		return TamingController.TameSpider(entity, player);
-	}
-
-	@Override
 	public void registerIcons(IconRegister ico) {
 		for (int i = 0; i < icons.length; i++)
 			icons[i] = ico.registerIcon("spiderpet:tool_"+i);
@@ -80,6 +74,12 @@ public class ItemTaming extends Item {
 	@Override
 	public Icon getIconFromDamage(int dmg) {
 		return icons[dmg];
+	}
+
+	@Override
+	public boolean itemInteractionForEntity(ItemStack is, EntityPlayer ep, EntityLivingBase elb)
+	{
+		return TamingController.TameSpider(elb, ep);
 	}
 
 }

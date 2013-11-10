@@ -39,6 +39,8 @@ public class SpiderRenderer extends RenderSpider {
 		if (MinecraftForgeClient.getRenderPass() != 1)
 			return;
 
+		EntitySpiderBase spider = (EntitySpiderBase)par1EntityLivingBase;
+
 		double d3 = par1EntityLivingBase.getDistanceSqToEntity(renderManager.livingPlayer);
 
 		if (d3 <= par9 * par9)
@@ -59,7 +61,7 @@ public class SpiderRenderer extends RenderSpider {
 			GL11.glEnable(GL11.GL_BLEND);
 			GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 			Tessellator tessellator = Tessellator.instance;
-			SpiderType type = ((EntitySpiderBase)par1EntityLivingBase).getBaseSpider();
+			SpiderType type = spider.getBaseSpider();
 			byte b0 = (byte)(-4-6*type.size);
 
 			GL11.glDisable(GL11.GL_TEXTURE_2D);
@@ -67,8 +69,13 @@ public class SpiderRenderer extends RenderSpider {
 
 			String[] s = par2Str.split("'s ");
 
+			int alpha = spider.isSitting() ? 127 : 192;
+			int text_alpha = spider.isSitting() ? 127 : 255;
+
+			text_alpha = text_alpha << 24;
+
 			int j = fontrenderer.getStringWidth(par2Str) / 2;
-			tessellator.setColorRGBA(0, 0, 0, 192);
+			tessellator.setColorRGBA(0, 0, 0, alpha);
 			int d = 0;
 			if (s.length > 1) {
 				d = 10;
@@ -87,11 +94,11 @@ public class SpiderRenderer extends RenderSpider {
 
 			if (s.length > 1) {
 				s[0] += "'s";
-				fontrenderer.drawString(s[0], -fontrenderer.getStringWidth(s[0]) / 2, b0, 0xffffff);
-				fontrenderer.drawString(s[1], -fontrenderer.getStringWidth(s[1]) / 2, b0+9, 0xffffff);
+				fontrenderer.drawString(s[0], -fontrenderer.getStringWidth(s[0]) / 2, b0, 0x00ffffff+text_alpha);
+				fontrenderer.drawString(s[1], -fontrenderer.getStringWidth(s[1]) / 2, b0+9, 0x00ffffff+text_alpha);
 			}
 			else
-				fontrenderer.drawString(par2Str, -fontrenderer.getStringWidth(par2Str) / 2, b0, 0xffffff);
+				fontrenderer.drawString(par2Str, -fontrenderer.getStringWidth(par2Str) / 2, b0, 0x00ffffff+text_alpha);
 
 			GL11.glEnable(GL11.GL_DEPTH_TEST);
 			GL11.glDepthMask(true);

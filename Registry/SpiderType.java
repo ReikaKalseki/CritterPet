@@ -12,7 +12,7 @@ package Reika.SpiderPet.Registry;
 import java.util.HashMap;
 
 import net.minecraft.item.Item;
-import Reika.DragonAPI.Auxiliary.ModList;
+import Reika.DragonAPI.ModList;
 import Reika.DragonAPI.Libraries.Java.ReikaStringParser;
 import Reika.SpiderPet.SpiderPet;
 import Reika.SpiderPet.Entities.TameHeatScar;

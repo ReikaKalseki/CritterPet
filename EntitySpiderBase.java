@@ -26,7 +26,10 @@ import net.minecraftforge.common.ForgeHooks;
 import Reika.DragonAPI.DragonAPICore;
 import Reika.DragonAPI.Libraries.IO.ReikaChatHelper;
 import Reika.DragonAPI.Libraries.IO.ReikaTextureHelper;
+import Reika.DragonAPI.Libraries.Java.ReikaRandomHelper;
 import Reika.DragonAPI.Libraries.Java.ReikaReflectionHelper;
+import Reika.DragonAPI.Libraries.Registry.ReikaParticleHelper;
+import Reika.DragonAPI.Libraries.World.ReikaWorldHelper;
 import Reika.SpiderPet.Registry.SpiderType;
 
 public abstract class EntitySpiderBase extends EntitySpider {
@@ -40,6 +43,18 @@ public abstract class EntitySpiderBase extends EntitySpider {
 		this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setAttribute(this.getSpiderMaxHealth());
 		this.setHealth(this.getSpiderMaxHealth());
 		stepHeight = 1.25F;
+		experienceValue = 0;
+		height = 1.25F*base.size;
+	}
+
+	private void spawnEffects(World world, double x, double y, double z) {
+		for (int i = 0; i < 12; i++) {
+			double rx = ReikaRandomHelper.getRandomPlusMinus(x, 1);
+			double rz = ReikaRandomHelper.getRandomPlusMinus(z, 1);
+			ReikaParticleHelper.HEART.spawnAt(world, rx, y+this.getScaleFactor()*0.8, rz, 0, 0, 0);
+			ReikaWorldHelper.splitAndSpawnXP(world, rx, y+0.5, rz, 1+rand.nextInt(5));
+		}
+		this.playSound("random.levelup", 1, 1);
 	}
 
 	@Override
@@ -104,6 +119,9 @@ public abstract class EntitySpiderBase extends EntitySpider {
 
 	@Override
 	public final void onUpdate() {
+		if (ticksExisted <= 1) {
+			this.spawnEffects(worldObj, posX, posY, posZ);
+		}
 		boolean preventDespawn = false;
 		if (!worldObj.isRemote && worldObj.difficultySetting == 0) { //the criteria for mob despawn in peaceful
 			preventDespawn = true;
@@ -312,7 +330,7 @@ public abstract class EntitySpiderBase extends EntitySpider {
 	@Override
 	public final int getTalkInterval()
 	{
-		return riddenByEntity != null ? 240 : 80;
+		return (this.isSitting() ? 16 : 4)*(riddenByEntity != null ? 240 : 80);
 	}
 
 	@Override
@@ -388,5 +406,17 @@ public abstract class EntitySpiderBase extends EntitySpider {
 			this.setOwner(s);
 		}
 		this.setSitting(NBT.getBoolean("Sitting"));
+	}
+
+	@Override
+	protected int getDropItemId()
+	{
+		return 0;
+	}
+
+	@Override
+	protected void dropFewItems(boolean par1, int par2)
+	{
+
 	}
 }
