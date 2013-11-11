@@ -55,6 +55,7 @@ public class TamingController {
 			if (!world.isRemote) {
 				world.spawnEntityInWorld(es);
 			}
+			es.spawnEffects();
 			if (!ep.capabilities.isCreativeMode)
 				ep.setCurrentItemOrArmor(0, new ItemStack(is.itemID, 1, 0));
 			return true;

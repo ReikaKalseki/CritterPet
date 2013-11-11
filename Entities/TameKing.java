@@ -42,4 +42,9 @@ public class TameKing extends EntitySpiderBase {
 			return false;
 		return true;
 	}
+
+	@Override
+	public int getAttackDamage() {
+		return 4;
+	}
 }

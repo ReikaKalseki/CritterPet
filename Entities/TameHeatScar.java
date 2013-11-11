@@ -40,4 +40,9 @@ public class TameHeatScar extends EntitySpiderBase {
 	public boolean canBeHurtBy(DamageSource dsc) {
 		return !dsc.isFireDamage();
 	}
+
+	@Override
+	public int getAttackDamage() {
+		return 4;
+	}
 }

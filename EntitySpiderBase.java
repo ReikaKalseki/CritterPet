@@ -9,6 +9,8 @@
  ******************************************************************************/
 package Reika.SpiderPet;
 
+import java.util.List;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
@@ -24,6 +26,7 @@ import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeHooks;
 import Reika.DragonAPI.DragonAPICore;
+import Reika.DragonAPI.Libraries.ReikaEntityHelper;
 import Reika.DragonAPI.Libraries.IO.ReikaChatHelper;
 import Reika.DragonAPI.Libraries.IO.ReikaTextureHelper;
 import Reika.DragonAPI.Libraries.Java.ReikaRandomHelper;
@@ -47,7 +50,11 @@ public abstract class EntitySpiderBase extends EntitySpider {
 		height = 1.25F*base.size;
 	}
 
-	private void spawnEffects(World world, double x, double y, double z) {
+	public void spawnEffects() {
+		World world = worldObj;
+		double x = posX;
+		double y = posY;
+		double z = posZ;
 		for (int i = 0; i < 12; i++) {
 			double rx = ReikaRandomHelper.getRandomPlusMinus(x, 1);
 			double rz = ReikaRandomHelper.getRandomPlusMinus(z, 1);
@@ -119,9 +126,6 @@ public abstract class EntitySpiderBase extends EntitySpider {
 
 	@Override
 	public final void onUpdate() {
-		if (ticksExisted <= 1) {
-			this.spawnEffects(worldObj, posX, posY, posZ);
-		}
 		boolean preventDespawn = false;
 		if (!worldObj.isRemote && worldObj.difficultySetting == 0) { //the criteria for mob despawn in peaceful
 			preventDespawn = true;
@@ -346,7 +350,7 @@ public abstract class EntitySpiderBase extends EntitySpider {
 	@Override
 	public final double getMountedYOffset()
 	{
-		return height*1.4;
+		return base.size*0.85;
 	}
 
 	@Override
@@ -419,4 +423,38 @@ public abstract class EntitySpiderBase extends EntitySpider {
 	{
 
 	}
+
+	@Override
+	protected void collideWithNearbyEntities()
+	{
+		List list = worldObj.getEntitiesWithinAABBExcludingEntity(this, boundingBox.expand(0.20000000298023224D, 0.0D, 0.20000000298023224D));
+
+		if (list != null && !list.isEmpty())
+		{
+			for (int i = 0; i < list.size(); ++i)
+			{
+				Entity entity = (Entity)list.get(i);
+
+				if (entity.canBePushed())
+				{
+					this.collideWithEntity(entity);
+				}
+			}
+		}
+	}
+
+	@Override
+	protected void collideWithEntity(Entity e)
+	{
+		e.applyEntityCollision(this);
+		if (e instanceof EntityLivingBase && !(e instanceof EntitySpiderBase)) {
+			if (ReikaEntityHelper.isHostile((EntityLivingBase)e)) {
+				//this.attackEntity(e, this.getAttackDamage());
+				e.attackEntityFrom(DamageSource.causeMobDamage(this), this.getAttackDamage());
+				this.applyAttackEffects((EntityLivingBase)e);
+			}
+		}
+	}
+
+	public abstract int getAttackDamage();
 }

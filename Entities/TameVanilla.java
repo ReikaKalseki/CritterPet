@@ -37,4 +37,9 @@ public class TameVanilla extends EntitySpiderBase {
 	public boolean canBeHurtBy(DamageSource dsc) {
 		return true;
 	}
+
+	@Override
+	public int getAttackDamage() {
+		return 3;
+	}
 }
