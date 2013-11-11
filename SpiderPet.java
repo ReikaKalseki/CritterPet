@@ -50,7 +50,7 @@ public class SpiderPet extends DragonAPIMod {
 
 	public static ModLogger logger;
 
-	@SidedProxy(clientSide="Reika.SpiderPet.SpiderClient", serverSide="Reika.SpiderPet.SpiderServer")
+	@SidedProxy(clientSide="Reika.SpiderPet.SpiderClient", serverSide="Reika.SpiderPet.SpiderCommon")
 	public static SpiderCommon proxy;
 
 	@Override
