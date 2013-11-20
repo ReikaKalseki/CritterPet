@@ -217,6 +217,24 @@ public abstract class EntitySpiderBase extends EntitySpider {
 	}
 
 	@Override
+	public void heal(float par1)
+	{
+		super.heal(par1);
+
+		this.playLivingSound();
+
+		double x = posX;
+		double y = posY;
+		double z = posZ;
+		for (int i = 0; i < 6; i++) {
+			double rx = ReikaRandomHelper.getRandomPlusMinus(x, 1);
+			double rz = ReikaRandomHelper.getRandomPlusMinus(z, 1);
+			ReikaParticleHelper.HEART.spawnAt(worldObj, rx, y+this.getScaleFactor()*0.8, rz, 0, 0, 0);
+			ReikaWorldHelper.splitAndSpawnXP(worldObj, rx, y+0.5, rz, 1+rand.nextInt(5));
+		}
+	}
+
+	@Override
 	public final boolean attackEntityFrom(DamageSource dsc, float par2)
 	{
 		if (this.isEntityInvulnerable())
