@@ -25,10 +25,10 @@ import net.minecraft.util.DamageSource;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeHooks;
-import Reika.DragonAPI.DragonAPICore;
 import Reika.DragonAPI.Libraries.ReikaEntityHelper;
 import Reika.DragonAPI.Libraries.IO.ReikaChatHelper;
 import Reika.DragonAPI.Libraries.IO.ReikaTextureHelper;
+import Reika.DragonAPI.Libraries.Java.ReikaObfuscationHelper;
 import Reika.DragonAPI.Libraries.Java.ReikaRandomHelper;
 import Reika.DragonAPI.Libraries.Java.ReikaReflectionHelper;
 import Reika.DragonAPI.Libraries.Registry.ReikaParticleHelper;
@@ -300,7 +300,7 @@ public abstract class EntitySpiderBase extends EntitySpider {
 			rotationYawHead = renderYawOffset = rotationYaw;
 			par1 = ((EntityLivingBase)riddenByEntity).moveStrafing * 0.5F;
 			par2 = ((EntityLivingBase)riddenByEntity).moveForward;
-			boolean jump = ReikaReflectionHelper.getPrivateBoolean(riddenByEntity, DragonAPICore.isDeObfEnvironment() ? "isJumping" : "field_70703_bu", SpiderPet.instance.getModLogger());
+			boolean jump = ReikaReflectionHelper.getPrivateBoolean(riddenByEntity, ReikaObfuscationHelper.getLabelName("isJumping"), SpiderPet.instance.getModLogger());
 			if (jump) {
 				if (onGround) {
 					if (this.isBesideClimbableBlock()) {
