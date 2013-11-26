@@ -16,6 +16,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.Event.Result;
+import net.minecraftforge.event.ForgeSubscribe;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent.AllowDespawn;
 import Reika.DragonAPI.DragonAPICore;
 import Reika.DragonAPI.Base.DragonAPIMod;
@@ -94,7 +95,7 @@ public class SpiderPet extends DragonAPIMod {
 
 	}
 
-	@EventHandler
+	@ForgeSubscribe
 	public void disallowDespawn(AllowDespawn d) {
 		EntityLivingBase e = d.entityLiving;
 		if (e instanceof EntitySpiderBase)
