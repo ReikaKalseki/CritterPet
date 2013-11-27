@@ -72,7 +72,9 @@ public class SpiderPet extends DragonAPIMod {
 	@EventHandler
 	public void load(FMLInitializationEvent event) {
 		egg = new ItemSpiderEgg(SpiderOptions.EGGID.getValue());
+		egg.setUnlocalizedName("petspideregg");
 		tool = new ItemTaming(SpiderOptions.TOOLID.getValue());
+		tool.setUnlocalizedName("spidertamer");
 		for (int i = 0; i < SpiderType.spiderList.length; i++) {
 			SpiderType type = SpiderType.spiderList[i];
 			int id = EntityRegistry.findGlobalUniqueEntityId();
