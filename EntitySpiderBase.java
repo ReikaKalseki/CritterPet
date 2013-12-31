@@ -475,4 +475,9 @@ public abstract class EntitySpiderBase extends EntitySpider {
 	}
 
 	public abstract int getAttackDamage();
+
+	@Override
+	public boolean shouldDismountInWater(Entity rider){
+		return false;
+	}
 }
