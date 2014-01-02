@@ -196,6 +196,9 @@ public abstract class EntitySpiderBase extends EntitySpider {
 					this.setSitting(!this.isSitting());
 					return true;
 				}
+				if (is.itemID == Item.nameTag.itemID) {
+					return false;
+				}
 				boolean flag = super.interact(ep);
 				if (flag)
 					return true;
