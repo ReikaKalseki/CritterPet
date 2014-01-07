@@ -48,6 +48,7 @@ public abstract class EntitySpiderBase extends EntitySpider {
 		stepHeight = 1.25F;
 		experienceValue = 0;
 		height = 1.25F*base.size;
+		this.func_110163_bv();
 	}
 
 	public void spawnEffects() {
