@@ -14,6 +14,7 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
+import Reika.SpiderPet.Entities.EntitySpiderBase;
 import Reika.SpiderPet.Entities.TameHeatScar;
 import Reika.SpiderPet.Entities.TameHedge;
 import Reika.SpiderPet.Entities.TameKing;

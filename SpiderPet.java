@@ -23,6 +23,7 @@ import Reika.DragonAPI.Base.DragonAPIMod;
 import Reika.DragonAPI.Instantiable.IO.ControlledConfig;
 import Reika.DragonAPI.Instantiable.IO.ModLogger;
 import Reika.DragonAPI.Libraries.ReikaRegistryHelper;
+import Reika.SpiderPet.Entities.EntitySpiderBase;
 import Reika.SpiderPet.Registry.SpiderOptions;
 import Reika.SpiderPet.Registry.SpiderType;
 import cpw.mods.fml.common.Mod;

@@ -19,6 +19,7 @@ import net.minecraftforge.client.MinecraftForgeClient;
 
 import org.lwjgl.opengl.GL11;
 
+import Reika.SpiderPet.Entities.EntitySpiderBase;
 import Reika.SpiderPet.Registry.SpiderType;
 
 public class SpiderRenderer extends RenderSpider {

@@ -7,7 +7,7 @@
  * Distribution of the software in any form is only allowed with
  * explicit, prior permission from the owner.
  ******************************************************************************/
-package Reika.SpiderPet;
+package Reika.SpiderPet.Entities;
 
 import java.util.List;
 
@@ -33,6 +33,7 @@ import Reika.DragonAPI.Libraries.Java.ReikaRandomHelper;
 import Reika.DragonAPI.Libraries.Java.ReikaReflectionHelper;
 import Reika.DragonAPI.Libraries.Registry.ReikaParticleHelper;
 import Reika.DragonAPI.Libraries.World.ReikaWorldHelper;
+import Reika.SpiderPet.SpiderPet;
 import Reika.SpiderPet.Registry.SpiderType;
 
 public abstract class EntitySpiderBase extends EntitySpider {

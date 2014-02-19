@@ -30,6 +30,7 @@ import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.World;
 import Reika.DragonAPI.Libraries.Java.ReikaJavaLibrary;
+import Reika.SpiderPet.Entities.EntitySpiderBase;
 import Reika.SpiderPet.Registry.SpiderType;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;

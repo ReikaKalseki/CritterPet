@@ -12,7 +12,6 @@ package Reika.SpiderPet.Entities;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.DamageSource;
 import net.minecraft.world.World;
-import Reika.SpiderPet.EntitySpiderBase;
 import Reika.SpiderPet.Registry.SpiderType;
 
 public class TameVanilla extends EntitySpiderBase {

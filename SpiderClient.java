@@ -20,8 +20,7 @@ public class SpiderClient extends SpiderCommon {
 
 	@Override
 	public void registerSounds() {
-		//RotarySounds.addSounds();
-		//MinecraftForge.EVENT_BUS.register(new SoundLoader(RotaryCraft.instance, SoundRegistry.soundList));
+
 	}
 
 	@Override
