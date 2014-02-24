@@ -10,6 +10,8 @@
 package Reika.SpiderPet;
 
 import net.minecraft.world.World;
+import net.minecraftforge.client.MinecraftForgeClient;
+import Reika.DragonAPI.Instantiable.Rendering.ItemSpriteSheetRenderer;
 import Reika.SpiderPet.Registry.SpiderType;
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.client.registry.RenderingRegistry;
@@ -17,6 +19,8 @@ import cpw.mods.fml.client.registry.RenderingRegistry;
 public class SpiderClient extends SpiderCommon {
 
 	public static final SpiderRenderer spider = new SpiderRenderer();
+
+	ItemSpriteSheetRenderer items = new ItemSpriteSheetRenderer(SpiderPet.instance, SpiderPet.class, "Textures/items.png");
 
 	@Override
 	public void registerSounds() {
@@ -29,6 +33,8 @@ public class SpiderClient extends SpiderCommon {
 			SpiderType s = SpiderType.spiderList[i];
 			RenderingRegistry.registerEntityRenderingHandler(s.entityClass, spider);
 		}
+
+		MinecraftForgeClient.registerItemRenderer(SpiderPet.tool.itemID, items);
 	}
 
 	// Override any other methods that need to be handled differently client side.

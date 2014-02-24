@@ -17,13 +17,11 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.Icon;
 import net.minecraft.world.World;
+import Reika.DragonAPI.Interfaces.IndexedItemSprites;
 import Reika.SpiderPet.Registry.SpiderType;
 
-public class ItemTaming extends Item {
-
-	private Icon[] icons = new Icon[1+SpiderType.spiderList.length];
+public class ItemTaming extends Item implements IndexedItemSprites {
 
 	public ItemTaming(int par1) {
 		super(par1);
@@ -67,19 +65,28 @@ public class ItemTaming extends Item {
 
 	@Override
 	public void registerIcons(IconRegister ico) {
-		for (int i = 0; i < icons.length; i++)
-			icons[i] = ico.registerIcon("spiderpet:tool_"+i);
-	}
 
-	@Override
-	public Icon getIconFromDamage(int dmg) {
-		return icons[dmg];
 	}
 
 	@Override
 	public boolean itemInteractionForEntity(ItemStack is, EntityPlayer ep, EntityLivingBase elb)
 	{
 		return TamingController.TameSpider(elb, ep);
+	}
+
+	@Override
+	public int getItemSpriteIndex(ItemStack is) {
+		return is.getItemDamage()+1;
+	}
+
+	@Override
+	public String getTexture(ItemStack is) {
+		return "Textures/items.png";
+	}
+
+	@Override
+	public Class getTextureReferenceClass() {
+		return SpiderPet.class;
 	}
 
 }
