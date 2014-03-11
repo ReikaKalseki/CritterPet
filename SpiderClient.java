@@ -20,7 +20,7 @@ public class SpiderClient extends SpiderCommon {
 
 	public static final SpiderRenderer spider = new SpiderRenderer();
 
-	ItemSpriteSheetRenderer items = new ItemSpriteSheetRenderer(SpiderPet.instance, SpiderPet.class, "Textures/items.png");
+	private ItemSpriteSheetRenderer items = new ItemSpriteSheetRenderer(SpiderPet.instance, SpiderPet.class, "Textures/items.png");
 
 	@Override
 	public void registerSounds() {

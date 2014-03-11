@@ -115,4 +115,9 @@ public enum SpiderOptions implements ConfigList {
 		return false;
 	}
 
+	@Override
+	public boolean shouldLoad() {
+		return true;
+	}
+
 }
