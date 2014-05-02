@@ -7,14 +7,14 @@
  * Distribution of the software in any form is only allowed with
  * explicit, prior permission from the owner.
  ******************************************************************************/
-package Reika.SpiderPet.Registry;
+package Reika.CritterPet.Registry;
 
 import net.minecraftforge.common.Configuration;
 import Reika.DragonAPI.Exception.RegistrationException;
 import Reika.DragonAPI.Interfaces.ConfigList;
-import Reika.SpiderPet.SpiderPet;
+import Reika.CritterPet.CritterPet;
 
-public enum SpiderOptions implements ConfigList {
+public enum CritterOptions implements ConfigList {
 
 	LOGLOADING("Console Loading Info", true),
 	DEBUGMODE("Debug Mode", false),
@@ -27,15 +27,15 @@ public enum SpiderOptions implements ConfigList {
 	private float defaultFloat;
 	private Class type;
 
-	public static final SpiderOptions[] optionList = SpiderOptions.values();
+	public static final CritterOptions[] optionList = CritterOptions.values();
 
-	private SpiderOptions(String l, boolean d) {
+	private CritterOptions(String l, boolean d) {
 		label = l;
 		defaultState = d;
 		type = boolean.class;
 	}
 
-	private SpiderOptions(String l, int d) {
+	private CritterOptions(String l, int d) {
 		label = l;
 		defaultValue = d;
 		type = int.class;
@@ -55,12 +55,12 @@ public enum SpiderOptions implements ConfigList {
 
 	public float setDecimal(Configuration config) {
 		if (!this.isDecimal())
-			throw new RegistrationException(SpiderPet.instance, "Config Property \""+this.getLabel()+"\" is not decimal!");
+			throw new RegistrationException(CritterPet.instance, "Config Property \""+this.getLabel()+"\" is not decimal!");
 		return (float)config.get("Control Setup", this.getLabel(), defaultFloat).getDouble(defaultFloat);
 	}
 
 	public float getFloat() {
-		return (Float)SpiderPet.config.getControl(this.ordinal());
+		return (Float)CritterPet.config.getControl(this.ordinal());
 	}
 
 	public Class getPropertyType() {
@@ -69,7 +69,7 @@ public enum SpiderOptions implements ConfigList {
 
 	public int setValue(Configuration config) {
 		if (!this.isNumeric())
-			throw new RegistrationException(SpiderPet.instance, "Config Property \""+this.getLabel()+"\" is not numerical!");
+			throw new RegistrationException(CritterPet.instance, "Config Property \""+this.getLabel()+"\" is not numerical!");
 		return config.get("Control Setup", this.getLabel(), defaultValue).getInt();
 	}
 
@@ -79,16 +79,16 @@ public enum SpiderOptions implements ConfigList {
 
 	public boolean setState(Configuration config) {
 		if (!this.isBoolean())
-			throw new RegistrationException(SpiderPet.instance, "Config Property \""+this.getLabel()+"\" is not boolean!");
+			throw new RegistrationException(CritterPet.instance, "Config Property \""+this.getLabel()+"\" is not boolean!");
 		return config.get("Control Setup", this.getLabel(), defaultState).getBoolean(defaultState);
 	}
 
 	public boolean getState() {
-		return (Boolean)SpiderPet.config.getControl(this.ordinal());
+		return (Boolean)CritterPet.config.getControl(this.ordinal());
 	}
 
 	public int getValue() {
-		return (Integer)SpiderPet.config.getControl(this.ordinal());
+		return (Integer)CritterPet.config.getControl(this.ordinal());
 	}
 
 	public boolean isDummiedOut() {

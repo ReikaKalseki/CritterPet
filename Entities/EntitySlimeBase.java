@@ -14,64 +14,42 @@ import java.util.List;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.monster.EntitySpider;
+import net.minecraft.entity.monster.EntitySlime;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.potion.Potion;
-import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
-import net.minecraftforge.common.ForgeHooks;
-import Reika.CritterPet.CritterPet;
 import Reika.CritterPet.Interfaces.TamedMob;
 import Reika.CritterPet.Registry.CritterType;
 import Reika.DragonAPI.Libraries.ReikaEntityHelper;
 import Reika.DragonAPI.Libraries.IO.ReikaChatHelper;
-import Reika.DragonAPI.Libraries.IO.ReikaTextureHelper;
-import Reika.DragonAPI.Libraries.Java.ReikaObfuscationHelper;
 import Reika.DragonAPI.Libraries.Java.ReikaRandomHelper;
-import Reika.DragonAPI.Libraries.Java.ReikaReflectionHelper;
 import Reika.DragonAPI.Libraries.Registry.ReikaParticleHelper;
 import Reika.DragonAPI.Libraries.World.ReikaWorldHelper;
 
-public abstract class EntitySpiderBase extends EntitySpider implements TamedMob {
+public abstract class EntitySlimeBase extends EntitySlime implements TamedMob {
 
 	private CritterType base;
+	private Entity entityToAttack;
 
-	public EntitySpiderBase(World world, CritterType sp) {
+	public EntitySlimeBase(World world, CritterType sp) {
 		super(world);
 		base = sp;
 		this.setSize(1.8F*sp.size, 1.1F*sp.size/2);
 		this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setAttribute(this.getCritterMaxHealth());
 		this.setHealth(this.getCritterMaxHealth());
-		stepHeight = 1.25F;
 		experienceValue = 0;
-		height = 1.25F*base.size;
+		height = 1.25F*sp.size;
 		this.func_110163_bv();
-	}
-
-	@Override
-	public void spawnEffects() {
-		World world = worldObj;
-		double x = posX;
-		double y = posY;
-		double z = posZ;
-		for (int i = 0; i < 12; i++) {
-			double rx = ReikaRandomHelper.getRandomPlusMinus(x, 1);
-			double rz = ReikaRandomHelper.getRandomPlusMinus(z, 1);
-			ReikaParticleHelper.HEART.spawnAt(world, rx, y+this.getScaleFactor()*0.8, rz, 0, 0, 0);
-			ReikaWorldHelper.splitAndSpawnXP(world, rx, y+0.5, rz, 1+rand.nextInt(5));
-		}
-		this.playSound("random.levelup", 1, 1);
+		this.setSlimeSize(4);
 	}
 
 	@Override
 	protected final void entityInit() {
 		super.entityInit();
-		dataWatcher.addObject(31, Byte.valueOf((byte)0)); //Set not sitting
 		dataWatcher.addObject(30, ""); //Set empty owner
 	}
 
@@ -93,39 +71,68 @@ public abstract class EntitySpiderBase extends EntitySpider implements TamedMob 
 		return s != null && !s.isEmpty();
 	}
 
+	@Override
+	public void spawnEffects() {
+		World world = worldObj;
+		double x = posX;
+		double y = posY;
+		double z = posZ;
+		for (int i = 0; i < 12; i++) {
+			double rx = ReikaRandomHelper.getRandomPlusMinus(x, 1);
+			double rz = ReikaRandomHelper.getRandomPlusMinus(z, 1);
+			ReikaParticleHelper.HEART.spawnAt(world, rx, y+this.getScaleFactor()*0.8, rz, 0, 0, 0);
+			ReikaWorldHelper.splitAndSpawnXP(world, rx, y+0.5, rz, 1+rand.nextInt(5));
+		}
+		this.playSound("random.levelup", 1, 1);
+	}
+
+	public final float getScaleFactor() {
+		return this.getSlimeSize()/2F;
+	}
+
+	@Override
 	public final CritterType getBaseCritter() {
 		return base;
 	}
 
-	public final boolean isSitting() {
-		return dataWatcher.getWatchableObjectByte(31) == 1;
-	}
-
-	public final void setSitting(boolean sit) {
-		byte s = (byte)(sit ? 1 : 0);
-		dataWatcher.updateObject(31, s);
-	}
-
+	@Override
 	public final boolean isVanillaCritter() {
 		return !this.isModCritter();
 	}
 
+	@Override
 	public final boolean isModCritter() {
-		return base != null;
-	}
-
-	public final int getCritterMaxHealth() {
-		if (base == null)
-			return 100;
-		return base.maxHealth;
+		return this.getBaseCritter().sourceMod != null;
 	}
 
 	@Override
-	public final boolean shouldRiderFaceForward(EntityPlayer player) {
-		return true;
+	public final int getCritterMaxHealth() {
+		return this.getBaseCritter().maxHealth*4;
 	}
 
-	protected abstract void updateRider();
+	@Override
+	public final void faceEntity(Entity e, float a, float b) {
+		if (!e.getEntityName().equals(this.getOwner()))
+			super.faceEntity(e, a, b);
+	}
+
+	@Override
+	protected final int getJumpDelay()
+	{
+		return riddenByEntity != null ? 5 : super.getJumpDelay();
+	}
+
+	@Override
+	protected final EntitySlime createInstance()
+	{
+		return super.createInstance();
+	}
+
+	@Override
+	public final void setDead()
+	{
+		isDead = true;
+	}
 
 	@Override
 	public final void onUpdate() {
@@ -139,14 +146,19 @@ public abstract class EntitySpiderBase extends EntitySpider implements TamedMob 
 			worldObj.difficultySetting = 0;
 		if (riddenByEntity != null)
 			this.updateRider();
-		if (entityToAttack != null && entityToAttack.getEntityName().equals(this.getOwner()))
-			entityToAttack = null;
 		if (riddenByEntity != null)
 			this.followOwner();
-		if (this.isSitting()) {
-
-		}
 	}
+
+	@Override
+	protected void updateEntityActionState()
+	{
+		if (entityToAttack != null)
+			this.faceEntity(entityToAttack, 10.0F, 30.0F);
+		super.updateEntityActionState();
+	}
+
+	protected abstract void updateRider();
 
 	private void followOwner() {
 		World world = worldObj;
@@ -157,23 +169,13 @@ public abstract class EntitySpiderBase extends EntitySpider implements TamedMob 
 		rotationPitch = 0;
 	}
 
-	@Override
-	protected final Entity findPlayerToAttack()
-	{
-		return null;
-	}
-
-	@Override
-	protected final void attackEntity(Entity e, float par2)
-	{
-		if (e.getEntityName().equals(this.getOwner()))
-			return;
-		super.attackEntity(e, par2);
-		if (e instanceof EntityLivingBase)
-			this.applyAttackEffects((EntityLivingBase)e);
-	}
-
 	protected abstract void applyAttackEffects(EntityLivingBase e);
+
+	@Override
+	public final void onCollideWithPlayer(EntityPlayer ep) {
+		if (!ep.getEntityName().equals(this.getOwner()))
+			super.onCollideWithPlayer(ep);
+	}
 
 	@Override
 	protected final boolean interact(EntityPlayer ep)
@@ -190,14 +192,10 @@ public abstract class EntitySpiderBase extends EntitySpider implements TamedMob 
 		}
 		if (ep.getEntityName().equals(owner)) {
 			if (is != null) {
-				if (is.itemID == Item.beefCooked.itemID && this.getHealth() < this.getMaxHealth()) {
+				if (is.itemID == Item.slimeBall.itemID && this.getHealth() < this.getMaxHealth()) {
 					this.heal(8);
 					if (!ep.capabilities.isCreativeMode)
 						is.stackSize--;
-					return true;
-				}
-				if (is.itemID == Item.bone.itemID) {
-					this.setSitting(!this.isSitting());
 					return true;
 				}
 				if (is.itemID == Item.nameTag.itemID) {
@@ -253,8 +251,8 @@ public abstract class EntitySpiderBase extends EntitySpider implements TamedMob 
 		else if (super.attackEntityFrom(dsc, par2)) {
 			Entity entity = dsc.getEntity();
 			if (riddenByEntity != entity && ridingEntity != entity) {
-				//if (entity != this && !entity.getEntityName().equals(this.getOwner()))
-				entityToAttack = entity;
+				if (entity != this && !entity.getEntityName().equals(this.getOwner()))
+					entityToAttack = entity;
 				return true;
 			}
 			else
@@ -283,61 +281,7 @@ public abstract class EntitySpiderBase extends EntitySpider implements TamedMob 
 	@Override
 	protected final boolean isMovementBlocked()
 	{
-		return this.isSitting() || riddenByEntity != null;
-	}
-
-	@Override
-	public final void moveEntityWithHeading(float par1, float par2)
-	{
-		if (riddenByEntity != null) {
-			prevRotationYaw = rotationYaw = riddenByEntity.rotationYaw;
-			rotationPitch = riddenByEntity.rotationPitch * 0.5F;
-			this.setRotation(rotationYaw, rotationPitch);
-			rotationYawHead = renderYawOffset = rotationYaw;
-			par1 = ((EntityLivingBase)riddenByEntity).moveStrafing * 0.5F;
-			par2 = ((EntityLivingBase)riddenByEntity).moveForward;
-			String s = ReikaObfuscationHelper.getLabelName("isJumping");
-			boolean jump = ReikaReflectionHelper.getPrivateBoolean(riddenByEntity, s, CritterPet.instance.getModLogger());
-			if (jump) {
-				if (onGround) {
-					if (this.isBesideClimbableBlock()) {
-
-					}
-					else {
-						motionY += 0.7*Math.pow(base.size, 0.25);
-						this.setJumping(true);
-						ForgeHooks.onLivingJump(this);
-						//this.jump();
-					}
-				}
-			}
-			else
-				this.setBesideClimbableBlock(false);
-		}
-		super.moveEntityWithHeading(par1, par2);
-	}
-
-	@Override
-	public final float getAIMoveSpeed()
-	{
-		float sp = 0.11F;
-		sp *= Math.sqrt(base.size);
-		if (riddenByEntity != null) {
-			sp *= riddenByEntity.isSprinting() ? 1.414 : 1;
-		}
-		PotionEffect pot = this.getActivePotionEffect(Potion.moveSpeed);
-		if (pot != null) {
-			sp += 0.01*(pot.getAmplifier()+1);
-		}
-		return sp;
-	}
-
-	public final float getScaleFactor() {
-		return base.size;
-	}
-
-	public final void bindTexture() {
-		ReikaTextureHelper.bindTexture(CritterPet.class, base.texture);
+		return false;
 	}
 
 	@Override
@@ -349,23 +293,23 @@ public abstract class EntitySpiderBase extends EntitySpider implements TamedMob 
 	@Override
 	public final int getTalkInterval()
 	{
-		return (this.isSitting() ? 16 : 4)*(riddenByEntity != null ? 240 : 80);
-	}
-
-	@Override
-	protected final void playStepSound(int par1, int par2, int par3, int par4)
-	{
-		this.playSound("mob.spider.step", this.getStepSoundVolume(), (float) (1.0F/Math.sqrt(base.size)));
+		return riddenByEntity != null ? 960 : 320;
 	}
 
 	public final float getStepSoundVolume() {
+		return this.getSoundVolume();
+	}
+
+	@Override
+	protected final float getSoundVolume()
+	{
 		return riddenByEntity != null ? 0.05F : 0.15F;
 	}
 
 	@Override
 	public final double getMountedYOffset()
 	{
-		return base.size*0.85;
+		return this.getSlimeSize()/2F+0.0625F;
 	}
 
 	@Override
@@ -385,12 +329,6 @@ public abstract class EntitySpiderBase extends EntitySpider implements TamedMob 
 	}
 
 	@Override
-	protected final void fall(float h) {
-		h = Math.max(h-3, 0);
-		super.fall(h);
-	}
-
-	@Override
 	public final String toString() {
 		return this.getEntityName()+" @ "+String.format("%.1f, %.1f, %.1f", posX, posY, posZ);
 	}
@@ -405,8 +343,6 @@ public abstract class EntitySpiderBase extends EntitySpider implements TamedMob 
 			NBT.setString("Owner", "");
 		else
 			NBT.setString("Owner", s);
-
-		NBT.setBoolean("Sitting", this.isSitting());
 	}
 
 	@Override
@@ -418,7 +354,6 @@ public abstract class EntitySpiderBase extends EntitySpider implements TamedMob 
 		if (s.length() > 0) {
 			this.setOwner(s);
 		}
-		this.setSitting(NBT.getBoolean("Sitting"));
 	}
 
 	@Override
@@ -459,16 +394,15 @@ public abstract class EntitySpiderBase extends EntitySpider implements TamedMob 
 		if (e instanceof EntityLivingBase && !(e instanceof TamedMob)) {
 			if (ReikaEntityHelper.isHostile((EntityLivingBase)e)) {
 				//this.attackEntity(e, this.getAttackDamage());
-				e.attackEntityFrom(DamageSource.causeMobDamage(this), this.getAttackDamage());
+				e.attackEntityFrom(DamageSource.causeMobDamage(this), this.getAttackStrength());
 				this.applyAttackEffects((EntityLivingBase)e);
 			}
 		}
 	}
 
-	public abstract int getAttackDamage();
-
 	@Override
 	public boolean shouldDismountInWater(Entity rider) {
 		return false;
 	}
+
 }

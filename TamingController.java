@@ -7,32 +7,35 @@
  * Distribution of the software in any form is only allowed with
  * explicit, prior permission from the owner.
  ******************************************************************************/
-package Reika.SpiderPet;
+package Reika.CritterPet;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
-import Reika.SpiderPet.Entities.EntitySpiderBase;
-import Reika.SpiderPet.Entities.TameHeatScar;
-import Reika.SpiderPet.Entities.TameHedge;
-import Reika.SpiderPet.Entities.TameKing;
-import Reika.SpiderPet.Entities.TameVanilla;
-import Reika.SpiderPet.Registry.SpiderType;
+import Reika.CritterPet.Entities.TameFire;
+import Reika.CritterPet.Entities.TameHeatScar;
+import Reika.CritterPet.Entities.TameHedge;
+import Reika.CritterPet.Entities.TameKing;
+import Reika.CritterPet.Entities.TameMazeSlime;
+import Reika.CritterPet.Entities.TameSlime;
+import Reika.CritterPet.Entities.TameVanilla;
+import Reika.CritterPet.Interfaces.TamedMob;
+import Reika.CritterPet.Registry.CritterType;
 
 public class TamingController {
 
-	public static boolean TameSpider(Entity e, EntityPlayer ep) {
+	public static boolean TameCritter(Entity e, EntityPlayer ep) {
 		World world = ep.worldObj;
-		SpiderType s = getType(e);
+		CritterType s = getType(e);
 		ItemStack is = ep.getCurrentEquippedItem();
 		if (is == null)
 			return false;
 		if (s == null)
 			return false;
 		if (canTame(s, is)) {
-			EntitySpiderBase es = null;
+			TamedMob es = null;
 			switch(s) {
 			case HEATSCAR:
 				es = new TameHeatScar(world);
@@ -46,15 +49,24 @@ public class TamingController {
 			case VANILLA:
 				es = new TameVanilla(world);
 				break;
+			case SLIME:
+				es = new TameSlime(world);
+				break;
+			case FIRE:
+				es = new TameFire(world);
+				break;
+			case MAZE:
+				es = new TameMazeSlime(world);
+				break;
 			default:
 				return false;
 			}
-			es.setLocationAndAngles(e.posX, e.posY, e.posZ, e.rotationYaw, e.rotationPitch);
-			es.rotationYawHead = ((EntityLivingBase)e).rotationYawHead;
+			((Entity)es).setLocationAndAngles(e.posX, e.posY, e.posZ, e.rotationYaw, e.rotationPitch);
+			((EntityLivingBase)es).rotationYawHead = ((EntityLivingBase)e).rotationYawHead;
 			es.setOwner(ep);
 			e.setDead();
 			if (!world.isRemote) {
-				world.spawnEntityInWorld(es);
+				world.spawnEntityInWorld((Entity)es);
 			}
 			es.spawnEffects();
 			if (!ep.capabilities.isCreativeMode)
@@ -64,28 +76,34 @@ public class TamingController {
 		return false;
 	}
 
-	private static boolean canTame(SpiderType s, ItemStack is) {
+	private static boolean canTame(CritterType s, ItemStack is) {
 		if (is == null)
 			return false;
-		if (is.itemID != SpiderPet.tool.itemID)
+		if (is.itemID != CritterPet.tool.itemID)
 			return false;
 		if (is.getItemDamage() <= 0)
 			return false;
 		return is.getItemDamage() == s.ordinal()+1;
 	}
 
-	public static SpiderType getType(Entity e) {
+	public static CritterType getType(Entity e) {
 		Class c = e.getClass();
 		String n = c.getSimpleName();
 		//ReikaJavaLibrary.pConsole(e+":"+c+":"+n);
-		if (n.equalsIgnoreCase("HeatscarSpider"))
-			return SpiderType.HEATSCAR;
-		if (n.equalsIgnoreCase("EntityTFKingSpider"))
-			return SpiderType.KING;
-		if (n.equalsIgnoreCase("EntityTFHedgeSpider"))
-			return SpiderType.HEDGE;
-		if (n.equalsIgnoreCase("EntitySpider"))
-			return SpiderType.VANILLA;
+		if (n.equalsIgnoreCase("HeatscarCritter"))
+			return CritterType.HEATSCAR;
+		if (n.equalsIgnoreCase("EntityTFKingCritter"))
+			return CritterType.KING;
+		if (n.equalsIgnoreCase("EntityTFHedgeCritter"))
+			return CritterType.HEDGE;
+		if (n.equalsIgnoreCase("EntityCritter"))
+			return CritterType.VANILLA;
+		if (n.equalsIgnoreCase("EntityTFSlimeBeetle"))
+			return CritterType.SLIME;
+		if (n.equalsIgnoreCase("EntityTFFireBeetle"))
+			return CritterType.FIRE;
+		if (n.equalsIgnoreCase("EntityTFMazeSlime"))
+			return CritterType.MAZE;
 		return null;
 	}
 

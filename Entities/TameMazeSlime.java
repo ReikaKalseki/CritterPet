@@ -16,32 +16,29 @@ import net.minecraft.util.DamageSource;
 import net.minecraft.world.World;
 import Reika.CritterPet.Registry.CritterType;
 
-public class TameHedge extends EntitySpiderBase {
+public class TameMazeSlime extends EntitySlimeBase {
 
-	public TameHedge(World par1World) {
-		super(par1World, CritterType.HEDGE);
+	public TameMazeSlime(World world) {
+		super(world, CritterType.MAZE);
 	}
 
 	@Override
 	protected void updateRider() {
-		this.addPotionEffect(new PotionEffect(Potion.jump.id, 20, 4));
-		this.addPotionEffect(new PotionEffect(Potion.moveSpeed.id, 20, 4));
+		riddenByEntity.fallDistance = 0;
+		if (riddenByEntity instanceof EntityLivingBase) {
+			EntityLivingBase rider = (EntityLivingBase)riddenByEntity;
+			rider.addPotionEffect(new PotionEffect(Potion.jump.id, 5, 10));
+		}
 	}
 
 	@Override
 	protected void applyAttackEffects(EntityLivingBase e) {
-		e.addPotionEffect(new PotionEffect(Potion.moveSlowdown.id, 200, 1));
+
 	}
 
 	@Override
 	public boolean canBeHurtBy(DamageSource dsc) {
-		if (dsc == DamageSource.fall)
-			return false;
-		return true;
+		return dsc != DamageSource.fall && !dsc.isExplosion();
 	}
 
-	@Override
-	public int getAttackDamage() {
-		return 3;
-	}
 }

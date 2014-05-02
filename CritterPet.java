@@ -7,7 +7,7 @@
  * Distribution of the software in any form is only allowed with
  * explicit, prior permission from the owner.
  ******************************************************************************/
-package Reika.SpiderPet;
+package Reika.CritterPet;
 
 import java.net.URL;
 
@@ -18,14 +18,14 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.Event.Result;
 import net.minecraftforge.event.ForgeSubscribe;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent.AllowDespawn;
+import Reika.CritterPet.Entities.EntitySpiderBase;
+import Reika.CritterPet.Registry.CritterOptions;
+import Reika.CritterPet.Registry.CritterType;
 import Reika.DragonAPI.DragonAPICore;
 import Reika.DragonAPI.Base.DragonAPIMod;
 import Reika.DragonAPI.Instantiable.IO.ControlledConfig;
 import Reika.DragonAPI.Instantiable.IO.ModLogger;
 import Reika.DragonAPI.Libraries.ReikaRegistryHelper;
-import Reika.SpiderPet.Entities.EntitySpiderBase;
-import Reika.SpiderPet.Registry.SpiderOptions;
-import Reika.SpiderPet.Registry.SpiderType;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
@@ -38,29 +38,29 @@ import cpw.mods.fml.common.registry.EntityRegistry;
 import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.common.registry.LanguageRegistry;
 
-@Mod( modid = "SpiderPet", name="Spider Pet", version="beta", certificateFingerprint = "@GET_FINGERPRINT@", dependencies="required-after:DragonAPI")
+@Mod( modid = "CritterPet", name="Critter Pet", version="beta", certificateFingerprint = "@GET_FINGERPRINT@", dependencies="required-after:DragonAPI")
 @NetworkMod(clientSideRequired = true, serverSideRequired = true)
-public class SpiderPet extends DragonAPIMod {
+public class CritterPet extends DragonAPIMod {
 
-	@Instance("SpiderPet")
-	public static SpiderPet instance = new SpiderPet();
+	@Instance("CritterPet")
+	public static CritterPet instance = new CritterPet();
 
-	public static final ControlledConfig config = new ControlledConfig(instance, SpiderOptions.optionList, null, null, null, 0);
+	public static final ControlledConfig config = new ControlledConfig(instance, CritterOptions.optionList, null, null, null, 0);
 
-	public static ItemSpiderEgg egg;
+	public static ItemCritterEgg egg;
 	public static ItemTaming tool;
 
 	public static ModLogger logger;
 
-	@SidedProxy(clientSide="Reika.SpiderPet.SpiderClient", serverSide="Reika.SpiderPet.SpiderCommon")
-	public static SpiderCommon proxy;
+	@SidedProxy(clientSide="Reika.CritterPet.CritterClient", serverSide="Reika.CritterPet.CritterCommon")
+	public static CritterCommon proxy;
 
 	@Override
 	@EventHandler
 	public void preload(FMLPreInitializationEvent evt) {
 		config.loadSubfolderedConfigFile(evt);
 		config.initProps(evt);
-		logger = new ModLogger(instance, SpiderOptions.LOGLOADING.getState(), SpiderOptions.DEBUGMODE.getState(), false);
+		logger = new ModLogger(instance, CritterOptions.LOGLOADING.getState(), CritterOptions.DEBUGMODE.getState(), false);
 		MinecraftForge.EVENT_BUS.register(this);
 
 		ReikaRegistryHelper.setupModData(instance, evt);
@@ -72,23 +72,26 @@ public class SpiderPet extends DragonAPIMod {
 	@Override
 	@EventHandler
 	public void load(FMLInitializationEvent event) {
-		egg = new ItemSpiderEgg(SpiderOptions.EGGID.getValue());
-		egg.setUnlocalizedName("petspideregg");
-		tool = new ItemTaming(SpiderOptions.TOOLID.getValue());
-		tool.setUnlocalizedName("spidertamer");
-		for (int i = 0; i < SpiderType.spiderList.length; i++) {
-			SpiderType type = SpiderType.spiderList[i];
-			int id = EntityRegistry.findGlobalUniqueEntityId();
-			EntityRegistry.registerGlobalEntityID(type.entityClass, type.getName(), id);
-			EntityRegistry.registerModEntity(type.entityClass, type.getName(), id, instance, 32, 20, true);
-			type.initializeMapping(id);
-			//EntityEggInfo egg = new EntityEggInfo(id, type.eggColor1, type.eggColor2);
-			//EntityList.entityEggs.put(id, egg);
-			logger.log("Loading Spider Type "+type.getName());
-			GameRegistry.addShapelessRecipe(new ItemStack(tool.itemID, 1, i+1), new ItemStack(tool.itemID, 1, 0), type.tamingItem);
+		egg = new ItemCritterEgg(CritterOptions.EGGID.getValue());
+		egg.setUnlocalizedName("petcritteregg");
+		tool = new ItemTaming(CritterOptions.TOOLID.getValue());
+		tool.setUnlocalizedName("crittertamer");
+		for (int i = 0; i < CritterType.critterList.length; i++) {
+			CritterType type = CritterType.critterList[i];
+			if (type.isAvailable()) {
+				int id = EntityRegistry.findGlobalUniqueEntityId();
+				EntityRegistry.registerGlobalEntityID(type.entityClass, type.name, id);
+				EntityRegistry.registerModEntity(type.entityClass, type.name, id, instance, 32, 20, true);
+				type.initializeMapping(id);
+				GameRegistry.addShapelessRecipe(new ItemStack(tool.itemID, 1, i+1), new ItemStack(tool.itemID, 1, 0), type.tamingItem);
+				logger.log("Loading Critter Type "+type.name());
+			}
+			else {
+				logger.log("Not Loading Critter Type "+type.name());
+			}
 		}
 		proxy.registerRenderers();
-		LanguageRegistry.addName(tool, "Spider Taming Device");
+		LanguageRegistry.addName(tool, "Critter Taming Device");
 		GameRegistry.addRecipe(new ItemStack(tool), " ID", " II", "I  ", 'I', Item.ingotIron, 'D', Item.diamond);
 	}
 
@@ -107,7 +110,7 @@ public class SpiderPet extends DragonAPIMod {
 
 	@Override
 	public String getDisplayName() {
-		return "Spider Pet";
+		return "Critter Pet";
 	}
 
 	@Override

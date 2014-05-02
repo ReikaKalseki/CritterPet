@@ -7,7 +7,7 @@
  * Distribution of the software in any form is only allowed with
  * explicit, prior permission from the owner.
  ******************************************************************************/
-package Reika.SpiderPet;
+package Reika.CritterPet;
 
 import java.util.List;
 
@@ -29,30 +29,29 @@ import net.minecraft.util.Icon;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.World;
-import Reika.DragonAPI.Libraries.Java.ReikaJavaLibrary;
-import Reika.SpiderPet.Entities.EntitySpiderBase;
-import Reika.SpiderPet.Registry.SpiderType;
+import Reika.CritterPet.Interfaces.TamedMob;
+import Reika.CritterPet.Registry.CritterType;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-public class ItemSpiderEgg extends ItemMonsterPlacer {
+public class ItemCritterEgg extends ItemMonsterPlacer {
 
-	private static EntitySpiderBase entity;
+	private static TamedMob entity;
 
-	public ItemSpiderEgg(int par1) {
+	public ItemCritterEgg(int par1) {
 		super(par1);
 	}
 
 	@Override
 	public String getItemDisplayName(ItemStack is)
 	{
-		SpiderType type = this.getType(is);
+		CritterType type = this.getType(is);
 		if (type != null) {
-			String name = type.getName();
-			return "Tame "+name+" Spider Spawn Egg";
+			String name = type.name;
+			return "Tame "+name+" Spawn Egg";
 		}
 		else {
-			return "Null-Type Spider Egg";
+			return "Null-Type Critter Egg";
 		}
 	}
 
@@ -60,7 +59,6 @@ public class ItemSpiderEgg extends ItemMonsterPlacer {
 	public boolean onItemUse(ItemStack is, EntityPlayer ep, World world, int x, int y, int z, int side, float par8, float par9, float par10)
 	{
 		boolean flag = this.superonItemUse(is, ep, world, x, y, z, side, par8, par9, par10);
-		ReikaJavaLibrary.pConsole(entity, Side.SERVER);
 		if (entity != null) {
 			entity.setOwner(ep);
 			entity = null;
@@ -143,7 +141,7 @@ public class ItemSpiderEgg extends ItemMonsterPlacer {
 	@SideOnly(Side.CLIENT)
 	public int getColorFromItemStack(ItemStack is, int pass)
 	{
-		SpiderType type = this.getType(is);
+		CritterType type = this.getType(is);
 		if (type == null) {
 			return 0xffffff;
 		}
@@ -154,7 +152,7 @@ public class ItemSpiderEgg extends ItemMonsterPlacer {
 
 	public static Entity spawnCreature(World world, int ordinal, double x, double y, double z)
 	{
-		int id = SpiderType.spiderList[ordinal].getEntityID();
+		int id = CritterType.critterList[ordinal].getEntityID();
 
 		Entity e = EntityList.createEntityByID(id, world);
 
@@ -168,12 +166,12 @@ public class ItemSpiderEgg extends ItemMonsterPlacer {
 			entityliving.playLivingSound();
 		}
 
-		entity = (EntitySpiderBase)e;
+		entity = (TamedMob)e;
 		return e;
 	}
 
-	public SpiderType getType(ItemStack is) {
-		return SpiderType.spiderList[is.getItemDamage()];
+	public CritterType getType(ItemStack is) {
+		return CritterType.critterList[is.getItemDamage()];
 	}
 
 	@Override
@@ -190,16 +188,17 @@ public class ItemSpiderEgg extends ItemMonsterPlacer {
 	@Override
 	public void addInformation(ItemStack is, EntityPlayer ep, List li, boolean verbose) {
 		int i = is.getItemDamage();
-		SpiderType type = SpiderType.spiderList[i];
-		String name = type.getName();
-		li.add("Spawns a tamed-by-"+ep.getEntityName()+" "+name+" Spider.");
+		CritterType type = CritterType.critterList[i];
+		String name = type.name;
+		li.add("Spawns a tamed-by-"+ep.getEntityName()+" "+name+".");
 	}
 
 	@Override
 	public void getSubItems(int id, CreativeTabs tab, List li) {
-		int num = SpiderType.spiderList.length;
-		for (int i = 0; i < num; i++) {
-			li.add(new ItemStack(id, 1, i));
+		for (int i = 0; i < CritterType.critterList.length; i++) {
+			CritterType c = CritterType.critterList[i];
+			if (c.isAvailable())
+				li.add(new ItemStack(id, 1, i));
 		}
 	}
 

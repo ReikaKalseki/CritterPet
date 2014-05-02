@@ -7,7 +7,7 @@
  * Distribution of the software in any form is only allowed with
  * explicit, prior permission from the owner.
  ******************************************************************************/
-package Reika.SpiderPet;
+package Reika.CritterPet;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -19,8 +19,8 @@ import net.minecraftforge.client.MinecraftForgeClient;
 
 import org.lwjgl.opengl.GL11;
 
-import Reika.SpiderPet.Entities.EntitySpiderBase;
-import Reika.SpiderPet.Registry.SpiderType;
+import Reika.CritterPet.Entities.EntitySpiderBase;
+import Reika.CritterPet.Registry.CritterType;
 
 public class SpiderRenderer extends RenderSpider {
 
@@ -40,7 +40,7 @@ public class SpiderRenderer extends RenderSpider {
 		if (MinecraftForgeClient.getRenderPass() != 1)
 			return;
 
-		EntitySpiderBase spider = (EntitySpiderBase)par1EntityLivingBase;
+		EntitySpiderBase critter = (EntitySpiderBase)par1EntityLivingBase;
 
 		double d3 = par1EntityLivingBase.getDistanceSqToEntity(renderManager.livingPlayer);
 
@@ -62,7 +62,7 @@ public class SpiderRenderer extends RenderSpider {
 			GL11.glEnable(GL11.GL_BLEND);
 			GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 			Tessellator tessellator = Tessellator.instance;
-			SpiderType type = spider.getBaseSpider();
+			CritterType type = critter.getBaseCritter();
 			byte b0 = (byte)(-4-6*type.size);
 
 			GL11.glDisable(GL11.GL_TEXTURE_2D);
@@ -70,8 +70,8 @@ public class SpiderRenderer extends RenderSpider {
 
 			String[] s = par2Str.split("'s ");
 
-			int alpha = spider.isSitting() ? 127 : 192;
-			int text_alpha = spider.isSitting() ? 127 : 255;
+			int alpha = critter.isSitting() ? 127 : 192;
+			int text_alpha = critter.isSitting() ? 127 : 255;
 
 			text_alpha = text_alpha << 24;
 
@@ -117,7 +117,7 @@ public class SpiderRenderer extends RenderSpider {
 	{
 		if (MinecraftForgeClient.getRenderPass() == 0) {
 
-			SpiderType type = ((EntitySpiderBase)elb).getBaseSpider();
+			CritterType type = ((EntitySpiderBase)elb).getBaseCritter();
 			((EntitySpiderBase)elb).bindTexture();
 
 			if (!elb.isInvisible())

@@ -7,17 +7,17 @@
  * Distribution of the software in any form is only allowed with
  * explicit, prior permission from the owner.
  ******************************************************************************/
-package Reika.SpiderPet.Entities;
+package Reika.CritterPet.Entities;
 
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.DamageSource;
 import net.minecraft.world.World;
-import Reika.SpiderPet.Registry.SpiderType;
+import Reika.CritterPet.Registry.CritterType;
 
 public class TameVanilla extends EntitySpiderBase {
 
 	public TameVanilla(World par1World) {
-		super(par1World, SpiderType.VANILLA);
+		super(par1World, CritterType.VANILLA);
 	}
 
 	@Override

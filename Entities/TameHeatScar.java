@@ -7,19 +7,19 @@
  * Distribution of the software in any form is only allowed with
  * explicit, prior permission from the owner.
  ******************************************************************************/
-package Reika.SpiderPet.Entities;
+package Reika.CritterPet.Entities;
 
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.DamageSource;
 import net.minecraft.world.World;
-import Reika.SpiderPet.Registry.SpiderType;
+import Reika.CritterPet.Registry.CritterType;
 
 public class TameHeatScar extends EntitySpiderBase {
 
 	public TameHeatScar(World par1World) {
-		super(par1World, SpiderType.HEATSCAR);
+		super(par1World, CritterType.HEATSCAR);
 	}
 
 	@Override
@@ -32,7 +32,7 @@ public class TameHeatScar extends EntitySpiderBase {
 
 	@Override
 	protected void applyAttackEffects(EntityLivingBase e) {
-		e.setFire(5);
+		e.setFire(6);
 	}
 
 	@Override

@@ -7,7 +7,7 @@
  * Distribution of the software in any form is only allowed with
  * explicit, prior permission from the owner.
  ******************************************************************************/
-package Reika.SpiderPet;
+package Reika.CritterPet;
 
 import java.util.List;
 
@@ -18,8 +18,8 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
+import Reika.CritterPet.Registry.CritterType;
 import Reika.DragonAPI.Interfaces.IndexedItemSprites;
-import Reika.SpiderPet.Registry.SpiderType;
 
 public class ItemTaming extends Item implements IndexedItemSprites {
 
@@ -47,19 +47,21 @@ public class ItemTaming extends Item implements IndexedItemSprites {
 			li.add("Missing a taming item.");
 		}
 		else {
-			SpiderType type = SpiderType.spiderList[i-1];
-			String name = type.getName();
+			CritterType type = CritterType.critterList[i-1];
+			String name = type.name;
 			Item item = type.tamingItem;
 			li.add("Loaded with "+item.getItemDisplayName(is));
-			li.add("Ready to tame a "+name+" Spider.");
+			li.add("Ready to tame a "+name+".");
 		}
 	}
 
 	@Override
 	public void getSubItems(int id, CreativeTabs tab, List li) {
-		int num = 1+SpiderType.spiderList.length;
-		for (int i = 0; i < num; i++) {
-			li.add(new ItemStack(id, 1, i));
+		li.add(new ItemStack(id, 1, 0));
+		for (int i = 0; i < CritterType.critterList.length; i++) {
+			CritterType s = CritterType.critterList[i];
+			if (s.isAvailable())
+				li.add(new ItemStack(id, 1, i+1));
 		}
 	}
 
@@ -71,7 +73,7 @@ public class ItemTaming extends Item implements IndexedItemSprites {
 	@Override
 	public boolean itemInteractionForEntity(ItemStack is, EntityPlayer ep, EntityLivingBase elb)
 	{
-		return TamingController.TameSpider(elb, ep);
+		return TamingController.TameCritter(elb, ep);
 	}
 
 	@Override
@@ -86,7 +88,7 @@ public class ItemTaming extends Item implements IndexedItemSprites {
 
 	@Override
 	public Class getTextureReferenceClass() {
-		return SpiderPet.class;
+		return CritterPet.class;
 	}
 
 }
