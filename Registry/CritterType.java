@@ -25,6 +25,7 @@ import Reika.CritterPet.Entities.TameKing;
 import Reika.CritterPet.Entities.TameMazeSlime;
 import Reika.CritterPet.Entities.TameSlime;
 import Reika.CritterPet.Entities.TameVanilla;
+import Reika.CritterPet.Entities.TameWisp;
 import Reika.DragonAPI.ModList;
 
 public enum CritterType {
@@ -35,7 +36,8 @@ public enum CritterType {
 	HEDGE("Hedge Spider", TameHedge.class, ModList.TWILIGHT, 20, 1, "/Reika/CritterPet/Textures/hedge.png", 0x053305, 0x229922, Item.melon),
 	SLIME("Slime Beetle", TameSlime.class, ModList.TWILIGHT, 25, 0.8F, "", 0x78BF5A, 0x1A330F, Item.slimeBall),
 	FIRE("Fire Beetle", TameFire.class, ModList.TWILIGHT, 25, 0.8F, "", 0xEC872C, 0x383540, Item.fireballCharge),
-	MAZE("Maze Slime", TameMazeSlime.class, ModList.TWILIGHT, 32, 3, "", 0x656F66, 0x859289, Item.brick);
+	MAZE("Maze Slime", TameMazeSlime.class, ModList.TWILIGHT, 32, 3, "", 0x656F66, 0x859289, Item.brick),
+	WISP("Wisp", TameWisp.class, ModList.THAUMCRAFT, 22, 1, "", 0xFF19FB, 0xFFBDFD, Item.glowstone);
 
 	public final Class entityClass;
 	public final ModList sourceMod;
@@ -95,6 +97,9 @@ public enum CritterType {
 				Class c5 = Class.forName("twilightforest.client.renderer.entity.RenderTFMazeSlime");
 				Constructor cc = c5.getConstructor(ModelBase.class, ModelBase.class, float.class);
 				return (Render)cc.newInstance(new ModelSlime(16), new ModelSlime(0), 0.625F);
+			case WISP:
+				Class c6 = Class.forName("thaumcraft.client.renderers.entity.RenderWisp");
+				return (Render)c6.newInstance();
 			default:
 				return CritterClient.critter;
 			}

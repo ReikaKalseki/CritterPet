@@ -21,6 +21,7 @@ import Reika.CritterPet.Entities.TameKing;
 import Reika.CritterPet.Entities.TameMazeSlime;
 import Reika.CritterPet.Entities.TameSlime;
 import Reika.CritterPet.Entities.TameVanilla;
+import Reika.CritterPet.Entities.TameWisp;
 import Reika.CritterPet.Interfaces.TamedMob;
 import Reika.CritterPet.Registry.CritterType;
 
@@ -57,6 +58,9 @@ public class TamingController {
 				break;
 			case MAZE:
 				es = new TameMazeSlime(world);
+				break;
+			case WISP:
+				es = new TameWisp(world);
 				break;
 			default:
 				return false;
@@ -104,6 +108,8 @@ public class TamingController {
 			return CritterType.FIRE;
 		if (n.equalsIgnoreCase("EntityTFMazeSlime"))
 			return CritterType.MAZE;
+		if (n.equalsIgnoreCase("EntityWisp"))
+			return CritterType.WISP;
 		return null;
 	}
 
