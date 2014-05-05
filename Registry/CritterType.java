@@ -97,9 +97,9 @@ public enum CritterType {
 				Class c5 = Class.forName("twilightforest.client.renderer.entity.RenderTFMazeSlime");
 				Constructor cc = c5.getConstructor(ModelBase.class, ModelBase.class, float.class);
 				return (Render)cc.newInstance(new ModelSlime(16), new ModelSlime(0), 0.625F);
-			case WISP:
-				Class c6 = Class.forName("thaumcraft.client.renderers.entity.RenderWisp");
-				return (Render)c6.newInstance();
+				//case WISP:
+				//	Class c6 = Class.forName("thaumcraft.client.renderers.entity.RenderWisp");
+				//	return (Render)c6.newInstance();
 			default:
 				return CritterClient.critter;
 			}
