@@ -38,7 +38,7 @@ public class TameMazeSlime extends EntitySlimeBase {
 
 	@Override
 	public boolean canBeHurtBy(DamageSource dsc) {
-		return dsc != DamageSource.fall && !dsc.isExplosion();
+		return dsc != DamageSource.fall && !dsc.isExplosion() && dsc != DamageSource.drown;
 	}
 
 }
