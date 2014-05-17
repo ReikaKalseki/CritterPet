@@ -27,6 +27,8 @@ import Reika.CritterPet.Entities.TameSlime;
 import Reika.CritterPet.Entities.TameVanilla;
 import Reika.CritterPet.Entities.TameWisp;
 import Reika.DragonAPI.ModList;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 public enum CritterType {
 
@@ -80,6 +82,7 @@ public enum CritterType {
 		return sourceMod != null ? sourceMod.isLoaded() : true;
 	}
 
+	@SideOnly(Side.CLIENT)
 	public Render getRenderInstance() {
 		try {
 			switch(this) {
