@@ -23,6 +23,7 @@ import Reika.CritterPet.Entities.TameSlime;
 import Reika.CritterPet.Entities.TameVanilla;
 import Reika.CritterPet.Interfaces.TamedMob;
 import Reika.CritterPet.Registry.CritterType;
+import Reika.DragonAPI.Libraries.Java.ReikaJavaLibrary;
 
 public class TamingController {
 
@@ -92,14 +93,17 @@ public class TamingController {
 	public static CritterType getType(Entity e) {
 		Class c = e.getClass();
 		String n = c.getSimpleName();
+		ReikaJavaLibrary.pConsole(n);
 		//ReikaJavaLibrary.pConsole(e+":"+c+":"+n);
-		if (n.equalsIgnoreCase("HeatscarCritter"))
+		if (n.equalsIgnoreCase("HeatscarSpider"))
 			return CritterType.HEATSCAR;
-		if (n.equalsIgnoreCase("EntityTFKingCritter"))
+		if (n.equalsIgnoreCase("EntityTFKingSpider"))
 			return CritterType.KING;
-		if (n.equalsIgnoreCase("EntityTFHedgeCritter"))
+		if (n.equalsIgnoreCase("EntityTFHedgeSpider"))
 			return CritterType.HEDGE;
-		if (n.equalsIgnoreCase("EntityCritter"))
+		if (n.equalsIgnoreCase("EntitySpider"))
+			return CritterType.VANILLA;
+		if (n.equalsIgnoreCase("EntityLegacySpider")) //LegacyCraft
 			return CritterType.VANILLA;
 		if (n.equalsIgnoreCase("EntityTFSlimeBeetle"))
 			return CritterType.SLIME;
