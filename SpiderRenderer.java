@@ -20,6 +20,7 @@ import net.minecraftforge.client.MinecraftForgeClient;
 import org.lwjgl.opengl.GL11;
 
 import Reika.CritterPet.Entities.EntitySpiderBase;
+import Reika.CritterPet.Interfaces.TamedMob;
 import Reika.CritterPet.Registry.CritterType;
 
 public class SpiderRenderer extends RenderSpider {
@@ -117,12 +118,13 @@ public class SpiderRenderer extends RenderSpider {
 	{
 		if (MinecraftForgeClient.getRenderPass() == 0) {
 
-			CritterType type = ((EntitySpiderBase)elb).getBaseCritter();
-			((EntitySpiderBase)elb).bindTexture();
+			CritterType type = ((TamedMob)elb).getBaseCritter();
+			if (elb instanceof EntitySpiderBase)
+				((EntitySpiderBase)elb).bindTexture();
 
 			if (!elb.isInvisible())
 			{
-				boolean sit = ((EntitySpiderBase)elb).isSitting();
+				boolean sit = elb instanceof EntitySpiderBase && ((EntitySpiderBase)elb).isSitting();
 				if (sit) {
 					ModelSpider s = (ModelSpider)mainModel;
 				}

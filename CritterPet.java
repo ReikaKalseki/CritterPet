@@ -14,7 +14,6 @@ import java.net.URL;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.Event.Result;
 import net.minecraftforge.event.ForgeSubscribe;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent.AllowDespawn;
@@ -22,10 +21,10 @@ import Reika.CritterPet.Entities.EntitySpiderBase;
 import Reika.CritterPet.Registry.CritterOptions;
 import Reika.CritterPet.Registry.CritterType;
 import Reika.DragonAPI.DragonAPICore;
+import Reika.DragonAPI.Auxiliary.CommandableUpdateChecker;
 import Reika.DragonAPI.Base.DragonAPIMod;
 import Reika.DragonAPI.Instantiable.IO.ControlledConfig;
 import Reika.DragonAPI.Instantiable.IO.ModLogger;
-import Reika.DragonAPI.Libraries.ReikaRegistryHelper;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
@@ -61,12 +60,10 @@ public class CritterPet extends DragonAPIMod {
 		config.loadSubfolderedConfigFile(evt);
 		config.initProps(evt);
 		logger = new ModLogger(instance, CritterOptions.LOGLOADING.getState(), CritterOptions.DEBUGMODE.getState(), false);
-		MinecraftForge.EVENT_BUS.register(this);
-
-		ReikaRegistryHelper.setupModData(instance, evt);
-		ReikaRegistryHelper.setupVersionChecking(evt);
 
 		proxy.registerSounds();
+
+		this.basicSetup(evt);
 	}
 
 	@Override
@@ -120,27 +117,17 @@ public class CritterPet extends DragonAPIMod {
 
 	@Override
 	public URL getDocumentationSite() {
-		return DragonAPICore.getReikaForumPage(instance);
+		return DragonAPICore.getReikaForumPage();
 	}
 
 	@Override
-	public boolean hasWiki() {
-		return false;
-	}
-
-	@Override
-	public URL getWiki() {
+	public String getWiki() {
 		return null;
 	}
 
 	@Override
-	public boolean hasVersion() {
-		return false;
-	}
-
-	@Override
-	public String getVersionName() {
-		return null;
+	public String getUpdateCheckURL() {
+		return CommandableUpdateChecker.reikaURL;
 	}
 
 	@Override
