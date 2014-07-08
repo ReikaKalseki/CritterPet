@@ -81,7 +81,7 @@ public class TameWisp extends EntityWisp implements TamedMob {
 	}
 
 	private final String getDefaultName() {
-		String owner = this.getOwner();
+		String owner = this.getMobOwner();
 		String sg = this.getBaseCritter().name;
 		if (owner == null || owner.isEmpty())
 			return sg;
@@ -133,7 +133,7 @@ public class TameWisp extends EntityWisp implements TamedMob {
 	protected void updateEntityActionState()
 	{
 		Entity e = this.getTarget();
-		if (e != null && e.getEntityName().equals(this.getOwner()))
+		if (e != null && e.getEntityName().equals(this.getMobOwner()))
 			this.setTarget(null);
 		super.updateEntityActionState();
 	}
@@ -166,7 +166,7 @@ public class TameWisp extends EntityWisp implements TamedMob {
 	{
 		super.writeEntityToNBT(NBT);
 
-		String s = this.getOwner();
+		String s = this.getMobOwner();
 		if (s == null)
 			NBT.setString("Owner", "");
 		else
@@ -253,12 +253,12 @@ public class TameWisp extends EntityWisp implements TamedMob {
 		this.setOwner(owner);
 	}
 
-	public final String getOwner() {
+	public final String getMobOwner() {
 		return dataWatcher.getWatchableObjectString(30);
 	}
 
 	public final boolean hasOwner() {
-		String s = this.getOwner();
+		String s = this.getMobOwner();
 		return s != null && !s.isEmpty();
 	}
 

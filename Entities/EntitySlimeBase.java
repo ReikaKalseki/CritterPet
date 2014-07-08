@@ -62,12 +62,12 @@ public abstract class EntitySlimeBase extends EntitySlime implements TamedMob {
 		this.setOwner(owner);
 	}
 
-	public final String getOwner() {
+	public final String getMobOwner() {
 		return dataWatcher.getWatchableObjectString(30);
 	}
 
 	public final boolean hasOwner() {
-		String s = this.getOwner();
+		String s = this.getMobOwner();
 		return s != null && !s.isEmpty();
 	}
 
@@ -112,7 +112,7 @@ public abstract class EntitySlimeBase extends EntitySlime implements TamedMob {
 
 	@Override
 	public final void faceEntity(Entity e, float a, float b) {
-		if (!e.getEntityName().equals(this.getOwner()))
+		if (!e.getEntityName().equals(this.getMobOwner()))
 			super.faceEntity(e, a, b);
 	}
 
@@ -173,7 +173,7 @@ public abstract class EntitySlimeBase extends EntitySlime implements TamedMob {
 
 	@Override
 	public final void onCollideWithPlayer(EntityPlayer ep) {
-		if (!ep.getEntityName().equals(this.getOwner()))
+		if (!ep.getEntityName().equals(this.getMobOwner()))
 			super.onCollideWithPlayer(ep);
 	}
 
@@ -181,7 +181,7 @@ public abstract class EntitySlimeBase extends EntitySlime implements TamedMob {
 	protected final boolean interact(EntityPlayer ep)
 	{
 		ItemStack is = ep.getCurrentEquippedItem();
-		String owner = this.getOwner();
+		String owner = this.getMobOwner();
 		if (owner == null || owner.isEmpty()) {
 			if (is != null && is.itemID == base.tamingItem.itemID) {
 				owner = ep.getEntityName();
@@ -251,7 +251,7 @@ public abstract class EntitySlimeBase extends EntitySlime implements TamedMob {
 		else if (super.attackEntityFrom(dsc, par2)) {
 			Entity entity = dsc.getEntity();
 			if (riddenByEntity != entity && ridingEntity != entity) {
-				if (entity != this && !entity.getEntityName().equals(this.getOwner()))
+				if (entity != this && !entity.getEntityName().equals(this.getMobOwner()))
 					entityToAttack = entity;
 				return true;
 			}
@@ -270,7 +270,7 @@ public abstract class EntitySlimeBase extends EntitySlime implements TamedMob {
 	}
 
 	private final String getDefaultName() {
-		String owner = this.getOwner();
+		String owner = this.getMobOwner();
 		String sg = base.name;
 		if (owner == null || owner.isEmpty())
 			return sg;
@@ -338,7 +338,7 @@ public abstract class EntitySlimeBase extends EntitySlime implements TamedMob {
 	{
 		super.writeEntityToNBT(NBT);
 
-		String s = this.getOwner();
+		String s = this.getMobOwner();
 		if (s == null)
 			NBT.setString("Owner", "");
 		else

@@ -14,7 +14,7 @@ import Reika.CritterPet.Registry.CritterType;
 
 public interface TamedMob {
 
-	public String getOwner();
+	public String getMobOwner();
 
 	public void setOwner(EntityPlayer ep);
 

@@ -19,6 +19,7 @@ import Reika.CritterPet.Entities.TameHeatScar;
 import Reika.CritterPet.Entities.TameHedge;
 import Reika.CritterPet.Entities.TameKing;
 import Reika.CritterPet.Entities.TameMazeSlime;
+import Reika.CritterPet.Entities.TameMistWolf;
 import Reika.CritterPet.Entities.TameSlime;
 import Reika.CritterPet.Entities.TameVanilla;
 import Reika.CritterPet.Interfaces.TamedMob;
@@ -59,6 +60,9 @@ public class TamingController {
 			case MAZE:
 				es = new TameMazeSlime(world);
 				break;
+			case MISTWOLF:
+				es = new TameMistWolf(world);
+				break;
 				//case WISP:
 				//	es = new TameWisp(world);
 				//	break;
@@ -68,6 +72,7 @@ public class TamingController {
 			((Entity)es).setLocationAndAngles(e.posX, e.posY, e.posZ, e.rotationYaw, e.rotationPitch);
 			((EntityLivingBase)es).rotationYawHead = ((EntityLivingBase)e).rotationYawHead;
 			es.setOwner(ep);
+			ReikaJavaLibrary.pConsole(es);
 			e.setDead();
 			if (!world.isRemote) {
 				world.spawnEntityInWorld((Entity)es);
@@ -93,7 +98,6 @@ public class TamingController {
 	public static CritterType getType(Entity e) {
 		Class c = e.getClass();
 		String n = c.getSimpleName();
-		ReikaJavaLibrary.pConsole(n);
 		//ReikaJavaLibrary.pConsole(e+":"+c+":"+n);
 		if (n.equalsIgnoreCase("HeatscarSpider"))
 			return CritterType.HEATSCAR;
@@ -113,6 +117,8 @@ public class TamingController {
 			return CritterType.MAZE;
 		if (n.equalsIgnoreCase("EntityWisp"))
 			return CritterType.WISP;
+		if (n.equalsIgnoreCase("EntityTFMistWolf"))
+			return CritterType.MISTWOLF;
 		return null;
 	}
 
