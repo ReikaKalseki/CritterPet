@@ -37,6 +37,7 @@ import Reika.DragonAPI.Libraries.World.ReikaWorldHelper;
 public abstract class TamedWolfBase extends EntityWolf implements TamedMob {
 
 	private CritterType base;
+	private boolean wasSitting = false;
 
 	public TamedWolfBase(World world, CritterType sp) {
 		super(world);
@@ -212,9 +213,14 @@ public abstract class TamedWolfBase extends EntityWolf implements TamedMob {
 			if (!worldObj.isRemote) {
 				if (riddenByEntity != null && riddenByEntity.equals(ep)) {
 					ep.dismountEntity(this);
+					if (wasSitting) {
+						wasSitting = false;
+						this.setSitting(true);
+					}
 				}
 				else if (this.isRideable() && ep.getCurrentEquippedItem() == null) {
 					ep.mountEntity(this);
+					wasSitting = this.isSitting();
 					this.setSitting(false);
 				}
 			}
@@ -286,12 +292,6 @@ public abstract class TamedWolfBase extends EntityWolf implements TamedMob {
 			return sg;
 		else
 			return owner+"'s "+sg;
-	}
-
-	@Override
-	protected final boolean isMovementBlocked()
-	{
-		return this.isSitting() || riddenByEntity != null;
 	}
 
 	@Override
@@ -426,6 +426,12 @@ public abstract class TamedWolfBase extends EntityWolf implements TamedMob {
 	protected final void dropFewItems(boolean par1, int par2)
 	{
 
+	}
+
+	@Override
+	protected final boolean isMovementBlocked()
+	{
+		return this.isSitting() || riddenByEntity != null;
 	}
 
 	public abstract int getAttackDamage();

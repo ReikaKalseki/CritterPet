@@ -24,13 +24,14 @@ import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import Reika.CritterPet.Interfaces.TamedMob;
 import Reika.CritterPet.Registry.CritterType;
+import Reika.DragonAPI.Interfaces.TameHostile;
 import Reika.DragonAPI.Libraries.ReikaEntityHelper;
 import Reika.DragonAPI.Libraries.IO.ReikaChatHelper;
 import Reika.DragonAPI.Libraries.Java.ReikaRandomHelper;
 import Reika.DragonAPI.Libraries.Registry.ReikaParticleHelper;
 import Reika.DragonAPI.Libraries.World.ReikaWorldHelper;
 
-public abstract class EntitySlimeBase extends EntitySlime implements TamedMob {
+public abstract class EntitySlimeBase extends EntitySlime implements TamedMob, TameHostile {
 
 	private CritterType base;
 	private Entity entityToAttack;

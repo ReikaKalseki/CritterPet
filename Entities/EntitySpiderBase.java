@@ -28,6 +28,7 @@ import net.minecraftforge.common.ForgeHooks;
 import Reika.CritterPet.CritterPet;
 import Reika.CritterPet.Interfaces.TamedMob;
 import Reika.CritterPet.Registry.CritterType;
+import Reika.DragonAPI.Interfaces.TameHostile;
 import Reika.DragonAPI.Libraries.ReikaEntityHelper;
 import Reika.DragonAPI.Libraries.IO.ReikaChatHelper;
 import Reika.DragonAPI.Libraries.IO.ReikaTextureHelper;
@@ -37,7 +38,7 @@ import Reika.DragonAPI.Libraries.Java.ReikaReflectionHelper;
 import Reika.DragonAPI.Libraries.Registry.ReikaParticleHelper;
 import Reika.DragonAPI.Libraries.World.ReikaWorldHelper;
 
-public abstract class EntitySpiderBase extends EntitySpider implements TamedMob {
+public abstract class EntitySpiderBase extends EntitySpider implements TamedMob, TameHostile {
 
 	private CritterType base;
 

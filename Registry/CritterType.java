@@ -103,9 +103,9 @@ public enum CritterType {
 				Class c5 = Class.forName("twilightforest.client.renderer.entity.RenderTFMazeSlime");
 				Constructor cc = c5.getConstructor(ModelBase.class, ModelBase.class, float.class);
 				return (Render)cc.newInstance(new ModelSlime(16), new ModelSlime(0), 0.625F);
-				//case WISP:
-				//	Class c6 = Class.forName("thaumcraft.client.renderers.entity.RenderWisp");
-				//	return (Render)c6.newInstance();
+			case WISP:
+				Class c7 = Class.forName("thaumcraft.client.renderers.entity.RenderWisp");
+				return (Render)c7.newInstance();
 			case MISTWOLF:
 				Class c6 = Class.forName("twilightforest.client.renderer.entity.RenderTFMistWolf");
 				Constructor cd = c6.getConstructor(ModelBase.class, ModelBase.class, float.class);

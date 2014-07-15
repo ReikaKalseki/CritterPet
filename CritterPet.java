@@ -59,7 +59,7 @@ public class CritterPet extends DragonAPIMod {
 	public void preload(FMLPreInitializationEvent evt) {
 		config.loadSubfolderedConfigFile(evt);
 		config.initProps(evt);
-		logger = new ModLogger(instance, CritterOptions.LOGLOADING.getState(), CritterOptions.DEBUGMODE.getState(), false);
+		logger = new ModLogger(instance, false);
 
 		proxy.registerSounds();
 
