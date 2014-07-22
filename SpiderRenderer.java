@@ -22,6 +22,7 @@ import org.lwjgl.opengl.GL11;
 import Reika.CritterPet.Entities.EntitySpiderBase;
 import Reika.CritterPet.Interfaces.TamedMob;
 import Reika.CritterPet.Registry.CritterType;
+import Reika.DragonAPI.Libraries.Java.ReikaGLHelper.BlendMode;
 
 public class SpiderRenderer extends RenderSpider {
 
@@ -61,7 +62,7 @@ public class SpiderRenderer extends RenderSpider {
 			GL11.glDepthMask(false);
 			GL11.glDisable(GL11.GL_DEPTH_TEST);
 			GL11.glEnable(GL11.GL_BLEND);
-			GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+			BlendMode.DEFAULT.apply();
 			Tessellator tessellator = Tessellator.instance;
 			CritterType type = critter.getBaseCritter();
 			byte b0 = (byte)(-4-6*type.size);
@@ -136,7 +137,7 @@ public class SpiderRenderer extends RenderSpider {
 				GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.15F);
 				GL11.glDepthMask(false);
 				GL11.glEnable(GL11.GL_BLEND);
-				GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+				BlendMode.DEFAULT.apply();
 				GL11.glAlphaFunc(GL11.GL_GREATER, 0.003921569F);
 				mainModel.render(elb, par2, par3, par4, par5, par6, par7);
 				GL11.glDisable(GL11.GL_BLEND);
