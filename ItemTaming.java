@@ -9,22 +9,23 @@
  ******************************************************************************/
 package Reika.CritterPet;
 
+import Reika.CritterPet.Registry.CritterType;
+import Reika.DragonAPI.Interfaces.IndexedItemSprites;
+
 import java.util.List;
 
-import net.minecraft.client.renderer.texture.IconRegister;
+import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
-import Reika.CritterPet.Registry.CritterType;
-import Reika.DragonAPI.Interfaces.IndexedItemSprites;
 
 public class ItemTaming extends Item implements IndexedItemSprites {
 
-	public ItemTaming(int par1) {
-		super(par1);
+	public ItemTaming() {
+		super();
 		this.setCreativeTab(CreativeTabs.tabTools);
 	}
 
@@ -44,19 +45,19 @@ public class ItemTaming extends Item implements IndexedItemSprites {
 	public void addInformation(ItemStack is, EntityPlayer ep, List li, boolean verbose) {
 		int i = is.getItemDamage();
 		if (i == 0) {
-			li.add("Missing a taming item.");
+			li.add("Missing a taming Items.");
 		}
 		else {
 			CritterType type = CritterType.critterList[i-1];
 			String name = type.name;
 			Item item = type.tamingItem;
-			li.add("Loaded with "+item.getItemDisplayName(is));
+			li.add("Loaded with "+item.getItemStackDisplayName(is));
 			li.add("Ready to tame a "+name+".");
 		}
 	}
 
 	@Override
-	public void getSubItems(int id, CreativeTabs tab, List li) {
+	public void getSubItems(Item id, CreativeTabs tab, List li) {
 		li.add(new ItemStack(id, 1, 0));
 		for (int i = 0; i < CritterType.critterList.length; i++) {
 			CritterType s = CritterType.critterList[i];
@@ -66,7 +67,7 @@ public class ItemTaming extends Item implements IndexedItemSprites {
 	}
 
 	@Override
-	public void registerIcons(IconRegister ico) {
+	public void registerIcons(IIconRegister ico) {
 
 	}
 

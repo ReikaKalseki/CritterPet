@@ -9,15 +9,15 @@
  ******************************************************************************/
 package Reika.CritterPet.Registry;
 
-import net.minecraftforge.common.Configuration;
 import Reika.CritterPet.CritterPet;
 import Reika.DragonAPI.Exception.RegistrationException;
 import Reika.DragonAPI.Interfaces.ConfigList;
 
+import net.minecraftforge.common.config.Configuration;
+
 public enum CritterOptions implements ConfigList {
 
-	TOOLID("Taming Item ID", 28300),
-	EGGID("Spawn Egg ID", 28301);
+	NULL("Null", false);
 
 	private String label;
 	private boolean defaultState;

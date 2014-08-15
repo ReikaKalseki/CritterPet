@@ -9,6 +9,10 @@
  ******************************************************************************/
 package Reika.CritterPet;
 
+import Reika.CritterPet.Interfaces.TamedMob;
+import Reika.CritterPet.Registry.CritterType;
+import Reika.DragonAPI.Libraries.World.ReikaWorldHelper;
+
 import java.util.List;
 
 import net.minecraft.block.Block;
@@ -18,19 +22,18 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.EntityLivingData;
+import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemMonsterPlacer;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumMovingObjectType;
 import net.minecraft.util.Facing;
-import net.minecraft.util.Icon;
+import net.minecraft.util.IIcon;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
+import net.minecraft.util.MovingObjectPosition.MovingObjectType;
 import net.minecraft.world.World;
-import Reika.CritterPet.Interfaces.TamedMob;
-import Reika.CritterPet.Registry.CritterType;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
@@ -38,12 +41,12 @@ public class ItemCritterEgg extends ItemMonsterPlacer {
 
 	private static TamedMob entity;
 
-	public ItemCritterEgg(int par1) {
-		super(par1);
+	public ItemCritterEgg() {
+		super();
 	}
 
 	@Override
-	public String getItemDisplayName(ItemStack is)
+	public String getItemStackDisplayName(ItemStack is)
 	{
 		CritterType type = this.getType(is);
 		if (type != null) {
@@ -79,13 +82,13 @@ public class ItemCritterEgg extends ItemMonsterPlacer {
 
 	private boolean superonItemUse(ItemStack is, EntityPlayer ep, World world, int x, int y, int z, int side, float par8, float par9, float par10) {
 		if (!world.isRemote) {
-			int i1 = world.getBlockId(x, y, z);
+			Block i1 = world.getBlock(x, y, z);
 			x += Facing.offsetsXForSide[side];
 			y += Facing.offsetsYForSide[side];
 			z += Facing.offsetsZForSide[side];
 			double d0 = 0.0D;
 
-			if (side == 1 && Block.blocksList[i1] != null && Block.blocksList[i1].getRenderType() == 11) //on top of fence
+			if (side == 1 && i1 != null && i1.getRenderType() == 11) //on top of fence
 				d0 = 0.5D;
 
 			Entity entity = spawnCreature(world, is.getItemDamage(), x + 0.5D, y + d0, z + 0.5D);
@@ -109,7 +112,7 @@ public class ItemCritterEgg extends ItemMonsterPlacer {
 			if (movingobjectposition == null)
 				return is;
 			else {
-				if (movingobjectposition.typeOfHit == EnumMovingObjectType.TILE) {
+				if (movingobjectposition.typeOfHit == MovingObjectType.BLOCK) {
 					int i = movingobjectposition.blockX;
 					int j = movingobjectposition.blockY;
 					int k = movingobjectposition.blockZ;
@@ -120,7 +123,7 @@ public class ItemCritterEgg extends ItemMonsterPlacer {
 					if (!ep.canPlayerEdit(i, j, k, movingobjectposition.sideHit, is))
 						return is;
 
-					if (world.getBlockMaterial(i, j, k) == Material.water) {
+					if (ReikaWorldHelper.getMaterial(world, i, j, k) == Material.water) {
 						Entity entity = spawnCreature(world, is.getItemDamage(), i, j, k);
 
 						if (entity != null) {
@@ -161,7 +164,7 @@ public class ItemCritterEgg extends ItemMonsterPlacer {
 			e.setLocationAndAngles(x, y, z, MathHelper.wrapAngleTo180_float(world.rand.nextFloat() * 360.0F), 0.0F);
 			entityliving.rotationYawHead = entityliving.rotationYaw;
 			entityliving.renderYawOffset = entityliving.rotationYaw;
-			entityliving.onSpawnWithEgg((EntityLivingData)null);
+			entityliving.onSpawnWithEgg((IEntityLivingData)null);
 			world.spawnEntityInWorld(e);
 			entityliving.playLivingSound();
 		}
@@ -175,14 +178,14 @@ public class ItemCritterEgg extends ItemMonsterPlacer {
 	}
 
 	@Override
-	public Icon getIconFromDamageForRenderPass(int dmg, int pass)
+	public IIcon getIconFromDamageForRenderPass(int dmg, int pass)
 	{
-		return Item.monsterPlacer.getIconFromDamageForRenderPass(dmg, pass);
+		return Items.spawn_egg.getIconFromDamageForRenderPass(dmg, pass);
 	}
 
 	@Override
-	public Icon getIconFromDamage(int dmg) {
-		return Item.monsterPlacer.getIconFromDamage(dmg);
+	public IIcon getIconFromDamage(int dmg) {
+		return Items.spawn_egg.getIconFromDamage(dmg);
 	}
 
 	@Override
@@ -190,11 +193,11 @@ public class ItemCritterEgg extends ItemMonsterPlacer {
 		int i = is.getItemDamage();
 		CritterType type = CritterType.critterList[i];
 		String name = type.name;
-		li.add("Spawns a tamed-by-"+ep.getEntityName()+" "+name+".");
+		li.add("Spawns a tamed-by-"+ep.getCommandSenderName()+" "+name+".");
 	}
 
 	@Override
-	public void getSubItems(int id, CreativeTabs tab, List li) {
+	public void getSubItems(Item id, CreativeTabs tab, List li) {
 		for (int i = 0; i < CritterType.critterList.length; i++) {
 			CritterType c = CritterType.critterList[i];
 			if (c.isAvailable())

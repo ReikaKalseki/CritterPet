@@ -9,20 +9,21 @@
  ******************************************************************************/
 package Reika.CritterPet;
 
+import Reika.CritterPet.Entities.EntitySpiderBase;
+import Reika.CritterPet.Interfaces.TamedMob;
+import Reika.CritterPet.Registry.CritterType;
+import Reika.DragonAPI.Libraries.Java.ReikaGLHelper.BlendMode;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.model.ModelSpider;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.entity.RenderSpider;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraftforge.client.MinecraftForgeClient;
 
 import org.lwjgl.opengl.GL11;
-
-import Reika.CritterPet.Entities.EntitySpiderBase;
-import Reika.CritterPet.Interfaces.TamedMob;
-import Reika.CritterPet.Registry.CritterType;
-import Reika.DragonAPI.Libraries.Java.ReikaGLHelper.BlendMode;
 
 public class SpiderRenderer extends RenderSpider {
 
@@ -37,7 +38,7 @@ public class SpiderRenderer extends RenderSpider {
 	}
 
 	@Override
-	protected void renderLivingLabel(EntityLivingBase par1EntityLivingBase, String par2Str, double par3, double par5, double par7, int par9)
+	protected void func_147906_a(Entity par1EntityLivingBase, String par2Str, double par3, double par5, double par7, int par9)
 	{
 		if (MinecraftForgeClient.getRenderPass() != 1)
 			return;

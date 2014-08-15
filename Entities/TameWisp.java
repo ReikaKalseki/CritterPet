@@ -9,6 +9,13 @@
  ******************************************************************************/
 package Reika.CritterPet.Entities;
 
+import Reika.CritterPet.Interfaces.TamedMob;
+import Reika.CritterPet.Registry.CritterType;
+import Reika.DragonAPI.Libraries.ReikaEntityHelper;
+import Reika.DragonAPI.Libraries.Java.ReikaRandomHelper;
+import Reika.DragonAPI.Libraries.Registry.ReikaParticleHelper;
+import Reika.DragonAPI.Libraries.World.ReikaWorldHelper;
+
 import java.lang.reflect.Field;
 import java.util.List;
 
@@ -16,17 +23,13 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.Item;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.DamageSource;
+import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.World;
 import thaumcraft.api.aspects.Aspect;
 import thaumcraft.common.entities.monster.EntityWisp;
-import Reika.CritterPet.Interfaces.TamedMob;
-import Reika.CritterPet.Registry.CritterType;
-import Reika.DragonAPI.Libraries.ReikaEntityHelper;
-import Reika.DragonAPI.Libraries.Java.ReikaRandomHelper;
-import Reika.DragonAPI.Libraries.Registry.ReikaParticleHelper;
-import Reika.DragonAPI.Libraries.World.ReikaWorldHelper;
 
 public class TameWisp extends EntityWisp implements TamedMob {
 
@@ -45,7 +48,7 @@ public class TameWisp extends EntityWisp implements TamedMob {
 	public TameWisp(World world) {
 		super(world);
 		this.setSize(1, 1);
-		this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setAttribute(this.getCritterMaxHealth());
+		this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(this.getCritterMaxHealth());
 		this.setHealth(this.getCritterMaxHealth());
 		experienceValue = 0;
 		height = 1.25F;
@@ -76,7 +79,7 @@ public class TameWisp extends EntityWisp implements TamedMob {
 	}
 
 	@Override
-	public final String getEntityName() {
+	public final String getCommandSenderName() {
 		return this.hasCustomNameTag() ? this.getCustomNameTag() : this.getDefaultName();
 	}
 
@@ -101,13 +104,13 @@ public class TameWisp extends EntityWisp implements TamedMob {
 	public void onUpdate()
 	{
 		boolean preventDespawn = false;
-		if (!worldObj.isRemote && worldObj.difficultySetting == 0) { //the criteria for mob despawn in peaceful
+		if (!worldObj.isRemote && worldObj.difficultySetting == EnumDifficulty.PEACEFUL) { //the criteria for mob despawn in peaceful
 			preventDespawn = true;
-			worldObj.difficultySetting = 1;
+			worldObj.difficultySetting = EnumDifficulty.EASY;
 		}
 		super.onUpdate();
 		if (preventDespawn)
-			worldObj.difficultySetting = 0;
+			worldObj.difficultySetting = EnumDifficulty.PEACEFUL;
 	}
 
 	private Entity getTarget() {
@@ -133,7 +136,7 @@ public class TameWisp extends EntityWisp implements TamedMob {
 	protected void updateEntityActionState()
 	{
 		Entity e = this.getTarget();
-		if (e != null && e.getEntityName().equals(this.getMobOwner()))
+		if (e != null && e.getCommandSenderName().equals(this.getMobOwner()))
 			this.setTarget(null);
 		super.updateEntityActionState();
 	}
@@ -221,9 +224,9 @@ public class TameWisp extends EntityWisp implements TamedMob {
 	}
 
 	@Override
-	protected int getDropItemId()
+	protected Item getDropItem()
 	{
-		return 0;
+		return null;
 	}
 
 	@Override
@@ -249,7 +252,7 @@ public class TameWisp extends EntityWisp implements TamedMob {
 	}
 
 	public final void setOwner(EntityPlayer ep) {
-		String owner = ep.getEntityName();
+		String owner = ep.getCommandSenderName();
 		this.setOwner(owner);
 	}
 

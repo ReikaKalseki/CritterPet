@@ -9,11 +9,6 @@
  ******************************************************************************/
 package Reika.CritterPet;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
-import net.minecraft.world.World;
 import Reika.CritterPet.Entities.TameFire;
 import Reika.CritterPet.Entities.TameHeatScar;
 import Reika.CritterPet.Entities.TameHedge;
@@ -25,6 +20,12 @@ import Reika.CritterPet.Entities.TameVanilla;
 import Reika.CritterPet.Interfaces.TamedMob;
 import Reika.CritterPet.Registry.CritterType;
 import Reika.DragonAPI.Libraries.Java.ReikaJavaLibrary;
+
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
+import net.minecraft.world.World;
 
 public class TamingController {
 
@@ -79,7 +80,7 @@ public class TamingController {
 			}
 			es.spawnEffects();
 			if (!ep.capabilities.isCreativeMode)
-				ep.setCurrentItemOrArmor(0, new ItemStack(is.itemID, 1, 0));
+				ep.setCurrentItemOrArmor(0, new ItemStack(is.getItem(), 1, 0));
 			return true;
 		}
 		return false;
@@ -88,7 +89,7 @@ public class TamingController {
 	private static boolean canTame(CritterType s, ItemStack is) {
 		if (is == null)
 			return false;
-		if (is.itemID != CritterPet.tool.itemID)
+		if (is.getItem() != CritterPet.tool)
 			return false;
 		if (is.getItemDamage() <= 0)
 			return false;

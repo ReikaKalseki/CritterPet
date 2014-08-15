@@ -9,14 +9,6 @@
  ******************************************************************************/
 package Reika.CritterPet;
 
-import java.net.URL;
-
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraftforge.event.Event.Result;
-import net.minecraftforge.event.ForgeSubscribe;
-import net.minecraftforge.event.entity.living.LivingSpawnEvent.AllowDespawn;
 import Reika.CritterPet.Entities.EntitySpiderBase;
 import Reika.CritterPet.Registry.CritterOptions;
 import Reika.CritterPet.Registry.CritterType;
@@ -25,6 +17,13 @@ import Reika.DragonAPI.Auxiliary.CommandableUpdateChecker;
 import Reika.DragonAPI.Base.DragonAPIMod;
 import Reika.DragonAPI.Instantiable.IO.ControlledConfig;
 import Reika.DragonAPI.Instantiable.IO.ModLogger;
+
+import java.net.URL;
+
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.init.Items;
+import net.minecraft.item.ItemStack;
+import net.minecraftforge.event.entity.living.LivingSpawnEvent.AllowDespawn;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
@@ -32,19 +31,20 @@ import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-import cpw.mods.fml.common.network.NetworkMod;
+import cpw.mods.fml.common.eventhandler.Event.Result;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.registry.EntityRegistry;
 import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.common.registry.LanguageRegistry;
 
 @Mod( modid = "CritterPet", name="Critter Pet", version="beta", certificateFingerprint = "@GET_FINGERPRINT@", dependencies="required-after:DragonAPI")
-@NetworkMod(clientSideRequired = true, serverSideRequired = true)
+
 public class CritterPet extends DragonAPIMod {
 
 	@Instance("CritterPet")
 	public static CritterPet instance = new CritterPet();
 
-	public static final ControlledConfig config = new ControlledConfig(instance, CritterOptions.optionList, null, null, null, 0);
+	public static final ControlledConfig config = new ControlledConfig(instance, CritterOptions.optionList, null, 0);
 
 	public static ItemCritterEgg egg;
 	public static ItemTaming tool;
@@ -69,18 +69,18 @@ public class CritterPet extends DragonAPIMod {
 	@Override
 	@EventHandler
 	public void load(FMLInitializationEvent event) {
-		egg = new ItemCritterEgg(CritterOptions.EGGID.getValue());
+		egg = new ItemCritterEgg();
 		egg.setUnlocalizedName("petcritteregg");
-		tool = new ItemTaming(CritterOptions.TOOLID.getValue());
+		tool = new ItemTaming();
 		tool.setUnlocalizedName("crittertamer");
 		for (int i = 0; i < CritterType.critterList.length; i++) {
 			CritterType type = CritterType.critterList[i];
 			if (type.isAvailable()) {
 				int id = EntityRegistry.findGlobalUniqueEntityId();
-				EntityRegistry.registerGlobalEntityID(type.entityClass, type.name, id);
+				EntityRegistry.registerGlobalEntityID(type.entityClass, "critterpet."+type.name, id);
 				EntityRegistry.registerModEntity(type.entityClass, type.name, id, instance, 32, 20, true);
 				type.initializeMapping(id);
-				GameRegistry.addShapelessRecipe(new ItemStack(tool.itemID, 1, i+1), new ItemStack(tool.itemID, 1, 0), type.tamingItem);
+				GameRegistry.addShapelessRecipe(new ItemStack(tool, 1, i+1), new ItemStack(tool, 1, 0), type.tamingItem);
 				logger.log("Loading Critter Type "+type.name());
 			}
 			else {
@@ -89,7 +89,7 @@ public class CritterPet extends DragonAPIMod {
 		}
 		proxy.registerRenderers();
 		LanguageRegistry.addName(tool, "Critter Taming Device");
-		GameRegistry.addRecipe(new ItemStack(tool), " ID", " II", "I  ", 'I', Item.ingotIron, 'D', Item.diamond);
+		GameRegistry.addRecipe(new ItemStack(tool), " ID", " II", "I  ", 'I', Items.iron_ingot, 'D', Items.diamond);
 	}
 
 	@Override
@@ -98,7 +98,7 @@ public class CritterPet extends DragonAPIMod {
 
 	}
 
-	@ForgeSubscribe
+	@SubscribeEvent
 	public void disallowDespawn(AllowDespawn d) {
 		EntityLivingBase e = d.entityLiving;
 		if (e instanceof EntitySpiderBase)

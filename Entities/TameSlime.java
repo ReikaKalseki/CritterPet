@@ -9,12 +9,13 @@
  ******************************************************************************/
 package Reika.CritterPet.Entities;
 
+import Reika.CritterPet.Registry.CritterType;
+
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.DamageSource;
 import net.minecraft.world.World;
-import Reika.CritterPet.Registry.CritterType;
 
 public class TameSlime extends EntitySpiderBase {
 

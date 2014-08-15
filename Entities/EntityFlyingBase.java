@@ -9,18 +9,6 @@
  ******************************************************************************/
 package Reika.CritterPet.Entities;
 
-import java.util.List;
-
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityFlying;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.DamageSource;
-import net.minecraft.world.World;
 import Reika.CritterPet.Interfaces.TamedMob;
 import Reika.CritterPet.Registry.CritterType;
 import Reika.DragonAPI.Interfaces.TameHostile;
@@ -29,6 +17,21 @@ import Reika.DragonAPI.Libraries.IO.ReikaChatHelper;
 import Reika.DragonAPI.Libraries.Java.ReikaRandomHelper;
 import Reika.DragonAPI.Libraries.Registry.ReikaParticleHelper;
 import Reika.DragonAPI.Libraries.World.ReikaWorldHelper;
+
+import java.util.List;
+
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityFlying;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Items;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.DamageSource;
+import net.minecraft.world.EnumDifficulty;
+import net.minecraft.world.World;
 
 public abstract class EntityFlyingBase extends EntityFlying implements TamedMob, TameHostile {
 
@@ -39,7 +42,7 @@ public abstract class EntityFlyingBase extends EntityFlying implements TamedMob,
 		super(par1World);
 		base = sp;
 		this.setSize(1.8F*sp.size, 1.1F*sp.size/2);
-		this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setAttribute(this.getCritterMaxHealth());
+		this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(this.getCritterMaxHealth());
 		this.setHealth(this.getCritterMaxHealth());
 		experienceValue = 0;
 		height = 1.25F*sp.size;
@@ -57,7 +60,7 @@ public abstract class EntityFlyingBase extends EntityFlying implements TamedMob,
 	}
 
 	public final void setOwner(EntityPlayer ep) {
-		String owner = ep.getEntityName();
+		String owner = ep.getCommandSenderName();
 		this.setOwner(owner);
 	}
 
@@ -112,13 +115,13 @@ public abstract class EntityFlyingBase extends EntityFlying implements TamedMob,
 	@Override
 	public final void onUpdate() {
 		boolean preventDespawn = false;
-		if (!worldObj.isRemote && worldObj.difficultySetting == 0) { //the criteria for mob despawn in peaceful
+		if (!worldObj.isRemote && worldObj.difficultySetting == EnumDifficulty.PEACEFUL) { //the criteria for mob despawn in peaceful
 			preventDespawn = true;
-			worldObj.difficultySetting = 1;
+			worldObj.difficultySetting = EnumDifficulty.EASY;
 		}
 		super.onUpdate();
 		if (preventDespawn)
-			worldObj.difficultySetting = 0;
+			worldObj.difficultySetting = EnumDifficulty.PEACEFUL;
 	}
 
 	@Override
@@ -133,7 +136,7 @@ public abstract class EntityFlyingBase extends EntityFlying implements TamedMob,
 
 	@Override
 	public final void onCollideWithPlayer(EntityPlayer ep) {
-		if (!ep.getEntityName().equals(this.getMobOwner()))
+		if (!ep.getCommandSenderName().equals(this.getMobOwner()))
 			super.onCollideWithPlayer(ep);
 	}
 
@@ -143,22 +146,22 @@ public abstract class EntityFlyingBase extends EntityFlying implements TamedMob,
 		ItemStack is = ep.getCurrentEquippedItem();
 		String owner = this.getMobOwner();
 		if (owner == null || owner.isEmpty()) {
-			if (is != null && is.itemID == base.tamingItem.itemID) {
-				owner = ep.getEntityName();
+			if (is != null && is.getItem() == base.tamingItem) {
+				owner = ep.getCommandSenderName();
 				//ReikaChatHelper.writeString("This critter had no owner! You are now the owner.");
 				return true;
 			}
 			return false;
 		}
-		if (ep.getEntityName().equals(owner)) {
+		if (ep.getCommandSenderName().equals(owner)) {
 			if (is != null) {
-				if (is.itemID == Item.glowstone.itemID && this.getHealth() < this.getMaxHealth()) {
+				if (is.getItem() == Items.glowstone_dust && this.getHealth() < this.getMaxHealth()) {
 					this.heal(8);
 					if (!ep.capabilities.isCreativeMode)
 						is.stackSize--;
 					return true;
 				}
-				if (is.itemID == Item.nameTag.itemID) {
+				if (is.getItem() == Items.name_tag) {
 					return false;
 				}
 				boolean flag = super.interact(ep);
@@ -203,7 +206,7 @@ public abstract class EntityFlyingBase extends EntityFlying implements TamedMob,
 		else if (super.attackEntityFrom(dsc, par2)) {
 			Entity entity = dsc.getEntity();
 			if (riddenByEntity != entity && ridingEntity != entity) {
-				if (entity != this && !entity.getEntityName().equals(this.getMobOwner()))
+				if (entity != this && !entity.getCommandSenderName().equals(this.getMobOwner()))
 					entityToAttack = entity;
 				return true;
 			}
@@ -217,7 +220,7 @@ public abstract class EntityFlyingBase extends EntityFlying implements TamedMob,
 	public abstract boolean canBeHurtBy(DamageSource dsc);
 
 	@Override
-	public final String getEntityName() {
+	public final String getCommandSenderName() {
 		return this.hasCustomNameTag() ? this.getCustomNameTag() : this.getDefaultName();
 	}
 
@@ -272,7 +275,7 @@ public abstract class EntityFlyingBase extends EntityFlying implements TamedMob,
 
 	@Override
 	public final String toString() {
-		return this.getEntityName()+" @ "+String.format("%.1f, %.1f, %.1f", posX, posY, posZ);
+		return this.getCommandSenderName()+" @ "+String.format("%.1f, %.1f, %.1f", posX, posY, posZ);
 	}
 
 	@Override
@@ -299,9 +302,9 @@ public abstract class EntityFlyingBase extends EntityFlying implements TamedMob,
 	}
 
 	@Override
-	protected final int getDropItemId()
+	protected final Item getDropItem()
 	{
-		return 0;
+		return null;
 	}
 
 	@Override

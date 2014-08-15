@@ -9,10 +9,11 @@
  ******************************************************************************/
 package Reika.CritterPet.Entities;
 
+import Reika.CritterPet.Registry.CritterType;
+
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.DamageSource;
 import net.minecraft.world.World;
-import Reika.CritterPet.Registry.CritterType;
 
 public class TameVanilla extends EntitySpiderBase {
 

@@ -9,14 +9,6 @@
  ******************************************************************************/
 package Reika.CritterPet.Registry;
 
-import java.lang.reflect.Constructor;
-import java.util.HashMap;
-
-import net.minecraft.client.model.ModelBase;
-import net.minecraft.client.model.ModelSlime;
-import net.minecraft.client.model.ModelWolf;
-import net.minecraft.client.renderer.entity.Render;
-import net.minecraft.item.Item;
 import Reika.CritterPet.CritterClient;
 import Reika.CritterPet.CritterPet;
 import Reika.CritterPet.Entities.TameFire;
@@ -29,20 +21,30 @@ import Reika.CritterPet.Entities.TameSlime;
 import Reika.CritterPet.Entities.TameVanilla;
 import Reika.CritterPet.Entities.TameWisp;
 import Reika.DragonAPI.ModList;
+
+import java.lang.reflect.Constructor;
+import java.util.HashMap;
+
+import net.minecraft.client.model.ModelBase;
+import net.minecraft.client.model.ModelSlime;
+import net.minecraft.client.model.ModelWolf;
+import net.minecraft.client.renderer.entity.Render;
+import net.minecraft.init.Items;
+import net.minecraft.item.Item;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
 public enum CritterType {
 
-	VANILLA("Spider", TameVanilla.class, null, 16, 1, "/Reika/CritterPet/Textures/vanilla.png", 0x775533, 0xcc0000, Item.rottenFlesh),
-	HEATSCAR("Heatscar Spider", TameHeatScar.class, ModList.NATURA, 50, 3.25F, "/Reika/CritterPet/Textures/heatscar.png", 0x771100, 0x331100, Item.blazePowder),
-	KING("King Spider", TameKing.class, ModList.TWILIGHT, 60, 2, "/Reika/CritterPet/Textures/king.png", 0x774400, 0xffdd00, Item.ingotGold),
-	HEDGE("Hedge Spider", TameHedge.class, ModList.TWILIGHT, 20, 1, "/Reika/CritterPet/Textures/hedge.png", 0x053305, 0x229922, Item.melon),
-	SLIME("Slime Beetle", TameSlime.class, ModList.TWILIGHT, 25, 0.8F, "", 0x78BF5A, 0x1A330F, Item.slimeBall),
-	FIRE("Fire Beetle", TameFire.class, ModList.TWILIGHT, 25, 0.8F, "", 0xEC872C, 0x383540, Item.fireballCharge),
-	MAZE("Maze Slime", TameMazeSlime.class, ModList.TWILIGHT, 32, 3, "", 0x656F66, 0x859289, Item.brick),
-	WISP("Wisp", TameWisp.class, ModList.THAUMCRAFT, 22, 1, "", 0xFF19FB, 0xFFBDFD, Item.glowstone),
-	MISTWOLF("Mist Wolf", TameMistWolf.class, ModList.TWILIGHT, 32, 2F, "", 0x6D2C1F, 0xC1B064, Item.porkRaw);
+	VANILLA("Spider", TameVanilla.class, null, 16, 1, "/Reika/CritterPet/Textures/vanilla.png", 0x775533, 0xcc0000, Items.rotten_flesh),
+	HEATSCAR("Heatscar Spider", TameHeatScar.class, ModList.NATURA, 50, 3.25F, "/Reika/CritterPet/Textures/heatscar.png", 0x771100, 0x331100, Items.blaze_powder),
+	KING("King Spider", TameKing.class, ModList.TWILIGHT, 60, 2, "/Reika/CritterPet/Textures/king.png", 0x774400, 0xffdd00, Items.gold_ingot),
+	HEDGE("Hedge Spider", TameHedge.class, ModList.TWILIGHT, 20, 1, "/Reika/CritterPet/Textures/hedge.png", 0x053305, 0x229922, Items.melon),
+	SLIME("Slime Beetle", TameSlime.class, ModList.TWILIGHT, 25, 0.8F, "", 0x78BF5A, 0x1A330F, Items.slime_ball),
+	FIRE("Fire Beetle", TameFire.class, ModList.TWILIGHT, 25, 0.8F, "", 0xEC872C, 0x383540, Items.fire_charge),
+	MAZE("Maze Slime", TameMazeSlime.class, ModList.TWILIGHT, 32, 3, "", 0x656F66, 0x859289, Items.brick),
+	WISP("Wisp", TameWisp.class, ModList.THAUMCRAFT, 22, 1, "", 0xFF19FB, 0xFFBDFD, Items.glowstone_dust),
+	MISTWOLF("Mist Wolf", TameMistWolf.class, ModList.TWILIGHT, 32, 2F, "", 0x6D2C1F, 0xC1B064, Items.porkchop);
 
 	public final Class entityClass;
 	public final ModList sourceMod;

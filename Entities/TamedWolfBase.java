@@ -9,11 +9,23 @@
  ******************************************************************************/
 package Reika.CritterPet.Entities;
 
+import Reika.CritterPet.CritterPet;
+import Reika.CritterPet.Interfaces.TamedMob;
+import Reika.CritterPet.Registry.CritterType;
+import Reika.DragonAPI.Interfaces.TameHostile;
+import Reika.DragonAPI.Libraries.IO.ReikaChatHelper;
+import Reika.DragonAPI.Libraries.IO.ReikaTextureHelper;
+import Reika.DragonAPI.Libraries.Java.ReikaRandomHelper;
+import Reika.DragonAPI.Libraries.Registry.ReikaParticleHelper;
+import Reika.DragonAPI.Libraries.World.ReikaWorldHelper;
+
+import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.passive.EntityWolf;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -21,19 +33,9 @@ import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.Vec3;
+import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeHooks;
-import Reika.CritterPet.CritterPet;
-import Reika.CritterPet.Interfaces.TamedMob;
-import Reika.CritterPet.Registry.CritterType;
-import Reika.DragonAPI.Interfaces.TameHostile;
-import Reika.DragonAPI.Libraries.IO.ReikaChatHelper;
-import Reika.DragonAPI.Libraries.IO.ReikaTextureHelper;
-import Reika.DragonAPI.Libraries.Java.ReikaObfuscationHelper;
-import Reika.DragonAPI.Libraries.Java.ReikaRandomHelper;
-import Reika.DragonAPI.Libraries.Java.ReikaReflectionHelper;
-import Reika.DragonAPI.Libraries.Registry.ReikaParticleHelper;
-import Reika.DragonAPI.Libraries.World.ReikaWorldHelper;
 
 public abstract class TamedWolfBase extends EntityWolf implements TamedMob, TameHostile {
 
@@ -44,7 +46,7 @@ public abstract class TamedWolfBase extends EntityWolf implements TamedMob, Tame
 		super(world);
 		base = sp;
 		this.setSize(1.25F*sp.size, 1.75F*sp.size/2);
-		this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setAttribute(this.getCritterMaxHealth());
+		this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(this.getCritterMaxHealth());
 		this.setHealth(this.getCritterMaxHealth());
 		experienceValue = 0;
 		height = 3.5F*base.size;
@@ -75,14 +77,14 @@ public abstract class TamedWolfBase extends EntityWolf implements TamedMob, Tame
 	}
 
 	@Override
-	public void setOwner(String owner) {
+	public void func_152115_b(String owner) {
 		dataWatcher.updateObject(30, owner);
-		super.setOwner(owner);
+		super.func_152115_b(owner);
 	}
 
 	public final void setOwner(EntityPlayer ep) {
-		String owner = ep.getEntityName();
-		this.setOwner(owner);
+		String owner = ep.getCommandSenderName();
+		this.func_152115_b(owner);
 	}
 
 	@Override
@@ -134,16 +136,16 @@ public abstract class TamedWolfBase extends EntityWolf implements TamedMob, Tame
 	@Override
 	public final void onUpdate() {
 		boolean preventDespawn = false;
-		if (!worldObj.isRemote && worldObj.difficultySetting == 0) { //the criteria for mob despawn in peaceful
+		if (!worldObj.isRemote && worldObj.difficultySetting == EnumDifficulty.PEACEFUL) { //the criteria for mob despawn in peaceful
 			preventDespawn = true;
-			worldObj.difficultySetting = 1;
+			worldObj.difficultySetting = EnumDifficulty.EASY;
 		}
 		super.onUpdate();
 		if (preventDespawn)
-			worldObj.difficultySetting = 0;
+			worldObj.difficultySetting = EnumDifficulty.PEACEFUL;
 		if (riddenByEntity != null)
 			this.updateRider();
-		if (entityToAttack != null && entityToAttack.getEntityName().equals(this.getMobOwner()))
+		if (entityToAttack != null && entityToAttack.getCommandSenderName().equals(this.getMobOwner()))
 			entityToAttack = null;
 		if (riddenByEntity != null)
 			this.followOwner();
@@ -170,7 +172,7 @@ public abstract class TamedWolfBase extends EntityWolf implements TamedMob, Tame
 	@Override
 	protected final void attackEntity(Entity e, float par2)
 	{
-		if (e.getEntityName().equals(this.getMobOwner()))
+		if (e.getCommandSenderName().equals(this.getMobOwner()))
 			return;
 		super.attackEntity(e, par2);
 		if (e instanceof EntityLivingBase)
@@ -185,26 +187,26 @@ public abstract class TamedWolfBase extends EntityWolf implements TamedMob, Tame
 		ItemStack is = ep.getCurrentEquippedItem();
 		String owner = this.getMobOwner();
 		if (owner == null || owner.isEmpty()) {
-			if (is != null && is.itemID == base.tamingItem.itemID) {
-				owner = ep.getEntityName();
+			if (is != null && is.getItem() == base.tamingItem) {
+				owner = ep.getCommandSenderName();
 				//ReikaChatHelper.writeString("This critter had no owner! You are now the owner.");
 				return true;
 			}
 			return false;
 		}
-		if (ep.getEntityName().equals(owner)) {
+		if (ep.getCommandSenderName().equals(owner)) {
 			if (is != null) {
-				if (is.itemID == Item.beefCooked.itemID && this.getHealth() < this.getMaxHealth()) {
+				if (is.getItem() == Items.cooked_beef && this.getHealth() < this.getMaxHealth()) {
 					this.heal(8);
 					if (!ep.capabilities.isCreativeMode)
 						is.stackSize--;
 					return true;
 				}
-				if (is.itemID == Item.bone.itemID) {
+				if (is.getItem() == Items.bone) {
 					this.setSitting(!this.isSitting());
 					return true;
 				}
-				if (is.itemID == Item.nameTag.itemID) {
+				if (is.getItem() == Items.name_tag) {
 					return false;
 				}
 				boolean flag = super.interact(ep);
@@ -265,7 +267,7 @@ public abstract class TamedWolfBase extends EntityWolf implements TamedMob, Tame
 		else if (super.attackEntityFrom(dsc, par2)) {
 			Entity entity = dsc.getEntity();
 			if (riddenByEntity != entity && ridingEntity != entity) {
-				//if (entity != this && !entity.getEntityName().equals(this.getOwner()))
+				//if (entity != this && !entity.getCommandSenderName().equals(this.getOwner()))
 				entityToAttack = entity;
 				this.setSitting(false);
 				return true;
@@ -282,7 +284,7 @@ public abstract class TamedWolfBase extends EntityWolf implements TamedMob, Tame
 	public abstract boolean canBeHurtBy(DamageSource dsc);
 
 	@Override
-	public final String getEntityName() {
+	public final String getCommandSenderName() {
 		return this.hasCustomNameTag() ? this.getCustomNameTag() : this.getDefaultName();
 	}
 
@@ -305,9 +307,7 @@ public abstract class TamedWolfBase extends EntityWolf implements TamedMob, Tame
 			rotationYawHead = renderYawOffset = rotationYaw;
 			par1 = ((EntityLivingBase)riddenByEntity).moveStrafing * 0.5F;
 			par2 = ((EntityLivingBase)riddenByEntity).moveForward;
-			String s = ReikaObfuscationHelper.getLabelName("isJumping");
-			boolean jump = ReikaReflectionHelper.getPrivateBoolean(riddenByEntity, s, CritterPet.instance.getModLogger());
-			if (jump) {
+			if (((EntityLivingBase)riddenByEntity).isJumping) {
 				if (onGround) {
 					motionY += 0.7*Math.pow(base.size, 0.25);
 					this.setJumping(true);
@@ -355,7 +355,7 @@ public abstract class TamedWolfBase extends EntityWolf implements TamedMob, Tame
 	}
 
 	@Override
-	protected final void playStepSound(int par1, int par2, int par3, int par4)
+	protected final void func_145780_a(int par1, int par2, int par3, Block par4)
 	{
 		this.playSound("mob.wolf.step", this.getStepSoundVolume(), (float) (1.0F/Math.sqrt(base.size)));
 	}
@@ -388,7 +388,7 @@ public abstract class TamedWolfBase extends EntityWolf implements TamedMob, Tame
 
 	@Override
 	public final String toString() {
-		return this.getEntityName()+" @ "+String.format("%.1f, %.1f, %.1f", posX, posY, posZ);
+		return this.getCommandSenderName()+" @ "+String.format("%.1f, %.1f, %.1f", posX, posY, posZ);
 	}
 
 	@Override
@@ -412,15 +412,15 @@ public abstract class TamedWolfBase extends EntityWolf implements TamedMob, Tame
 		String s = NBT.getString("Owner");
 
 		if (s.length() > 0) {
-			this.setOwner(s);
+			this.func_152115_b(s);
 		}
 		this.setSitting(NBT.getBoolean("Sitting"));
 	}
 
 	@Override
-	protected final int getDropItemId()
+	protected final Item getDropItem()
 	{
-		return 0;
+		return null;
 	}
 
 	@Override

@@ -9,11 +9,12 @@
  ******************************************************************************/
 package Reika.CritterPet;
 
+import Reika.CritterPet.Registry.CritterType;
+import Reika.DragonAPI.Instantiable.Rendering.ItemSpriteSheetRenderer;
+
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.world.World;
 import net.minecraftforge.client.MinecraftForgeClient;
-import Reika.DragonAPI.Instantiable.Rendering.ItemSpriteSheetRenderer;
-import Reika.CritterPet.Registry.CritterType;
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.client.registry.RenderingRegistry;
 
@@ -39,7 +40,7 @@ public class CritterClient extends CritterCommon {
 			}
 		}
 
-		MinecraftForgeClient.registerItemRenderer(CritterPet.tool.itemID, items);
+		MinecraftForgeClient.registerItemRenderer(CritterPet.tool, items);
 	}
 
 	// Override any other methods that need to be handled differently client side.
