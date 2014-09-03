@@ -9,10 +9,6 @@
  ******************************************************************************/
 package Reika.CritterPet;
 
-import Reika.CritterPet.Interfaces.TamedMob;
-import Reika.CritterPet.Registry.CritterType;
-import Reika.DragonAPI.Libraries.World.ReikaWorldHelper;
-
 import java.util.List;
 
 import net.minecraft.block.Block;
@@ -34,6 +30,9 @@ import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.MovingObjectPosition.MovingObjectType;
 import net.minecraft.world.World;
+import Reika.CritterPet.Interfaces.TamedMob;
+import Reika.CritterPet.Registry.CritterType;
+import Reika.DragonAPI.Libraries.World.ReikaWorldHelper;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 

@@ -9,6 +9,11 @@
  ******************************************************************************/
 package Reika.CritterPet;
 
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
+import net.minecraft.world.World;
 import Reika.CritterPet.Entities.TameFire;
 import Reika.CritterPet.Entities.TameHeatScar;
 import Reika.CritterPet.Entities.TameHedge;
@@ -20,12 +25,6 @@ import Reika.CritterPet.Entities.TameVanilla;
 import Reika.CritterPet.Interfaces.TamedMob;
 import Reika.CritterPet.Registry.CritterType;
 import Reika.DragonAPI.Libraries.Java.ReikaJavaLibrary;
-
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
-import net.minecraft.world.World;
 
 public class TamingController {
 
@@ -116,8 +115,8 @@ public class TamingController {
 			return CritterType.FIRE;
 		if (n.equalsIgnoreCase("EntityTFMazeSlime"))
 			return CritterType.MAZE;
-		if (n.equalsIgnoreCase("EntityWisp"))
-			return CritterType.WISP;
+		//if (n.equalsIgnoreCase("EntityWisp"))
+		//	return CritterType.WISP;
 		if (n.equalsIgnoreCase("EntityTFMistWolf"))
 			return CritterType.MISTWOLF;
 		return null;

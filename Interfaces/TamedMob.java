@@ -9,9 +9,8 @@
  ******************************************************************************/
 package Reika.CritterPet.Interfaces;
 
-import Reika.CritterPet.Registry.CritterType;
-
 import net.minecraft.entity.player.EntityPlayer;
+import Reika.CritterPet.Registry.CritterType;
 
 public interface TamedMob {
 

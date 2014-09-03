@@ -9,13 +9,6 @@
  ******************************************************************************/
 package Reika.CritterPet.Entities;
 
-import Reika.CritterPet.Interfaces.TamedMob;
-import Reika.CritterPet.Registry.CritterType;
-import Reika.DragonAPI.Libraries.ReikaEntityHelper;
-import Reika.DragonAPI.Libraries.Java.ReikaRandomHelper;
-import Reika.DragonAPI.Libraries.Registry.ReikaParticleHelper;
-import Reika.DragonAPI.Libraries.World.ReikaWorldHelper;
-
 import java.lang.reflect.Field;
 import java.util.List;
 
@@ -30,6 +23,12 @@ import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.World;
 import thaumcraft.api.aspects.Aspect;
 import thaumcraft.common.entities.monster.EntityWisp;
+import Reika.CritterPet.Interfaces.TamedMob;
+import Reika.CritterPet.Registry.CritterType;
+import Reika.DragonAPI.Libraries.ReikaEntityHelper;
+import Reika.DragonAPI.Libraries.Java.ReikaRandomHelper;
+import Reika.DragonAPI.Libraries.Registry.ReikaParticleHelper;
+import Reika.DragonAPI.Libraries.World.ReikaWorldHelper;
 
 public class TameWisp extends EntityWisp implements TamedMob {
 
@@ -282,7 +281,7 @@ public class TameWisp extends EntityWisp implements TamedMob {
 
 	@Override
 	public final CritterType getBaseCritter() {
-		return CritterType.WISP;
+		return null;//CritterType.WISP;
 	}
 
 	@Override

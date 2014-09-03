@@ -9,6 +9,15 @@
  ******************************************************************************/
 package Reika.CritterPet.Registry;
 
+import java.lang.reflect.Constructor;
+import java.util.HashMap;
+
+import net.minecraft.client.model.ModelBase;
+import net.minecraft.client.model.ModelSlime;
+import net.minecraft.client.model.ModelWolf;
+import net.minecraft.client.renderer.entity.Render;
+import net.minecraft.init.Items;
+import net.minecraft.item.Item;
 import Reika.CritterPet.CritterClient;
 import Reika.CritterPet.CritterPet;
 import Reika.CritterPet.Entities.TameFire;
@@ -19,18 +28,7 @@ import Reika.CritterPet.Entities.TameMazeSlime;
 import Reika.CritterPet.Entities.TameMistWolf;
 import Reika.CritterPet.Entities.TameSlime;
 import Reika.CritterPet.Entities.TameVanilla;
-import Reika.CritterPet.Entities.TameWisp;
 import Reika.DragonAPI.ModList;
-
-import java.lang.reflect.Constructor;
-import java.util.HashMap;
-
-import net.minecraft.client.model.ModelBase;
-import net.minecraft.client.model.ModelSlime;
-import net.minecraft.client.model.ModelWolf;
-import net.minecraft.client.renderer.entity.Render;
-import net.minecraft.init.Items;
-import net.minecraft.item.Item;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
@@ -43,7 +41,7 @@ public enum CritterType {
 	SLIME("Slime Beetle", TameSlime.class, ModList.TWILIGHT, 25, 0.8F, "", 0x78BF5A, 0x1A330F, Items.slime_ball),
 	FIRE("Fire Beetle", TameFire.class, ModList.TWILIGHT, 25, 0.8F, "", 0xEC872C, 0x383540, Items.fire_charge),
 	MAZE("Maze Slime", TameMazeSlime.class, ModList.TWILIGHT, 32, 3, "", 0x656F66, 0x859289, Items.brick),
-	WISP("Wisp", TameWisp.class, ModList.THAUMCRAFT, 22, 1, "", 0xFF19FB, 0xFFBDFD, Items.glowstone_dust),
+	//WISP("Wisp", TameWisp.class, ModList.THAUMCRAFT, 22, 1, "", 0xFF19FB, 0xFFBDFD, Items.glowstone_dust),
 	MISTWOLF("Mist Wolf", TameMistWolf.class, ModList.TWILIGHT, 32, 2F, "", 0x6D2C1F, 0xC1B064, Items.porkchop);
 
 	public final Class entityClass;
@@ -105,9 +103,9 @@ public enum CritterType {
 				Class c5 = Class.forName("twilightforest.client.renderer.entity.RenderTFMazeSlime");
 				Constructor cc = c5.getConstructor(ModelBase.class, ModelBase.class, float.class);
 				return (Render)cc.newInstance(new ModelSlime(16), new ModelSlime(0), 0.625F);
-			case WISP:
-				Class c7 = Class.forName("thaumcraft.client.renderers.entity.RenderWisp");
-				return (Render)c7.newInstance();
+				//case WISP:
+				//	Class c7 = Class.forName("thaumcraft.client.renderers.entity.RenderWisp");
+				//	return (Render)c7.newInstance();
 			case MISTWOLF:
 				Class c6 = Class.forName("twilightforest.client.renderer.entity.RenderTFMistWolf");
 				Constructor cd = c6.getConstructor(ModelBase.class, ModelBase.class, float.class);

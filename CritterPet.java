@@ -9,6 +9,12 @@
  ******************************************************************************/
 package Reika.CritterPet;
 
+import java.net.URL;
+
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.init.Items;
+import net.minecraft.item.ItemStack;
+import net.minecraftforge.event.entity.living.LivingSpawnEvent.AllowDespawn;
 import Reika.CritterPet.Entities.EntitySpiderBase;
 import Reika.CritterPet.Registry.CritterOptions;
 import Reika.CritterPet.Registry.CritterType;
@@ -17,13 +23,6 @@ import Reika.DragonAPI.Auxiliary.CommandableUpdateChecker;
 import Reika.DragonAPI.Base.DragonAPIMod;
 import Reika.DragonAPI.Instantiable.IO.ControlledConfig;
 import Reika.DragonAPI.Instantiable.IO.ModLogger;
-
-import java.net.URL;
-
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.init.Items;
-import net.minecraft.item.ItemStack;
-import net.minecraftforge.event.entity.living.LivingSpawnEvent.AllowDespawn;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
@@ -61,6 +60,13 @@ public class CritterPet extends DragonAPIMod {
 		config.initProps(evt);
 		logger = new ModLogger(instance, false);
 
+		egg = new ItemCritterEgg();
+		egg.setUnlocalizedName("petcritteregg");
+		tool = new ItemTaming();
+		tool.setUnlocalizedName("crittertamer");
+		GameRegistry.registerItem(egg, "petcritteregg");
+		GameRegistry.registerItem(tool, "crittertamer");
+
 		proxy.registerSounds();
 
 		this.basicSetup(evt);
@@ -69,10 +75,6 @@ public class CritterPet extends DragonAPIMod {
 	@Override
 	@EventHandler
 	public void load(FMLInitializationEvent event) {
-		egg = new ItemCritterEgg();
-		egg.setUnlocalizedName("petcritteregg");
-		tool = new ItemTaming();
-		tool.setUnlocalizedName("crittertamer");
 		for (int i = 0; i < CritterType.critterList.length; i++) {
 			CritterType type = CritterType.critterList[i];
 			if (type.isAvailable()) {
