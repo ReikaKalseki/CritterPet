@@ -40,4 +40,9 @@ public class TameFire extends EntitySpiderBase {
 		return 4;
 	}
 
+	@Override
+	public boolean isRideable() {
+		return true;
+	}
+
 }

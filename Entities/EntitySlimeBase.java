@@ -395,7 +395,7 @@ public abstract class EntitySlimeBase extends EntitySlime implements TamedMob, T
 	{
 		e.applyEntityCollision(this);
 		if (e instanceof EntityLivingBase && !(e instanceof TamedMob)) {
-			if (ReikaEntityHelper.isHostile((EntityLivingBase)e)) {
+			if (ReikaEntityHelper.isHostile((EntityLivingBase)e) || this.isNonOwnerPlayer(e)) {
 				//this.attackEntity(e, this.getAttackDamage());
 				e.attackEntityFrom(DamageSource.causeMobDamage(this), this.getAttackStrength());
 				this.applyAttackEffects((EntityLivingBase)e);
@@ -406,6 +406,10 @@ public abstract class EntitySlimeBase extends EntitySlime implements TamedMob, T
 	@Override
 	public boolean shouldDismountInWater(Entity rider) {
 		return false;
+	}
+
+	protected final boolean isNonOwnerPlayer(Entity e) {
+		return e instanceof EntityPlayer && !e.getCommandSenderName().equals(this.getMobOwner());
 	}
 
 }

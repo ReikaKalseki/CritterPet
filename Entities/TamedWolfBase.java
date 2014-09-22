@@ -440,4 +440,8 @@ public abstract class TamedWolfBase extends EntityWolf implements TamedMob, Tame
 	public boolean shouldDismountInWater(Entity rider) {
 		return false;
 	}
+
+	protected final boolean isNonOwnerPlayer(Entity e) {
+		return e instanceof EntityPlayer && !e.getCommandSenderName().equals(this.getMobOwner());
+	}
 }

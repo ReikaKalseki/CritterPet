@@ -46,4 +46,9 @@ public class TameKing extends EntitySpiderBase {
 	public int getAttackDamage() {
 		return 4;
 	}
+
+	@Override
+	public boolean isRideable() {
+		return true;
+	}
 }

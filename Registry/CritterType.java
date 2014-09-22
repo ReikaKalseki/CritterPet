@@ -12,10 +12,13 @@ package Reika.CritterPet.Registry;
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
 
+import net.minecraft.block.Block;
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.model.ModelSlime;
 import net.minecraft.client.model.ModelWolf;
 import net.minecraft.client.renderer.entity.Render;
+import net.minecraft.entity.monster.EntitySilverfish;
+import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import Reika.CritterPet.CritterClient;
@@ -26,9 +29,11 @@ import Reika.CritterPet.Entities.TameHedge;
 import Reika.CritterPet.Entities.TameKing;
 import Reika.CritterPet.Entities.TameMazeSlime;
 import Reika.CritterPet.Entities.TameMistWolf;
+import Reika.CritterPet.Entities.TameSilverfish;
 import Reika.CritterPet.Entities.TameSlime;
 import Reika.CritterPet.Entities.TameVanilla;
 import Reika.DragonAPI.ModList;
+import Reika.DragonAPI.Libraries.ReikaEntityHelper;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
@@ -42,7 +47,8 @@ public enum CritterType {
 	FIRE("Fire Beetle", TameFire.class, ModList.TWILIGHT, 25, 0.8F, "", 0xEC872C, 0x383540, Items.fire_charge),
 	MAZE("Maze Slime", TameMazeSlime.class, ModList.TWILIGHT, 32, 3, "", 0x656F66, 0x859289, Items.brick),
 	//WISP("Wisp", TameWisp.class, ModList.THAUMCRAFT, 22, 1, "", 0xFF19FB, 0xFFBDFD, Items.glowstone_dust),
-	MISTWOLF("Mist Wolf", TameMistWolf.class, ModList.TWILIGHT, 32, 2F, "", 0x6D2C1F, 0xC1B064, Items.porkchop);
+	MISTWOLF("Mist Wolf", TameMistWolf.class, ModList.TWILIGHT, 32, 2F, "", 0x6D2C1F, 0xC1B064, Items.porkchop),
+	SILVERFISH("Silverfish", TameSilverfish.class, null, 8, 0.25F, "/Reika/CritterPet/Textures/silverfish.png", 0x000000, 0xffffff, Blocks.stonebrick);
 
 	public final Class entityClass;
 	public final ModList sourceMod;
@@ -56,6 +62,10 @@ public enum CritterType {
 	private static final HashMap<CritterType, Integer> mappings = new HashMap();
 
 	public static final CritterType[] critterList = values();
+
+	private CritterType(String name, Class c, ModList mod, int health, float size, String tex, int c1, int c2, Block i) {
+		this(name, c, mod, health, size, tex, c1, c2, Item.getItemFromBlock(i));
+	}
 
 	private CritterType(String name, Class c, ModList mod, int health, float size, String tex, int c1, int c2, Item i) {
 		entityClass = c;
@@ -110,6 +120,8 @@ public enum CritterType {
 				Class c6 = Class.forName("twilightforest.client.renderer.entity.RenderTFMistWolf");
 				Constructor cd = c6.getConstructor(ModelBase.class, ModelBase.class, float.class);
 				return (Render)cd.newInstance(new ModelWolf(), new ModelWolf(), 0.625F);
+			case SILVERFISH:
+				return ReikaEntityHelper.getEntityRenderer(EntitySilverfish.class);
 			default:
 				return CritterClient.critter;
 			}

@@ -44,4 +44,9 @@ public class TameHedge extends EntitySpiderBase {
 	public int getAttackDamage() {
 		return 3;
 	}
+
+	@Override
+	public boolean isRideable() {
+		return true;
+	}
 }

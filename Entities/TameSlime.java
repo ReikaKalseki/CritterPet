@@ -42,4 +42,9 @@ public class TameSlime extends EntitySpiderBase {
 		return 8;
 	}
 
+	@Override
+	public boolean isRideable() {
+		return true;
+	}
+
 }
