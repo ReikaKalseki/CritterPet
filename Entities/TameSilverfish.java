@@ -1,7 +1,17 @@
+/*******************************************************************************
+ * @author Reika Kalseki
+ * 
+ * Copyright 2014
+ * 
+ * All rights reserved.
+ * Distribution of the software in any form is only allowed with
+ * explicit, prior permission from the owner.
+ ******************************************************************************/
 package Reika.CritterPet.Entities;
 
 import java.util.List;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
@@ -74,6 +84,10 @@ public class TameSilverfish extends EntitySilverfish implements TamedMob {
 	protected final void entityInit() {
 		super.entityInit();
 		dataWatcher.addObject(30, ""); //Set empty owner
+
+		dataWatcher.addObject(20, 0.0F);
+		dataWatcher.addObject(21, 0.0F);
+		dataWatcher.addObject(22, 0.0F);
 	}
 
 	private void setOwner(String owner) {
@@ -102,16 +116,43 @@ public class TameSilverfish extends EntitySilverfish implements TamedMob {
 			worldObj.difficultySetting = EnumDifficulty.EASY;
 		}
 		super.onUpdate();
+		//if (motionX != 0 || motionY != 0 || motionZ != 0)
+		//	velocityChanged = true;
 		if (preventDespawn)
 			worldObj.difficultySetting = EnumDifficulty.PEACEFUL;
 		if (entityToAttack != null && entityToAttack.getCommandSenderName().equals(this.getMobOwner()))
 			entityToAttack = null;
+
+		if (worldObj.isRemote) {
+			this.readVelocity();
+		}
+		else {
+			this.updateVelocity();
+		}
+	}
+
+	private void readVelocity() {
+		motionX = dataWatcher.getWatchableObjectFloat(20);
+		motionY = dataWatcher.getWatchableObjectFloat(21);
+		motionZ = dataWatcher.getWatchableObjectFloat(22);
+	}
+
+	private void updateVelocity() {
+		dataWatcher.updateObject(20, (float)motionX);
+		dataWatcher.updateObject(21, (float)motionY);
+		dataWatcher.updateObject(22, (float)motionZ);
+	}
+
+	@Override
+	protected void updateWanderPath()
+	{
+		super.updateWanderPath();
 	}
 
 	@Override
 	protected final Entity findPlayerToAttack()
 	{
-		return null;
+		return super.findPlayerToAttack();//null;
 	}
 
 	@Override
@@ -201,7 +242,7 @@ public class TameSilverfish extends EntitySilverfish implements TamedMob {
 	@Override
 	public final boolean getAlwaysRenderNameTagForRender()
 	{
-		return true;
+		return this.getDistanceSqToEntity(Minecraft.getMinecraft().thePlayer) < 16;//true;
 	}
 
 	@Override
