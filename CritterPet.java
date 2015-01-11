@@ -21,6 +21,7 @@ import Reika.CritterPet.Registry.CritterType;
 import Reika.DragonAPI.DragonAPICore;
 import Reika.DragonAPI.Auxiliary.Trackers.CommandableUpdateChecker;
 import Reika.DragonAPI.Base.DragonAPIMod;
+import Reika.DragonAPI.Base.DragonAPIMod.LoadProfiler.LoadPhase;
 import Reika.DragonAPI.Instantiable.IO.ControlledConfig;
 import Reika.DragonAPI.Instantiable.IO.ModLogger;
 import cpw.mods.fml.common.Mod;
@@ -56,6 +57,7 @@ public class CritterPet extends DragonAPIMod {
 	@Override
 	@EventHandler
 	public void preload(FMLPreInitializationEvent evt) {
+		this.startTiming(LoadPhase.PRELOAD);
 		this.verifyVersions();
 		config.loadSubfolderedConfigFile(evt);
 		config.initProps(evt);
@@ -71,11 +73,13 @@ public class CritterPet extends DragonAPIMod {
 		proxy.registerSounds();
 
 		this.basicSetup(evt);
+		this.finishTiming();
 	}
 
 	@Override
 	@EventHandler
 	public void load(FMLInitializationEvent event) {
+		this.startTiming(LoadPhase.LOAD);
 		for (int i = 0; i < CritterType.critterList.length; i++) {
 			CritterType type = CritterType.critterList[i];
 			if (type.isAvailable()) {
@@ -93,12 +97,14 @@ public class CritterPet extends DragonAPIMod {
 		proxy.registerRenderers();
 		LanguageRegistry.addName(tool, "Critter Taming Device");
 		GameRegistry.addRecipe(new ItemStack(tool), " ID", " II", "I  ", 'I', Items.iron_ingot, 'D', Items.diamond);
+		this.finishTiming();
 	}
 
 	@Override
 	@EventHandler
 	public void postload(FMLPostInitializationEvent evt) {
-
+		this.startTiming(LoadPhase.POSTLOAD);
+		this.finishTiming();
 	}
 
 	@SubscribeEvent
