@@ -24,7 +24,6 @@ import Reika.CritterPet.Entities.TameSlime;
 import Reika.CritterPet.Entities.TameVanilla;
 import Reika.CritterPet.Interfaces.TamedMob;
 import Reika.CritterPet.Registry.CritterType;
-import Reika.DragonAPI.Libraries.Java.ReikaJavaLibrary;
 
 public class TamingController {
 
@@ -39,40 +38,39 @@ public class TamingController {
 		if (canTame(s, is)) {
 			TamedMob es = null;
 			switch(s) {
-			case HEATSCAR:
-				es = new TameHeatScar(world);
-				break;
-			case HEDGE:
-				es = new TameHedge(world);
-				break;
-			case KING:
-				es = new TameKing(world);
-				break;
-			case VANILLA:
-				es = new TameVanilla(world);
-				break;
-			case SLIME:
-				es = new TameSlime(world);
-				break;
-			case FIRE:
-				es = new TameFire(world);
-				break;
-			case MAZE:
-				es = new TameMazeSlime(world);
-				break;
-			case MISTWOLF:
-				es = new TameMistWolf(world);
-				break;
-				//case WISP:
-				//	es = new TameWisp(world);
-				//	break;
-			default:
-				return false;
+				case HEATSCAR:
+					es = new TameHeatScar(world);
+					break;
+				case HEDGE:
+					es = new TameHedge(world);
+					break;
+				case KING:
+					es = new TameKing(world);
+					break;
+				case VANILLA:
+					es = new TameVanilla(world);
+					break;
+				case SLIME:
+					es = new TameSlime(world);
+					break;
+				case FIRE:
+					es = new TameFire(world);
+					break;
+				case MAZE:
+					es = new TameMazeSlime(world);
+					break;
+				case MISTWOLF:
+					es = new TameMistWolf(world);
+					break;
+					//case WISP:
+					//	es = new TameWisp(world);
+					//	break;
+				default:
+					return false;
 			}
 			((Entity)es).setLocationAndAngles(e.posX, e.posY, e.posZ, e.rotationYaw, e.rotationPitch);
 			((EntityLivingBase)es).rotationYawHead = ((EntityLivingBase)e).rotationYawHead;
 			es.setOwner(ep);
-			ReikaJavaLibrary.pConsole(es);
 			e.setDead();
 			if (!world.isRemote) {
 				world.spawnEntityInWorld((Entity)es);

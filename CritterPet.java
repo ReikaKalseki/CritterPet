@@ -19,6 +19,7 @@ import Reika.CritterPet.Entities.EntitySpiderBase;
 import Reika.CritterPet.Registry.CritterOptions;
 import Reika.CritterPet.Registry.CritterType;
 import Reika.DragonAPI.DragonAPICore;
+import Reika.DragonAPI.DragonOptions;
 import Reika.DragonAPI.Auxiliary.Trackers.CommandableUpdateChecker;
 import Reika.DragonAPI.Base.DragonAPIMod;
 import Reika.DragonAPI.Base.DragonAPIMod.LoadProfiler.LoadPhase;
@@ -62,6 +63,8 @@ public class CritterPet extends DragonAPIMod {
 		config.loadSubfolderedConfigFile(evt);
 		config.initProps(evt);
 		logger = new ModLogger(instance, false);
+		if (DragonOptions.FILELOG.getState())
+			logger.setOutput("**_Loading_Log.log");
 
 		egg = new ItemCritterEgg();
 		egg.setUnlocalizedName("petcritteregg");
