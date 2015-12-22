@@ -45,7 +45,7 @@ public class CritterPet extends DragonAPIMod {
 	@Instance("CritterPet")
 	public static CritterPet instance = new CritterPet();
 
-	public static final ControlledConfig config = new ControlledConfig(instance, CritterOptions.optionList, null, 0);
+	public static final ControlledConfig config = new ControlledConfig(instance, CritterOptions.optionList, null);
 
 	public static ItemCritterEgg egg;
 	public static ItemTaming tool;
