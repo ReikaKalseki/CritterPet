@@ -44,7 +44,7 @@ public class ItemTaming extends Item implements IndexedItemSprites {
 	public void addInformation(ItemStack is, EntityPlayer ep, List li, boolean verbose) {
 		int i = is.getItemDamage();
 		if (i == 0) {
-			li.add("Missing a taming Items.");
+			li.add("Missing a taming item.");
 		}
 		else {
 			CritterType type = CritterType.critterList[i-1];
