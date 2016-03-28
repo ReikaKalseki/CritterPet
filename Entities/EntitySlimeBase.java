@@ -26,7 +26,7 @@ import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.World;
 import Reika.CritterPet.Interfaces.TamedMob;
 import Reika.CritterPet.Registry.CritterType;
-import Reika.DragonAPI.Interfaces.TameHostile;
+import Reika.DragonAPI.Interfaces.Entity.TameHostile;
 import Reika.DragonAPI.Libraries.ReikaEntityHelper;
 import Reika.DragonAPI.Libraries.IO.ReikaChatHelper;
 import Reika.DragonAPI.Libraries.Java.ReikaRandomHelper;
