@@ -32,7 +32,7 @@ public class TameFire extends EntitySpiderBase {
 
 	@Override
 	public boolean canBeHurtBy(DamageSource dsc) {
-		return true;
+		return !dsc.isFireDamage();
 	}
 
 	@Override

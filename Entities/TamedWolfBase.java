@@ -22,6 +22,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.MathHelper;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.World;
@@ -91,6 +92,13 @@ public abstract class TamedWolfBase extends EntityWolf implements TamedMob, Tame
 		return dataWatcher.getWatchableObjectString(30);
 	}
 
+	public final EntityPlayer findOwner() {
+		String s = this.getMobOwner();
+		if (s != null && !s.isEmpty())
+			return worldObj.getPlayerEntityByName(s);
+		return null;
+	}
+
 	public final boolean hasOwner() {
 		String s = this.getMobOwner();
 		return s != null && !s.isEmpty();
@@ -146,6 +154,7 @@ public abstract class TamedWolfBase extends EntityWolf implements TamedMob, Tame
 			this.updateRider();
 		if (entityToAttack != null && entityToAttack.getCommandSenderName().equals(this.getMobOwner()))
 			entityToAttack = null;
+		this.teleportAsNecessary();
 		if (riddenByEntity != null)
 			this.followOwner();
 		if (this.isSitting()) {
@@ -443,5 +452,27 @@ public abstract class TamedWolfBase extends EntityWolf implements TamedMob, Tame
 
 	protected final boolean isNonOwnerPlayer(Entity e) {
 		return e instanceof EntityPlayer && !e.getCommandSenderName().equals(this.getMobOwner());
+	}
+
+	private void teleportAsNecessary() {
+		EntityPlayer owner = this.findOwner();
+		if (owner != null && !this.isSitting()) {
+			if (!this.getLeashed()) {
+				if (this.getDistanceSqToEntity(owner) >= 144.0D) {
+					int x = MathHelper.floor_double(owner.posX)-2;
+					int z = MathHelper.floor_double(owner.posZ)-2;
+					int y = MathHelper.floor_double(owner.boundingBox.minY);
+
+					for (int i = 0; i <= 4; ++i) {
+						for (int k = 0; k <= 4; ++k) {
+							if ((i < 1 || k < 1 || i > 3 || k > 3) && World.doesBlockHaveSolidTopSurface(worldObj, x+i, y-1, z+k) && !worldObj.getBlock(x+i, y, z+k).isNormalCube() && !worldObj.getBlock(x+i, y+1, z+k).isNormalCube()) {
+								this.setLocationAndAngles(x+i+0.5F, y, z+k+0.5F, rotationYaw, rotationPitch);
+								return;
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 }
