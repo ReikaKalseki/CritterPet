@@ -9,6 +9,7 @@
  ******************************************************************************/
 package Reika.CritterPet;
 
+import java.io.File;
 import java.net.URL;
 
 import net.minecraft.entity.EntityLivingBase;
@@ -145,6 +146,11 @@ public class CritterPet extends DragonAPIMod {
 	@Override
 	public ModLogger getModLogger() {
 		return logger;
+	}
+
+	@Override
+	public File getConfigFolder() {
+		return config.getConfigFolder();
 	}
 
 }
