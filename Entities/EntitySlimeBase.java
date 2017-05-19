@@ -28,6 +28,7 @@ import net.minecraft.world.World;
 import Reika.CritterPet.Interfaces.TamedMob;
 import Reika.CritterPet.Registry.CritterType;
 import Reika.DragonAPI.Interfaces.Entity.TameHostile;
+import Reika.DragonAPI.Interfaces.Item.EntityCapturingItem;
 import Reika.DragonAPI.Libraries.ReikaEntityHelper;
 import Reika.DragonAPI.Libraries.IO.ReikaChatHelper;
 import Reika.DragonAPI.Libraries.Java.ReikaRandomHelper;
@@ -193,6 +194,8 @@ public abstract class EntitySlimeBase extends EntitySlime implements TamedMob, T
 	protected final boolean interact(EntityPlayer ep)
 	{
 		ItemStack is = ep.getCurrentEquippedItem();
+		if (is != null && is.getItem() instanceof EntityCapturingItem)
+			return false;
 		String owner = this.getMobOwner();
 		if (owner == null || owner.isEmpty()) {
 			if (is != null && is.getItem() == base.tamingItem) {
@@ -255,6 +258,9 @@ public abstract class EntitySlimeBase extends EntitySlime implements TamedMob, T
 	public final boolean attackEntityFrom(DamageSource dsc, float par2)
 	{
 		if (this.isEntityInvulnerable()) {
+			return false;
+		}
+		else if (dsc.getEntity() != null && dsc.getEntity().getCommandSenderName().equals(this.getMobOwner())) {
 			return false;
 		}
 		else if (!this.canBeHurtBy(dsc)) {
@@ -439,6 +445,44 @@ public abstract class EntitySlimeBase extends EntitySlime implements TamedMob, T
 				}
 			}
 		}
+	}
+
+	@Override
+	public final boolean allowLeashing() {
+		return true;
+	}
+
+	@Override
+	protected void updateLeashedState()
+	{
+		super.updateLeashedState();
+
+		if (this.getLeashed() && this.getLeashedToEntity() != null && this.getLeashedToEntity().worldObj == worldObj) {
+			Entity entity = this.getLeashedToEntity();
+			float f = this.getDistanceToEntity(entity);
+
+			if (f > 4.0F) {
+				this.getNavigator().tryMoveToEntityLiving(entity, 1.0D);
+			}
+
+			if (f > 6.0F) {
+				double d0 = (entity.posX - posX) / f;
+				double d1 = (entity.posY - posY) / f;
+				double d2 = (entity.posZ - posZ) / f;
+				motionX += d0 * Math.abs(d0) * 0.4D;
+				motionY += d1 * Math.abs(d1) * 0.4D;
+				motionZ += d2 * Math.abs(d2) * 0.4D;
+			}
+
+			if (f > 10.0F) {
+				this.clearLeashed(true, true);
+			}
+		}
+	}
+
+	@Override
+	public boolean isInRangeToRenderDist(double dist) {
+		return true;
 	}
 
 }

@@ -9,11 +9,13 @@
  ******************************************************************************/
 package Reika.CritterPet.Entities;
 
-import net.minecraft.block.Block;
+import java.util.List;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.passive.EntityWolf;
+import net.minecraft.entity.monster.EntityMagmaCube;
+import net.minecraft.entity.monster.EntitySlime;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
@@ -26,34 +28,63 @@ import net.minecraft.util.MathHelper;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.World;
-import net.minecraftforge.common.ForgeHooks;
-import Reika.CritterPet.CritterPet;
 import Reika.CritterPet.Interfaces.TamedMob;
 import Reika.CritterPet.Registry.CritterType;
+import Reika.DragonAPI.Auxiliary.Trackers.KeyWatcher;
+import Reika.DragonAPI.Auxiliary.Trackers.KeyWatcher.Key;
 import Reika.DragonAPI.Interfaces.Entity.TameHostile;
 import Reika.DragonAPI.Interfaces.Item.EntityCapturingItem;
 import Reika.DragonAPI.Libraries.ReikaEntityHelper;
 import Reika.DragonAPI.Libraries.IO.ReikaChatHelper;
-import Reika.DragonAPI.Libraries.IO.ReikaTextureHelper;
 import Reika.DragonAPI.Libraries.Java.ReikaRandomHelper;
 import Reika.DragonAPI.Libraries.Registry.ReikaParticleHelper;
 import Reika.DragonAPI.Libraries.World.ReikaWorldHelper;
 
-public abstract class TamedWolfBase extends EntityWolf implements TamedMob, TameHostile {
+public class TameLavaSlime extends EntityMagmaCube implements TamedMob, TameHostile {
 
-	private CritterType base;
-	private boolean wasSitting = false;
+	private CritterType base = CritterType.LAVASLIME;
+	private Entity entityToAttack;
 
-	public TamedWolfBase(World world, CritterType sp) {
+	public TameLavaSlime(World world) {
 		super(world);
-		base = sp;
-		this.setSize(1.25F*sp.size, 1.75F*sp.size/2);
+		this.setSize(1.8F*base.size, 1.1F*base.size/2);
 		this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(this.getCritterMaxHealth());
 		this.setHealth(this.getCritterMaxHealth());
 		experienceValue = 0;
-		height = 3.5F*base.size;
+		height = 1.25F*base.size;
 		this.func_110163_bv();
-		this.setTamed(true);
+		this.setSlimeSize(4);
+	}
+
+	@Override
+	protected final void entityInit() {
+		super.entityInit();
+		dataWatcher.addObject(30, ""); //Set empty owner
+	}
+
+	private void setOwner(String owner) {
+		dataWatcher.updateObject(30, owner);
+	}
+
+	public final void setOwner(EntityPlayer ep) {
+		String owner = ep.getCommandSenderName();
+		this.setOwner(owner);
+	}
+
+	public final String getMobOwner() {
+		return dataWatcher.getWatchableObjectString(30);
+	}
+
+	public final EntityPlayer findOwner() {
+		String s = this.getMobOwner();
+		if (s != null && !s.isEmpty())
+			return worldObj.getPlayerEntityByName(s);
+		return null;
+	}
+
+	public final boolean hasOwner() {
+		String s = this.getMobOwner();
+		return s != null && !s.isEmpty();
 	}
 
 	@Override
@@ -71,76 +102,53 @@ public abstract class TamedWolfBase extends EntityWolf implements TamedMob, Tame
 		this.playSound("random.levelup", 1, 1);
 	}
 
-	@Override
-	protected final void entityInit() {
-		super.entityInit();
-		dataWatcher.addObject(31, Byte.valueOf((byte)0)); //Set not sitting
-		dataWatcher.addObject(30, ""); //Set empty owner
+	public final float getScaleFactor() {
+		return this.getSlimeSize()/2F;
 	}
 
 	@Override
-	public void func_152115_b(String owner) {
-		dataWatcher.updateObject(30, owner);
-		super.func_152115_b(owner);
-	}
-
-	public final void setOwner(EntityPlayer ep) {
-		String owner = ep.getCommandSenderName();
-		this.func_152115_b(owner);
-	}
-
-	@Override
-	public final String getMobOwner() {
-		return dataWatcher.getWatchableObjectString(30);
-	}
-
-	public final EntityPlayer findOwner() {
-		String s = this.getMobOwner();
-		if (s != null && !s.isEmpty())
-			return worldObj.getPlayerEntityByName(s);
-		return null;
-	}
-
-	public final boolean hasOwner() {
-		String s = this.getMobOwner();
-		return s != null && !s.isEmpty();
-	}
-
 	public final CritterType getBaseCritter() {
 		return base;
 	}
 
 	@Override
-	public final boolean isSitting() {
-		return dataWatcher.getWatchableObjectByte(31) == 1;
-	}
-
-	@Override
-	public final void setSitting(boolean sit) {
-		byte s = (byte)(sit ? 1 : 0);
-		dataWatcher.updateObject(31, s);
-	}
-
 	public final boolean isVanillaCritter() {
 		return !this.isModCritter();
 	}
 
+	@Override
 	public final boolean isModCritter() {
-		return base != null;
-	}
-
-	public final int getCritterMaxHealth() {
-		if (base == null)
-			return 100;
-		return base.maxHealth;
+		return this.getBaseCritter().sourceMod != null;
 	}
 
 	@Override
-	public final boolean shouldRiderFaceForward(EntityPlayer player) {
-		return true;
+	public final int getCritterMaxHealth() {
+		return this.getBaseCritter().maxHealth*4;
 	}
 
-	protected abstract void updateRider();
+	@Override
+	public final void faceEntity(Entity e, float a, float b) {
+		if (!e.getCommandSenderName().equals(this.getMobOwner()))
+			super.faceEntity(e, a, b);
+	}
+
+	@Override
+	protected final int getJumpDelay()
+	{
+		return riddenByEntity != null ? 5 : super.getJumpDelay();
+	}
+
+	@Override
+	protected final EntitySlime createInstance()
+	{
+		return super.createInstance();
+	}
+
+	@Override
+	public final void setDead()
+	{
+		isDead = true;
+	}
 
 	@Override
 	public final void onUpdate() {
@@ -154,24 +162,19 @@ public abstract class TamedWolfBase extends EntityWolf implements TamedMob, Tame
 			worldObj.difficultySetting = EnumDifficulty.PEACEFUL;
 		if (riddenByEntity != null)
 			this.updateRider();
-		if (entityToAttack != null && entityToAttack.getCommandSenderName().equals(this.getMobOwner()))
-			entityToAttack = null;
 		this.teleportAsNecessary();
 		if (riddenByEntity != null)
 			this.followOwner();
-		if (this.isSitting()) {
-
-		}
-		if (ReikaEntityHelper.isInRain(this)) {
-			if (rand.nextInt(40) == 0) {
-				this.playSound("mob.wolf.whine", 1, 0.75F+0.5F*rand.nextFloat());
-			}
-		}
+		if (isAirBorne)
+			velocityChanged = true;
 	}
 
 	@Override
-	protected final String getLivingSound() {
-		return rand.nextInt(3) == 0 ? (this.getHealth() < this.getMaxHealth()*0.8 ? "mob.wolf.whine" : "mob.wolf.panting") : "mob.wolf.bark";
+	protected void updateEntityActionState()
+	{
+		if (entityToAttack != null)
+			this.faceEntity(entityToAttack, 10.0F, 30.0F);
+		super.updateEntityActionState();
 	}
 
 	private void followOwner() {
@@ -184,25 +187,13 @@ public abstract class TamedWolfBase extends EntityWolf implements TamedMob, Tame
 	}
 
 	@Override
-	protected final Entity findPlayerToAttack()
-	{
-		return null;
+	public final void onCollideWithPlayer(EntityPlayer ep) {
+		if (!ep.getCommandSenderName().equals(this.getMobOwner()))
+			super.onCollideWithPlayer(ep);
 	}
 
 	@Override
-	protected final void attackEntity(Entity e, float par2)
-	{
-		if (e.getCommandSenderName().equals(this.getMobOwner()))
-			return;
-		super.attackEntity(e, par2);
-		if (e instanceof EntityLivingBase)
-			this.applyAttackEffects((EntityLivingBase)e);
-	}
-
-	protected abstract void applyAttackEffects(EntityLivingBase e);
-
-	@Override
-	public final boolean interact(EntityPlayer ep)
+	protected final boolean interact(EntityPlayer ep)
 	{
 		ItemStack is = ep.getCurrentEquippedItem();
 		if (is != null && is.getItem() instanceof EntityCapturingItem)
@@ -218,14 +209,10 @@ public abstract class TamedWolfBase extends EntityWolf implements TamedMob, Tame
 		}
 		if (ep.getCommandSenderName().equals(owner)) {
 			if (is != null) {
-				if (is.getItem() == Items.cooked_beef && this.getHealth() < this.getMaxHealth()) {
+				if (is.getItem() == Items.magma_cream && this.getHealth() < this.getMaxHealth()) {
 					this.heal(8);
 					if (!ep.capabilities.isCreativeMode)
 						is.stackSize--;
-					return true;
-				}
-				if (is.getItem() == Items.bone) {
-					this.setSitting(!this.isSitting());
 					return true;
 				}
 				if (is.getItem() == Items.name_tag) {
@@ -238,15 +225,9 @@ public abstract class TamedWolfBase extends EntityWolf implements TamedMob, Tame
 			if (!worldObj.isRemote) {
 				if (riddenByEntity != null && riddenByEntity.equals(ep)) {
 					ep.dismountEntity(this);
-					if (wasSitting) {
-						wasSitting = false;
-						this.setSitting(true);
-					}
 				}
-				else if (this.isRideable() && ep.getCurrentEquippedItem() == null) {
+				else {
 					ep.mountEntity(this);
-					wasSitting = this.isSitting();
-					this.setSitting(false);
 				}
 			}
 			return true;
@@ -256,8 +237,6 @@ public abstract class TamedWolfBase extends EntityWolf implements TamedMob, Tame
 			return false;
 		}
 	}
-
-	public abstract boolean isRideable();
 
 	@Override
 	public void heal(float par1)
@@ -292,21 +271,16 @@ public abstract class TamedWolfBase extends EntityWolf implements TamedMob, Tame
 		else if (super.attackEntityFrom(dsc, par2)) {
 			Entity entity = dsc.getEntity();
 			if (riddenByEntity != entity && ridingEntity != entity) {
-				//if (entity != this && !entity.getCommandSenderName().equals(this.getOwner()))
-				entityToAttack = entity;
-				this.setSitting(false);
+				if (entity != this && !entity.getCommandSenderName().equals(this.getMobOwner()))
+					entityToAttack = entity;
 				return true;
 			}
-			else {
-				this.setSitting(false);
+			else
 				return true;
-			}
 		}
 		else
 			return false;
 	}
-
-	public abstract boolean canBeHurtBy(DamageSource dsc);
 
 	@Override
 	public final String getCommandSenderName() {
@@ -323,48 +297,9 @@ public abstract class TamedWolfBase extends EntityWolf implements TamedMob, Tame
 	}
 
 	@Override
-	public final void moveEntityWithHeading(float par1, float par2)
+	protected final boolean isMovementBlocked()
 	{
-		if (riddenByEntity != null) {
-			prevRotationYaw = rotationYaw = riddenByEntity.rotationYaw;
-			rotationPitch = riddenByEntity.rotationPitch * 0.5F;
-			this.setRotation(rotationYaw, rotationPitch);
-			rotationYawHead = renderYawOffset = rotationYaw;
-			par1 = ((EntityLivingBase)riddenByEntity).moveStrafing * 0.5F;
-			par2 = ((EntityLivingBase)riddenByEntity).moveForward;
-			if (((EntityLivingBase)riddenByEntity).isJumping) {
-				if (onGround) {
-					motionY += 0.7*Math.pow(base.size, 0.25);
-					this.setJumping(true);
-					ForgeHooks.onLivingJump(this);
-					//this.jump();
-				}
-			}
-		}
-		super.moveEntityWithHeading(par1, par2);
-	}
-
-	@Override
-	public final float getAIMoveSpeed()
-	{
-		float sp = 0.11F;
-		sp *= Math.sqrt(base.size);
-		if (riddenByEntity != null) {
-			sp *= riddenByEntity.isSprinting() ? 1.414 : 1;
-		}
-		PotionEffect pot = this.getActivePotionEffect(Potion.moveSpeed);
-		if (pot != null) {
-			sp += 0.01*(pot.getAmplifier()+1);
-		}
-		return sp;
-	}
-
-	public final float getScaleFactor() {
-		return base.size;
-	}
-
-	public final void bindTexture() {
-		ReikaTextureHelper.bindTexture(CritterPet.class, base.texture);
+		return false;
 	}
 
 	@Override
@@ -376,23 +311,23 @@ public abstract class TamedWolfBase extends EntityWolf implements TamedMob, Tame
 	@Override
 	public final int getTalkInterval()
 	{
-		return (this.isSitting() ? 16 : 4)*(riddenByEntity != null ? 240 : 80);
-	}
-
-	@Override
-	protected final void func_145780_a(int par1, int par2, int par3, Block par4)
-	{
-		this.playSound("mob.wolf.step", this.getStepSoundVolume(), (float) (1.0F/Math.sqrt(base.size)));
+		return riddenByEntity != null ? 960 : 320;
 	}
 
 	public final float getStepSoundVolume() {
+		return this.getSoundVolume();
+	}
+
+	@Override
+	protected final float getSoundVolume()
+	{
 		return riddenByEntity != null ? 0.05F : 0.15F;
 	}
 
 	@Override
 	public final double getMountedYOffset()
 	{
-		return base.size*0.8;
+		return this.getSlimeSize()/2F+0.125F/1.5+squishFactor*2.5;
 	}
 
 	@Override
@@ -426,8 +361,6 @@ public abstract class TamedWolfBase extends EntityWolf implements TamedMob, Tame
 			NBT.setString("Owner", "");
 		else
 			NBT.setString("Owner", s);
-
-		NBT.setBoolean("Sitting", this.isSitting());
 	}
 
 	@Override
@@ -437,9 +370,8 @@ public abstract class TamedWolfBase extends EntityWolf implements TamedMob, Tame
 		String s = NBT.getString("Owner");
 
 		if (s.length() > 0) {
-			this.func_152115_b(s);
+			this.setOwner(s);
 		}
-		this.setSitting(NBT.getBoolean("Sitting"));
 	}
 
 	@Override
@@ -455,12 +387,36 @@ public abstract class TamedWolfBase extends EntityWolf implements TamedMob, Tame
 	}
 
 	@Override
-	protected final boolean isMovementBlocked()
+	protected void collideWithNearbyEntities()
 	{
-		return this.isSitting() || riddenByEntity != null;
+		List list = worldObj.getEntitiesWithinAABBExcludingEntity(this, boundingBox.expand(0.2, 0.0D, 0.2));
+
+		if (list != null && !list.isEmpty())
+		{
+			for (int i = 0; i < list.size(); ++i)
+			{
+				Entity entity = (Entity)list.get(i);
+
+				if (entity.canBePushed())
+				{
+					this.collideWithEntity(entity);
+				}
+			}
+		}
 	}
 
-	public abstract int getAttackDamage();
+	@Override
+	protected void collideWithEntity(Entity e)
+	{
+		e.applyEntityCollision(this);
+		if (e instanceof EntityLivingBase && !(e instanceof TamedMob)) {
+			if (ReikaEntityHelper.isHostile((EntityLivingBase)e) || this.isNonOwnerPlayer(e)) {
+				//this.attackEntity(e, this.getAttackDamage());
+				e.attackEntityFrom(DamageSource.causeMobDamage(this), this.getAttackStrength());
+				this.applyAttackEffects((EntityLivingBase)e);
+			}
+		}
+	}
 
 	@Override
 	public boolean shouldDismountInWater(Entity rider) {
@@ -473,19 +429,17 @@ public abstract class TamedWolfBase extends EntityWolf implements TamedMob, Tame
 
 	private void teleportAsNecessary() {
 		EntityPlayer owner = this.findOwner();
-		if (owner != null && !this.isSitting()) {
-			if (!this.getLeashed()) {
-				if (this.getDistanceSqToEntity(owner) >= 144.0D) {
-					int x = MathHelper.floor_double(owner.posX)-2;
-					int z = MathHelper.floor_double(owner.posZ)-2;
-					int y = MathHelper.floor_double(owner.boundingBox.minY);
+		if (owner != null && !this.getLeashed()) {
+			if (this.getDistanceSqToEntity(owner) >= 144.0D) {
+				int x = MathHelper.floor_double(owner.posX)-2;
+				int z = MathHelper.floor_double(owner.posZ)-2;
+				int y = MathHelper.floor_double(owner.boundingBox.minY);
 
-					for (int i = 0; i <= 4; ++i) {
-						for (int k = 0; k <= 4; ++k) {
-							if ((i < 1 || k < 1 || i > 3 || k > 3) && World.doesBlockHaveSolidTopSurface(worldObj, x+i, y-1, z+k) && !worldObj.getBlock(x+i, y, z+k).isNormalCube() && !worldObj.getBlock(x+i, y+1, z+k).isNormalCube()) {
-								this.setLocationAndAngles(x+i+0.5F, y, z+k+0.5F, rotationYaw, rotationPitch);
-								return;
-							}
+				for (int i = 0; i <= 4; ++i) {
+					for (int k = 0; k <= 4; ++k) {
+						if ((i < 1 || k < 1 || i > 3 || k > 3) && World.doesBlockHaveSolidTopSurface(worldObj, x+i, y-1, z+k) && !worldObj.getBlock(x+i, y, z+k).isNormalCube() && !worldObj.getBlock(x+i, y+1, z+k).isNormalCube()) {
+							this.setLocationAndAngles(x+i+0.5F, y, z+k+0.5F, rotationYaw, rotationPitch);
+							return;
 						}
 					}
 				}
@@ -499,7 +453,65 @@ public abstract class TamedWolfBase extends EntityWolf implements TamedMob, Tame
 	}
 
 	@Override
+	protected void updateLeashedState()
+	{
+		super.updateLeashedState();
+
+		if (this.getLeashed() && this.getLeashedToEntity() != null && this.getLeashedToEntity().worldObj == worldObj) {
+			Entity entity = this.getLeashedToEntity();
+			float f = this.getDistanceToEntity(entity);
+
+			if (f > 4.0F) {
+				this.getNavigator().tryMoveToEntityLiving(entity, 1.0D);
+			}
+
+			if (f > 6.0F) {
+				double d0 = (entity.posX - posX) / f;
+				double d1 = (entity.posY - posY) / f;
+				double d2 = (entity.posZ - posZ) / f;
+				motionX += d0 * Math.abs(d0) * 0.4D;
+				motionY += d1 * Math.abs(d1) * 0.4D;
+				motionZ += d2 * Math.abs(d2) * 0.4D;
+			}
+
+			if (f > 10.0F) {
+				this.clearLeashed(true, true);
+			}
+		}
+	}
+
+	protected void updateRider() {
+		riddenByEntity.fallDistance = 0;
+		if (riddenByEntity instanceof EntityLivingBase) {
+			EntityLivingBase rider = (EntityLivingBase)riddenByEntity;
+			rider.addPotionEffect(new PotionEffect(Potion.jump.id, 5, 10));
+			if (riddenByEntity instanceof EntityPlayer) {
+				if (KeyWatcher.instance.isKeyDown((EntityPlayer)riddenByEntity, Key.LEFT)) {
+					rotationYaw -= 5;
+				}
+				else if (KeyWatcher.instance.isKeyDown((EntityPlayer)riddenByEntity, Key.RIGHT)) {
+					rotationYaw += 5;
+				}
+				else if (KeyWatcher.instance.isKeyDown((EntityPlayer)riddenByEntity, Key.FOWARD)) {
+					float par1 = rider.moveStrafing * 0.5F;
+					float par2 = rider.moveForward;
+					this.moveEntityWithHeading(par1, par2);
+				}
+			}
+		}
+	}
+
+	protected void applyAttackEffects(EntityLivingBase e) {
+		ReikaEntityHelper.knockbackEntity(this, e, 2);
+	}
+
+	public boolean canBeHurtBy(DamageSource dsc) {
+		return dsc != DamageSource.fall && !dsc.isExplosion() && dsc != DamageSource.drown;
+	}
+
+	@Override
 	public boolean isInRangeToRenderDist(double dist) {
 		return true;
 	}
+
 }

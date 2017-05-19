@@ -25,12 +25,14 @@ import thaumcraft.api.aspects.Aspect;
 import thaumcraft.common.entities.monster.EntityWisp;
 import Reika.CritterPet.Interfaces.TamedMob;
 import Reika.CritterPet.Registry.CritterType;
+import Reika.DragonAPI.Interfaces.Entity.TameHostile;
 import Reika.DragonAPI.Libraries.ReikaEntityHelper;
+import Reika.DragonAPI.Libraries.Java.ReikaJavaLibrary;
 import Reika.DragonAPI.Libraries.Java.ReikaRandomHelper;
 import Reika.DragonAPI.Libraries.Registry.ReikaParticleHelper;
 import Reika.DragonAPI.Libraries.World.ReikaWorldHelper;
 
-public class TameWisp extends EntityWisp implements TamedMob {
+public class TameWisp extends EntityWisp implements TamedMob, TameHostile {
 
 	private static Field target;
 
@@ -57,24 +59,27 @@ public class TameWisp extends EntityWisp implements TamedMob {
 	}
 
 	private Aspect getAspect() {
+		/*
 		switch(rand.nextInt(8)) {
-		case 0:
-			return Aspect.PLANT;
-		case 1:
-			return Aspect.WATER;
-		case 2:
-			return Aspect.FIRE;
-		case 3:
-			return Aspect.MAGIC;
-		case 4:
-			return Aspect.ORDER;
-		case 5:
-			return Aspect.TOOL;
-		case 6:
-			return Aspect.HUNGER;
-		default:
-			return Aspect.LIGHT;
+			case 0:
+				return Aspect.PLANT;
+			case 1:
+				return Aspect.WATER;
+			case 2:
+				return Aspect.FIRE;
+			case 3:
+				return Aspect.MAGIC;
+			case 4:
+				return Aspect.ORDER;
+			case 5:
+				return Aspect.TOOL;
+			case 6:
+				return Aspect.HUNGER;
+			default:
+				return Aspect.LIGHT;
 		}
+		 */
+		return ReikaJavaLibrary.getRandomCollectionEntry(rand, Aspect.aspects.values());
 	}
 
 	@Override
@@ -92,11 +97,22 @@ public class TameWisp extends EntityWisp implements TamedMob {
 	}
 
 	@Override
-	public boolean attackEntityFrom(DamageSource dsc, float i)
+	public final boolean attackEntityFrom(DamageSource dsc, float par2)
 	{
-		if (dsc.isMagicDamage())
+		if (this.isEntityInvulnerable()) {
 			return false;
-		return super.attackEntityFrom(dsc, i);
+		}
+		else if (dsc.getEntity() != null && dsc.getEntity().getCommandSenderName().equals(this.getMobOwner())) {
+			return false;
+		}
+		else if (dsc.isMagicDamage()) {
+			return false;
+		}
+		else if (super.attackEntityFrom(dsc, par2)) {
+			return true;
+		}
+		else
+			return false;
 	}
 
 	@Override
@@ -110,6 +126,29 @@ public class TameWisp extends EntityWisp implements TamedMob {
 		super.onUpdate();
 		if (preventDespawn)
 			worldObj.difficultySetting = EnumDifficulty.PEACEFUL;
+
+		EntityPlayer ep = worldObj.getPlayerEntityByName(this.getMobOwner());
+		if (ep != null && ep.getDistanceSqToEntity(this) <= 16384) {
+			double vx = Math.signum(ep.posX-posX)/64D;
+			double vy = Math.signum(ep.posY-posY)/64D;
+			double vz = Math.signum(ep.posZ-posZ)/64D;
+			if (vx < 0.05)
+				motionX = vx;
+			else
+				motionX += vx;
+			if (vx < 0.05)
+				motionY = vy;
+			else
+				motionY += vy;
+			if (vx < 0.05)
+				motionZ = vz;
+			else
+				motionZ += vz;
+			motionX = Math.signum(motionX)*Math.min(Math.abs(motionX), 0.25);
+			motionY = Math.signum(motionY)*Math.min(Math.abs(motionY), 0.25);
+			motionZ = Math.signum(motionZ)*Math.min(Math.abs(motionZ), 0.25);
+			velocityChanged = true;
+		}
 	}
 
 	private Entity getTarget() {
@@ -281,7 +320,7 @@ public class TameWisp extends EntityWisp implements TamedMob {
 
 	@Override
 	public final CritterType getBaseCritter() {
-		return null;//CritterType.WISP;
+		return CritterType.WISP;
 	}
 
 	@Override
@@ -297,6 +336,11 @@ public class TameWisp extends EntityWisp implements TamedMob {
 	@Override
 	public final int getCritterMaxHealth() {
 		return this.getBaseCritter().maxHealth*4;
+	}
+
+	@Override
+	public boolean isInRangeToRenderDist(double dist) {
+		return true;
 	}
 
 }

@@ -18,10 +18,13 @@ import Reika.CritterPet.Entities.TameFire;
 import Reika.CritterPet.Entities.TameHeatScar;
 import Reika.CritterPet.Entities.TameHedge;
 import Reika.CritterPet.Entities.TameKing;
+import Reika.CritterPet.Entities.TameLavaSlime;
 import Reika.CritterPet.Entities.TameMazeSlime;
 import Reika.CritterPet.Entities.TameMistWolf;
+import Reika.CritterPet.Entities.TameSilverfish;
 import Reika.CritterPet.Entities.TameSlime;
 import Reika.CritterPet.Entities.TameVanilla;
+import Reika.CritterPet.Entities.TameWisp;
 import Reika.CritterPet.Interfaces.TamedMob;
 import Reika.CritterPet.Registry.CritterType;
 
@@ -62,9 +65,15 @@ public class TamingController {
 				case MISTWOLF:
 					es = new TameMistWolf(world);
 					break;
-					//case WISP:
-					//	es = new TameWisp(world);
-					//	break;
+				case WISP:
+					es = new TameWisp(world);
+					break;
+				case SILVERFISH:
+					es = new TameSilverfish(world);
+					break;
+				case LAVASLIME:
+					es = new TameLavaSlime(world);
+					break;
 				default:
 					return false;
 			}
@@ -113,10 +122,14 @@ public class TamingController {
 			return CritterType.FIRE;
 		if (n.equalsIgnoreCase("EntityTFMazeSlime"))
 			return CritterType.MAZE;
-		//if (n.equalsIgnoreCase("EntityWisp"))
-		//	return CritterType.WISP;
+		if (n.equalsIgnoreCase("EntityWisp"))
+			return CritterType.WISP;
 		if (n.equalsIgnoreCase("EntityTFMistWolf"))
 			return CritterType.MISTWOLF;
+		if (n.equalsIgnoreCase("EntitySilverfish"))
+			return CritterType.SILVERFISH;
+		if (n.equalsIgnoreCase("EntityMagmaCube"))
+			return CritterType.LAVASLIME;
 		return null;
 	}
 

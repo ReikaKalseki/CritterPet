@@ -208,6 +208,9 @@ public abstract class EntityFlyingBase extends EntityFlying implements TamedMob,
 		if (this.isEntityInvulnerable()) {
 			return false;
 		}
+		else if (dsc.getEntity() != null && dsc.getEntity().getCommandSenderName().equals(this.getMobOwner())) {
+			return false;
+		}
 		else if (!this.canBeHurtBy(dsc)) {
 			return false;
 		}
@@ -370,6 +373,16 @@ public abstract class EntityFlyingBase extends EntityFlying implements TamedMob,
 				}
 			}
 		}
+	}
+
+	@Override
+	public final boolean allowLeashing() {
+		return true;
+	}
+
+	@Override
+	public boolean isInRangeToRenderDist(double dist) {
+		return true;
 	}
 
 }

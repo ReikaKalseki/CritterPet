@@ -33,6 +33,7 @@ import Reika.CritterPet.CritterPet;
 import Reika.CritterPet.Interfaces.TamedMob;
 import Reika.CritterPet.Registry.CritterType;
 import Reika.DragonAPI.Interfaces.Entity.TameHostile;
+import Reika.DragonAPI.Interfaces.Item.EntityCapturingItem;
 import Reika.DragonAPI.Libraries.ReikaEntityHelper;
 import Reika.DragonAPI.Libraries.IO.ReikaChatHelper;
 import Reika.DragonAPI.Libraries.IO.ReikaTextureHelper;
@@ -164,6 +165,11 @@ public abstract class EntitySpiderBase extends EntitySpider implements TamedMob,
 		if (this.isSitting()) {
 
 		}
+		if (ReikaEntityHelper.isInRain(this)) {
+			if (rand.nextInt(40) == 0) {
+				this.playSound(this.getHurtSound(), 1, 0.75F+0.5F*rand.nextFloat());
+			}
+		}
 	}
 
 	private void followOwner() {
@@ -195,6 +201,8 @@ public abstract class EntitySpiderBase extends EntitySpider implements TamedMob,
 	protected final boolean interact(EntityPlayer ep)
 	{
 		ItemStack is = ep.getCurrentEquippedItem();
+		if (is != null && is.getItem() instanceof EntityCapturingItem)
+			return false;
 		String owner = this.getMobOwner();
 		if (owner == null || owner.isEmpty()) {
 			if (is != null && is.getItem() == base.tamingItem) {
@@ -263,6 +271,9 @@ public abstract class EntitySpiderBase extends EntitySpider implements TamedMob,
 	public final boolean attackEntityFrom(DamageSource dsc, float par2)
 	{
 		if (this.isEntityInvulnerable()) {
+			return false;
+		}
+		else if (dsc.getEntity() != null && dsc.getEntity().getCommandSenderName().equals(this.getMobOwner())) {
 			return false;
 		}
 		else if (dsc == DamageSource.inWall || !this.canBeHurtBy(dsc)) {
@@ -512,5 +523,15 @@ public abstract class EntitySpiderBase extends EntitySpider implements TamedMob,
 				}
 			}
 		}
+	}
+
+	@Override
+	public final boolean allowLeashing() {
+		return true;
+	}
+
+	@Override
+	public boolean isInRangeToRenderDist(double dist) {
+		return true;
 	}
 }

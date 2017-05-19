@@ -28,14 +28,18 @@ import net.minecraft.world.World;
 import Reika.CritterPet.CritterPet;
 import Reika.CritterPet.Interfaces.TamedMob;
 import Reika.CritterPet.Registry.CritterType;
+import Reika.DragonAPI.Interfaces.Entity.TameHostile;
+import Reika.DragonAPI.Interfaces.Item.EntityCapturingItem;
 import Reika.DragonAPI.Libraries.ReikaEntityHelper;
 import Reika.DragonAPI.Libraries.IO.ReikaChatHelper;
 import Reika.DragonAPI.Libraries.IO.ReikaTextureHelper;
 import Reika.DragonAPI.Libraries.Java.ReikaRandomHelper;
 import Reika.DragonAPI.Libraries.Registry.ReikaParticleHelper;
 import Reika.DragonAPI.Libraries.World.ReikaWorldHelper;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
-public class TameSilverfish extends EntitySilverfish implements TamedMob {
+public class TameSilverfish extends EntitySilverfish implements TamedMob, TameHostile {
 
 	public TameSilverfish(World world) {
 		super(world);
@@ -139,6 +143,11 @@ public class TameSilverfish extends EntitySilverfish implements TamedMob {
 		else {
 			this.updateVelocity();
 		}
+		if (ReikaEntityHelper.isInRain(this)) {
+			if (rand.nextInt(40) == 0) {
+				this.playSound(this.getHurtSound(), 1, 0.75F+0.5F*rand.nextFloat());
+			}
+		}
 	}
 
 	private void readVelocity() {
@@ -162,13 +171,15 @@ public class TameSilverfish extends EntitySilverfish implements TamedMob {
 	@Override
 	protected final Entity findPlayerToAttack()
 	{
-		return super.findPlayerToAttack();//null;
+		return this.getMobOwner() != null ? worldObj.getPlayerEntityByName(this.getMobOwner()) : null; //follow owner
 	}
 
 	@Override
 	protected final boolean interact(EntityPlayer ep)
 	{
 		ItemStack is = ep.getCurrentEquippedItem();
+		if (is != null && is.getItem() instanceof EntityCapturingItem)
+			return false;
 		String owner = this.getMobOwner();
 		if (owner == null || owner.isEmpty()) {
 			if (is != null && is.getItem() == CritterType.SILVERFISH.tamingItem) {
@@ -186,7 +197,7 @@ public class TameSilverfish extends EntitySilverfish implements TamedMob {
 						is.stackSize--;
 					return true;
 				}
-				if (is.getItem() == Items.name_tag) {
+				if (is.getItem() == Items.name_tag || is.getItem() == Items.lead) {
 					return false;
 				}
 				boolean flag = super.interact(ep);
@@ -222,7 +233,24 @@ public class TameSilverfish extends EntitySilverfish implements TamedMob {
 	@Override
 	public final boolean attackEntityFrom(DamageSource dsc, float par2)
 	{
-		return super.attackEntityFrom(dsc, par2);
+		if (this.isEntityInvulnerable()) {
+			return false;
+		}
+		else if (dsc.getEntity() != null && dsc.getEntity().getCommandSenderName().equals(this.getMobOwner())) {
+			return false;
+		}
+		else if (super.attackEntityFrom(dsc, par2)) {
+			Entity entity = dsc.getEntity();
+			if (riddenByEntity != entity && ridingEntity != entity) {
+				if (entity != this && !entity.getCommandSenderName().equals(this.getMobOwner()))
+					entityToAttack = entity;
+				return true;
+			}
+			else
+				return true;
+		}
+		else
+			return false;
 	}
 
 	@Override
@@ -245,13 +273,14 @@ public class TameSilverfish extends EntitySilverfish implements TamedMob {
 		return super.getAIMoveSpeed();
 	}
 
+	@SideOnly(Side.CLIENT)
 	public final void bindTexture() {
 		ReikaTextureHelper.bindTexture(CritterPet.class, CritterType.SILVERFISH.texture);
 	}
 
 	@Override
-	public final boolean getAlwaysRenderNameTagForRender()
-	{
+	@SideOnly(Side.CLIENT)
+	public final boolean getAlwaysRenderNameTagForRender() {
 		return this.getDistanceSqToEntity(Minecraft.getMinecraft().thePlayer) < 16;//true;
 	}
 
@@ -354,6 +383,16 @@ public class TameSilverfish extends EntitySilverfish implements TamedMob {
 				}
 			}
 		}
+	}
+
+	@Override
+	public final boolean allowLeashing() {
+		return true;
+	}
+
+	@Override
+	public boolean isInRangeToRenderDist(double dist) {
+		return true;
 	}
 
 }
