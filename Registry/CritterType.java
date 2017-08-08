@@ -1,7 +1,7 @@
 /*******************************************************************************
  * @author Reika Kalseki
  * 
- * Copyright 2016
+ * Copyright 2017
  * 
  * All rights reserved.
  * Distribution of the software in any form is only allowed with
@@ -34,7 +34,7 @@ import Reika.CritterPet.Entities.TameMistWolf;
 import Reika.CritterPet.Entities.TameSilverfish;
 import Reika.CritterPet.Entities.TameSlime;
 import Reika.CritterPet.Entities.TameVanilla;
-import Reika.CritterPet.Entities.TameWisp;
+import Reika.CritterPet.Entities.TameWispDummy;
 import Reika.DragonAPI.ModList;
 import Reika.DragonAPI.Libraries.ReikaEntityHelper;
 import cpw.mods.fml.relauncher.Side;
@@ -49,7 +49,7 @@ public enum CritterType {
 	SLIME("Slime Beetle", TameSlime.class, ModList.TWILIGHT, 25, 0.8F, "", 0x78BF5A, 0x1A330F, Items.slime_ball),
 	FIRE("Fire Beetle", TameFire.class, ModList.TWILIGHT, 25, 0.8F, "", 0xEC872C, 0x383540, Items.fire_charge),
 	MAZE("Maze Slime", TameMazeSlime.class, ModList.TWILIGHT, 32, 3, "", 0x656F66, 0x859289, Items.brick),
-	WISP("Wisp", TameWisp.class, ModList.THAUMCRAFT, 22, 1, "", 0xFF19FB, 0xFFBDFD, Items.glowstone_dust),
+	WISP("Wisp", TameWispDummy.class, ModList.THAUMCRAFT, 22, 1, "", 0xFF19FB, 0xFFBDFD, Items.glowstone_dust),
 	MISTWOLF("Mist Wolf", TameMistWolf.class, ModList.TWILIGHT, 32, 2F, "", 0x6D2C1F, 0xC1B064, Items.porkchop),
 	SILVERFISH("Silverfish", TameSilverfish.class, null, 8, 0.25F, "/Reika/CritterPet/Textures/silverfish.png", 3158064, 7237230, Blocks.stonebrick),
 	LAVASLIME("Lava Slime", TameLavaSlime.class, null, 32, 3, "", 0x606020, 0xff6000, Items.magma_cream);

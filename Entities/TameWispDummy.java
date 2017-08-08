@@ -15,6 +15,7 @@ import java.util.List;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.entity.monster.EntityMob;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.nbt.NBTTagCompound;
@@ -32,7 +33,7 @@ import Reika.DragonAPI.Libraries.Java.ReikaRandomHelper;
 import Reika.DragonAPI.Libraries.Registry.ReikaParticleHelper;
 import Reika.DragonAPI.Libraries.World.ReikaWorldHelper;
 
-public class TameWisp extends EntityWisp implements TamedMob, TameHostile {
+public class TameWispDummy extends EntityMob implements TamedMob, TameHostile { //maybe change extension with ASM?
 
 	private static Field target;
 
@@ -46,7 +47,7 @@ public class TameWisp extends EntityWisp implements TamedMob, TameHostile {
 		}
 	}
 
-	public TameWisp(World world) {
+	public TameWispDummy(World world) {
 		super(world);
 		this.setSize(1, 1);
 		this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(this.getCritterMaxHealth());
@@ -55,7 +56,7 @@ public class TameWisp extends EntityWisp implements TamedMob, TameHostile {
 		height = 1.25F;
 		this.func_110163_bv();
 
-		this.setType(this.getAspect().getTag());
+		//this.setType(this.getAspect().getTag());
 	}
 
 	private Aspect getAspect() {
@@ -160,7 +161,8 @@ public class TameWisp extends EntityWisp implements TamedMob, TameHostile {
 			return null;
 		}
 	}
-
+	/*
+	@Override
 	private void setTarget(Entity entity) {
 		try {
 			target.set(this, entity);
@@ -168,7 +170,7 @@ public class TameWisp extends EntityWisp implements TamedMob, TameHostile {
 		catch (Exception e) {
 			e.printStackTrace();
 		}
-	}
+	}*/
 
 	@Override
 	protected void updateEntityActionState()
