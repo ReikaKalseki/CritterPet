@@ -26,6 +26,8 @@ import thaumcraft.api.aspects.Aspect;
 import thaumcraft.common.entities.monster.EntityWisp;
 import Reika.CritterPet.Interfaces.TamedMob;
 import Reika.CritterPet.Registry.CritterType;
+import Reika.DragonAPI.ModList;
+import Reika.DragonAPI.ASM.DependentMethodStripper.ModDependent;
 import Reika.DragonAPI.Interfaces.Entity.TameHostile;
 import Reika.DragonAPI.Libraries.ReikaEntityHelper;
 import Reika.DragonAPI.Libraries.Java.ReikaJavaLibrary;
@@ -59,6 +61,7 @@ public class TameWispDummy extends EntityMob implements TamedMob, TameHostile { 
 		//this.setType(this.getAspect().getTag());
 	}
 
+	@ModDependent(ModList.THAUMCRAFT)
 	private Aspect getAspect() {
 		/*
 		switch(rand.nextInt(8)) {

@@ -38,7 +38,7 @@ public class TameMazeSlime extends EntitySlimeBase {
 				else if (KeyWatcher.instance.isKeyDown((EntityPlayer)riddenByEntity, Key.RIGHT)) {
 					rotationYaw += 5;
 				}
-				else if (KeyWatcher.instance.isKeyDown((EntityPlayer)riddenByEntity, Key.FOWARD)) {
+				else if (KeyWatcher.instance.isKeyDown((EntityPlayer)riddenByEntity, Key.FORWARD)) {
 					float par1 = rider.moveStrafing * 0.5F;
 					float par2 = rider.moveForward;
 					this.moveEntityWithHeading(par1, par2);
