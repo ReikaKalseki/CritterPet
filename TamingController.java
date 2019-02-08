@@ -1,25 +1,21 @@
 /*******************************************************************************
  * @author Reika Kalseki
- * 
+ *
  * Copyright 2017
- * 
+ *
  * All rights reserved.
  * Distribution of the software in any form is only allowed with
  * explicit, prior permission from the owner.
  ******************************************************************************/
 package Reika.CritterPet;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
-import net.minecraft.world.World;
 import Reika.CritterPet.Entities.TameFire;
 import Reika.CritterPet.Entities.TameHeatScar;
 import Reika.CritterPet.Entities.TameHedge;
 import Reika.CritterPet.Entities.TameKing;
 import Reika.CritterPet.Entities.TameLavaSlime;
 import Reika.CritterPet.Entities.TameMazeSlime;
+import Reika.CritterPet.Entities.TameMinighast;
 import Reika.CritterPet.Entities.TameMistWolf;
 import Reika.CritterPet.Entities.TameSilverfish;
 import Reika.CritterPet.Entities.TameSlime;
@@ -27,6 +23,11 @@ import Reika.CritterPet.Entities.TameVanilla;
 import Reika.CritterPet.Entities.TameWisp;
 import Reika.CritterPet.Interfaces.TamedMob;
 import Reika.CritterPet.Registry.CritterType;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
+import net.minecraft.world.World;
 
 public class TamingController {
 
@@ -73,6 +74,9 @@ public class TamingController {
 					break;
 				case LAVASLIME:
 					es = new TameLavaSlime(world);
+					break;
+				case MINIGHAST:
+					es = new TameMinighast(world);
 					break;
 				default:
 					return false;
@@ -130,6 +134,8 @@ public class TamingController {
 			return CritterType.SILVERFISH;
 		if (n.equalsIgnoreCase("EntityMagmaCube"))
 			return CritterType.LAVASLIME;
+		if (n.equalsIgnoreCase("EntityTFMiniGhast"))
+			return CritterType.MINIGHAST;
 		return null;
 	}
 

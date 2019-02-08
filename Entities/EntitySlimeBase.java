@@ -1,8 +1,8 @@
 /*******************************************************************************
  * @author Reika Kalseki
- * 
+ *
  * Copyright 2017
- * 
+ *
  * All rights reserved.
  * Distribution of the software in any form is only allowed with
  * explicit, prior permission from the owner.
@@ -11,6 +11,15 @@ package Reika.CritterPet.Entities;
 
 import java.util.List;
 
+import Reika.CritterPet.Interfaces.TamedMob;
+import Reika.CritterPet.Registry.CritterType;
+import Reika.DragonAPI.Interfaces.Entity.TameHostile;
+import Reika.DragonAPI.Interfaces.Item.EntityCapturingItem;
+import Reika.DragonAPI.Libraries.ReikaEntityHelper;
+import Reika.DragonAPI.Libraries.IO.ReikaChatHelper;
+import Reika.DragonAPI.Libraries.Java.ReikaRandomHelper;
+import Reika.DragonAPI.Libraries.Registry.ReikaParticleHelper;
+import Reika.DragonAPI.Libraries.World.ReikaWorldHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
@@ -25,15 +34,6 @@ import net.minecraft.util.MathHelper;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.World;
-import Reika.CritterPet.Interfaces.TamedMob;
-import Reika.CritterPet.Registry.CritterType;
-import Reika.DragonAPI.Interfaces.Entity.TameHostile;
-import Reika.DragonAPI.Interfaces.Item.EntityCapturingItem;
-import Reika.DragonAPI.Libraries.ReikaEntityHelper;
-import Reika.DragonAPI.Libraries.IO.ReikaChatHelper;
-import Reika.DragonAPI.Libraries.Java.ReikaRandomHelper;
-import Reika.DragonAPI.Libraries.Registry.ReikaParticleHelper;
-import Reika.DragonAPI.Libraries.World.ReikaWorldHelper;
 
 public abstract class EntitySlimeBase extends EntitySlime implements TamedMob, TameHostile {
 
@@ -56,6 +56,7 @@ public abstract class EntitySlimeBase extends EntitySlime implements TamedMob, T
 	protected final void entityInit() {
 		super.entityInit();
 		dataWatcher.addObject(30, ""); //Set empty owner
+		dataWatcher.addObject(31, Byte.valueOf((byte)0)); //Set not sitting
 	}
 
 	private void setOwner(String owner) {
@@ -81,6 +82,15 @@ public abstract class EntitySlimeBase extends EntitySlime implements TamedMob, T
 	public final boolean hasOwner() {
 		String s = this.getMobOwner();
 		return s != null && !s.isEmpty();
+	}
+
+	public final boolean isSitting() {
+		return dataWatcher.getWatchableObjectByte(31) == 1;
+	}
+
+	public final void setSitting(boolean sit) {
+		byte s = (byte)(sit ? 1 : 0);
+		dataWatcher.updateObject(31, s);
 	}
 
 	@Override
@@ -213,6 +223,10 @@ public abstract class EntitySlimeBase extends EntitySlime implements TamedMob, T
 						is.stackSize--;
 					return true;
 				}
+				if (is.getItem() == Items.bone) {
+					this.setSitting(!this.isSitting());
+					return true;
+				}
 				if (is.getItem() == Items.name_tag) {
 					return false;
 				}
@@ -297,9 +311,8 @@ public abstract class EntitySlimeBase extends EntitySlime implements TamedMob, T
 	}
 
 	@Override
-	protected final boolean isMovementBlocked()
-	{
-		return false;
+	protected final boolean isMovementBlocked() {
+		return this.isSitting();
 	}
 
 	@Override
@@ -361,6 +374,8 @@ public abstract class EntitySlimeBase extends EntitySlime implements TamedMob, T
 			NBT.setString("Owner", "");
 		else
 			NBT.setString("Owner", s);
+
+		NBT.setBoolean("Sitting", this.isSitting());
 	}
 
 	@Override
@@ -372,6 +387,8 @@ public abstract class EntitySlimeBase extends EntitySlime implements TamedMob, T
 		if (s.length() > 0) {
 			this.setOwner(s);
 		}
+
+		this.setSitting(NBT.getBoolean("Sitting"));
 	}
 
 	@Override
@@ -429,7 +446,7 @@ public abstract class EntitySlimeBase extends EntitySlime implements TamedMob, T
 
 	private void teleportAsNecessary() {
 		EntityPlayer owner = this.findOwner();
-		if (owner != null && !this.getLeashed()) {
+		if (owner != null && !this.isSitting() && !this.getLeashed()) {
 			if (this.getDistanceSqToEntity(owner) >= 144.0D) {
 				int x = MathHelper.floor_double(owner.posX)-2;
 				int z = MathHelper.floor_double(owner.posZ)-2;

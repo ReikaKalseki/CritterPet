@@ -1,8 +1,8 @@
 /*******************************************************************************
  * @author Reika Kalseki
- * 
+ *
  * Copyright 2017
- * 
+ *
  * All rights reserved.
  * Distribution of the software in any form is only allowed with
  * explicit, prior permission from the owner.
@@ -11,6 +11,8 @@ package Reika.CritterPet;
 
 import java.util.List;
 
+import Reika.CritterPet.Registry.CritterType;
+import Reika.DragonAPI.Interfaces.Item.IndexedItemSprites;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
@@ -18,13 +20,14 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
-import Reika.CritterPet.Registry.CritterType;
-import Reika.DragonAPI.Interfaces.Item.IndexedItemSprites;
 
 public class ItemTaming extends Item implements IndexedItemSprites {
 
 	public ItemTaming() {
 		super();
+		hasSubtypes = true;
+		this.setMaxDamage(0);
+		this.setMaxStackSize(1);
 		this.setCreativeTab(CreativeTabs.tabTools);
 	}
 

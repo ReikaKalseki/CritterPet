@@ -1,8 +1,8 @@
 /*******************************************************************************
  * @author Reika Kalseki
- * 
+ *
  * Copyright 2017
- * 
+ *
  * All rights reserved.
  * Distribution of the software in any form is only allowed with
  * explicit, prior permission from the owner.
@@ -12,6 +12,24 @@ package Reika.CritterPet.Registry;
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
 
+import Reika.CritterPet.CritterClient;
+import Reika.CritterPet.CritterPet;
+import Reika.CritterPet.Entities.TameFire;
+import Reika.CritterPet.Entities.TameHeatScar;
+import Reika.CritterPet.Entities.TameHedge;
+import Reika.CritterPet.Entities.TameKing;
+import Reika.CritterPet.Entities.TameLavaSlime;
+import Reika.CritterPet.Entities.TameMazeSlime;
+import Reika.CritterPet.Entities.TameMinighast;
+import Reika.CritterPet.Entities.TameMistWolf;
+import Reika.CritterPet.Entities.TameSilverfish;
+import Reika.CritterPet.Entities.TameSlime;
+import Reika.CritterPet.Entities.TameVanilla;
+import Reika.CritterPet.Entities.TameWispDummy;
+import Reika.DragonAPI.ModList;
+import Reika.DragonAPI.Libraries.ReikaEntityHelper;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.Block;
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.model.ModelSlime;
@@ -22,23 +40,6 @@ import net.minecraft.entity.monster.EntitySilverfish;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
-import Reika.CritterPet.CritterClient;
-import Reika.CritterPet.CritterPet;
-import Reika.CritterPet.Entities.TameFire;
-import Reika.CritterPet.Entities.TameHeatScar;
-import Reika.CritterPet.Entities.TameHedge;
-import Reika.CritterPet.Entities.TameKing;
-import Reika.CritterPet.Entities.TameLavaSlime;
-import Reika.CritterPet.Entities.TameMazeSlime;
-import Reika.CritterPet.Entities.TameMistWolf;
-import Reika.CritterPet.Entities.TameSilverfish;
-import Reika.CritterPet.Entities.TameSlime;
-import Reika.CritterPet.Entities.TameVanilla;
-import Reika.CritterPet.Entities.TameWispDummy;
-import Reika.DragonAPI.ModList;
-import Reika.DragonAPI.Libraries.ReikaEntityHelper;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 
 public enum CritterType {
 
@@ -52,7 +53,8 @@ public enum CritterType {
 	WISP("Wisp", TameWispDummy.class, ModList.THAUMCRAFT, 22, 1, "", 0xFF19FB, 0xFFBDFD, Items.glowstone_dust),
 	MISTWOLF("Mist Wolf", TameMistWolf.class, ModList.TWILIGHT, 32, 2F, "", 0x6D2C1F, 0xC1B064, Items.porkchop),
 	SILVERFISH("Silverfish", TameSilverfish.class, null, 8, 0.25F, "/Reika/CritterPet/Textures/silverfish.png", 3158064, 7237230, Blocks.stonebrick),
-	LAVASLIME("Lava Slime", TameLavaSlime.class, null, 32, 3, "", 0x606020, 0xff6000, Items.magma_cream);
+	LAVASLIME("Lava Slime", TameLavaSlime.class, null, 32, 3, "", 0x606020, 0xff6000, Items.magma_cream),
+	MINIGHAST("Carminite Ghastling", TameMinighast.class, ModList.TWILIGHT, 20, 1.5F, "/Reika/CritterPet/Textures/minighast.png", 0xf0f0f0, 0xB87878, Items.redstone);
 
 	public final Class entityClass;
 	public final ModList sourceMod;
@@ -128,6 +130,11 @@ public enum CritterType {
 					return ReikaEntityHelper.getEntityRenderer(EntitySilverfish.class);
 				case LAVASLIME:
 					return ReikaEntityHelper.getEntityRenderer(EntityMagmaCube.class);
+				case MINIGHAST:
+					Class c8 = Class.forName("twilightforest.client.renderer.entity.RenderTFMiniGhast");
+					Class c9 = Class.forName("twilightforest.client.model.ModelTFGhast");
+					Constructor ccc = c8.getConstructor(ModelBase.class, float.class);
+					return (Render)ccc.newInstance(c9.newInstance(), 0.625F);
 				default:
 					return CritterClient.critter;
 			}
