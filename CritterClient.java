@@ -12,8 +12,10 @@ package Reika.CritterPet;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.world.World;
 import net.minecraftforge.client.MinecraftForgeClient;
+
 import Reika.CritterPet.Registry.CritterType;
 import Reika.DragonAPI.Instantiable.Rendering.ItemSpriteSheetRenderer;
+
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.client.registry.RenderingRegistry;
 

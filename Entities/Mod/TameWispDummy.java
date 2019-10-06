@@ -7,7 +7,7 @@
  * Distribution of the software in any form is only allowed with
  * explicit, prior permission from the owner.
  ******************************************************************************/
-package Reika.CritterPet.Entities;
+package Reika.CritterPet.Entities.Mod;
 
 import java.lang.reflect.Field;
 import java.util.List;
@@ -22,8 +22,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.DamageSource;
 import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.World;
-import thaumcraft.api.aspects.Aspect;
-import thaumcraft.common.entities.monster.EntityWisp;
+
 import Reika.CritterPet.Interfaces.TamedMob;
 import Reika.CritterPet.Registry.CritterType;
 import Reika.DragonAPI.ModList;
@@ -34,6 +33,9 @@ import Reika.DragonAPI.Libraries.Java.ReikaJavaLibrary;
 import Reika.DragonAPI.Libraries.Java.ReikaRandomHelper;
 import Reika.DragonAPI.Libraries.Registry.ReikaParticleHelper;
 import Reika.DragonAPI.Libraries.World.ReikaWorldHelper;
+
+import thaumcraft.api.aspects.Aspect;
+import thaumcraft.common.entities.monster.EntityWisp;
 
 public class TameWispDummy extends EntityMob implements TamedMob, TameHostile { //maybe change extension with ASM?
 

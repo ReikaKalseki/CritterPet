@@ -7,13 +7,15 @@
  * Distribution of the software in any form is only allowed with
  * explicit, prior permission from the owner.
  ******************************************************************************/
-package Reika.CritterPet.Entities;
+package Reika.CritterPet.Entities.Base;
+
+import java.util.List;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.passive.EntityWolf;
+import net.minecraft.entity.monster.EntitySpider;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
@@ -27,6 +29,7 @@ import net.minecraft.util.Vec3;
 import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeHooks;
+
 import Reika.CritterPet.CritterPet;
 import Reika.CritterPet.Interfaces.TamedMob;
 import Reika.CritterPet.Registry.CritterType;
@@ -39,21 +42,20 @@ import Reika.DragonAPI.Libraries.Java.ReikaRandomHelper;
 import Reika.DragonAPI.Libraries.Registry.ReikaParticleHelper;
 import Reika.DragonAPI.Libraries.World.ReikaWorldHelper;
 
-public abstract class TamedWolfBase extends EntityWolf implements TamedMob, TameHostile {
+public abstract class EntitySpiderBase extends EntitySpider implements TamedMob, TameHostile {
 
 	private CritterType base;
-	private boolean wasSitting = false;
 
-	public TamedWolfBase(World world, CritterType sp) {
+	public EntitySpiderBase(World world, CritterType sp) {
 		super(world);
 		base = sp;
-		this.setSize(1.25F*sp.size, 1.75F*sp.size/2);
+		this.setSize(1.8F*sp.size, 1.1F*sp.size/2);
 		this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(this.getCritterMaxHealth());
 		this.setHealth(this.getCritterMaxHealth());
+		stepHeight = 1.25F;
 		experienceValue = 0;
-		height = 3.5F*base.size;
+		height = 1.25F*base.size;
 		this.func_110163_bv();
-		this.setTamed(true);
 	}
 
 	@Override
@@ -78,18 +80,15 @@ public abstract class TamedWolfBase extends EntityWolf implements TamedMob, Tame
 		dataWatcher.addObject(30, ""); //Set empty owner
 	}
 
-	@Override
-	public void func_152115_b(String owner) {
+	private void setOwner(String owner) {
 		dataWatcher.updateObject(30, owner);
-		super.func_152115_b(owner);
 	}
 
 	public final void setOwner(EntityPlayer ep) {
 		String owner = ep.getCommandSenderName();
-		this.func_152115_b(owner);
+		this.setOwner(owner);
 	}
 
-	@Override
 	public final String getMobOwner() {
 		return dataWatcher.getWatchableObjectString(30);
 	}
@@ -110,12 +109,10 @@ public abstract class TamedWolfBase extends EntityWolf implements TamedMob, Tame
 		return base;
 	}
 
-	@Override
 	public final boolean isSitting() {
 		return dataWatcher.getWatchableObjectByte(31) == 1;
 	}
 
-	@Override
 	public final void setSitting(boolean sit) {
 		byte s = (byte)(sit ? 1 : 0);
 		dataWatcher.updateObject(31, s);
@@ -157,21 +154,23 @@ public abstract class TamedWolfBase extends EntityWolf implements TamedMob, Tame
 		if (entityToAttack != null && entityToAttack.getCommandSenderName().equals(this.getMobOwner()))
 			entityToAttack = null;
 		this.teleportAsNecessary();
-		if (riddenByEntity != null)
+		if (riddenByEntity != null) {
 			this.followOwner();
+			if (riddenByEntity.getEntityData().getBoolean("jetpack")) {
+				if (rand.nextInt(4) == 0)
+					this.playLivingSound();
+				limbSwingAmount = 0.75F;
+				limbSwing += 0.5F;
+			}
+		}
 		if (this.isSitting()) {
 
 		}
 		if (ReikaEntityHelper.isInRain(this)) {
 			if (rand.nextInt(40) == 0) {
-				this.playSound("mob.wolf.whine", 1, 0.75F+0.5F*rand.nextFloat());
+				this.playSound(this.getHurtSound(), 1, 0.75F+0.5F*rand.nextFloat());
 			}
 		}
-	}
-
-	@Override
-	protected final String getLivingSound() {
-		return rand.nextInt(3) == 0 ? (this.getHealth() < this.getMaxHealth()*0.8 ? "mob.wolf.whine" : "mob.wolf.panting") : "mob.wolf.bark";
 	}
 
 	private void followOwner() {
@@ -184,14 +183,12 @@ public abstract class TamedWolfBase extends EntityWolf implements TamedMob, Tame
 	}
 
 	@Override
-	protected final Entity findPlayerToAttack()
-	{
+	protected final Entity findPlayerToAttack() {
 		return null;
 	}
 
 	@Override
-	protected final void attackEntity(Entity e, float par2)
-	{
+	protected final void attackEntity(Entity e, float par2) {
 		if (e.getCommandSenderName().equals(this.getMobOwner()))
 			return;
 		super.attackEntity(e, par2);
@@ -202,7 +199,7 @@ public abstract class TamedWolfBase extends EntityWolf implements TamedMob, Tame
 	protected abstract void applyAttackEffects(EntityLivingBase e);
 
 	@Override
-	public final boolean interact(EntityPlayer ep)
+	protected final boolean interact(EntityPlayer ep)
 	{
 		ItemStack is = ep.getCurrentEquippedItem();
 		if (is != null && is.getItem() instanceof EntityCapturingItem)
@@ -238,15 +235,9 @@ public abstract class TamedWolfBase extends EntityWolf implements TamedMob, Tame
 			if (!worldObj.isRemote) {
 				if (riddenByEntity != null && riddenByEntity.equals(ep)) {
 					ep.dismountEntity(this);
-					if (wasSitting) {
-						wasSitting = false;
-						this.setSitting(true);
-					}
 				}
-				else if (this.isRideable() && ep.getCurrentEquippedItem() == null) {
+				else if (this.isRideable()) {
 					ep.mountEntity(this);
-					wasSitting = this.isSitting();
-					this.setSitting(false);
 				}
 			}
 			return true;
@@ -286,7 +277,7 @@ public abstract class TamedWolfBase extends EntityWolf implements TamedMob, Tame
 		else if (dsc.getEntity() != null && dsc.getEntity().getCommandSenderName().equals(this.getMobOwner())) {
 			return false;
 		}
-		else if (!this.canBeHurtBy(dsc)) {
+		else if (dsc == DamageSource.inWall || !this.canBeHurtBy(dsc)) {
 			return false;
 		}
 		else if (super.attackEntityFrom(dsc, par2)) {
@@ -294,13 +285,10 @@ public abstract class TamedWolfBase extends EntityWolf implements TamedMob, Tame
 			if (riddenByEntity != entity && ridingEntity != entity) {
 				//if (entity != this && !entity.getCommandSenderName().equals(this.getOwner()))
 				entityToAttack = entity;
-				this.setSitting(false);
 				return true;
 			}
-			else {
-				this.setSitting(false);
+			else
 				return true;
-			}
 		}
 		else
 			return false;
@@ -323,6 +311,12 @@ public abstract class TamedWolfBase extends EntityWolf implements TamedMob, Tame
 	}
 
 	@Override
+	protected final boolean isMovementBlocked()
+	{
+		return this.isSitting() || riddenByEntity != null;
+	}
+
+	@Override
 	public final void moveEntityWithHeading(float par1, float par2)
 	{
 		if (riddenByEntity != null) {
@@ -334,12 +328,19 @@ public abstract class TamedWolfBase extends EntityWolf implements TamedMob, Tame
 			par2 = ((EntityLivingBase)riddenByEntity).moveForward;
 			if (((EntityLivingBase)riddenByEntity).isJumping) {
 				if (onGround) {
-					motionY += 0.7*Math.pow(base.size, 0.25);
-					this.setJumping(true);
-					ForgeHooks.onLivingJump(this);
-					//this.jump();
+					if (this.isBesideClimbableBlock()) {
+
+					}
+					else {
+						motionY += 0.7*Math.pow(base.size, 0.25);
+						this.setJumping(true);
+						ForgeHooks.onLivingJump(this);
+						//this.jump();
+					}
 				}
 			}
+			else
+				this.setBesideClimbableBlock(false);
 		}
 		super.moveEntityWithHeading(par1, par2);
 	}
@@ -382,7 +383,7 @@ public abstract class TamedWolfBase extends EntityWolf implements TamedMob, Tame
 	@Override
 	protected final void func_145780_a(int par1, int par2, int par3, Block par4)
 	{
-		this.playSound("mob.wolf.step", this.getStepSoundVolume(), (float) (1.0F/Math.sqrt(base.size)));
+		this.playSound("mob.spider.step", this.getStepSoundVolume(), (float) (1.0F/Math.sqrt(base.size)));
 	}
 
 	public final float getStepSoundVolume() {
@@ -392,7 +393,7 @@ public abstract class TamedWolfBase extends EntityWolf implements TamedMob, Tame
 	@Override
 	public final double getMountedYOffset()
 	{
-		return base.size*0.8;
+		return base.size*0.85;
 	}
 
 	@Override
@@ -409,6 +410,12 @@ public abstract class TamedWolfBase extends EntityWolf implements TamedMob, Tame
 	@Override
 	public final boolean canBePushed() {
 		return false;
+	}
+
+	@Override
+	protected final void fall(float h) {
+		h = Math.max(h-3, 0);
+		super.fall(h);
 	}
 
 	@Override
@@ -437,7 +444,7 @@ public abstract class TamedWolfBase extends EntityWolf implements TamedMob, Tame
 		String s = NBT.getString("Owner");
 
 		if (s.length() > 0) {
-			this.func_152115_b(s);
+			this.setOwner(s);
 		}
 		this.setSitting(NBT.getBoolean("Sitting"));
 	}
@@ -455,9 +462,39 @@ public abstract class TamedWolfBase extends EntityWolf implements TamedMob, Tame
 	}
 
 	@Override
-	protected final boolean isMovementBlocked()
+	protected void collideWithNearbyEntities()
 	{
-		return this.isSitting() || riddenByEntity != null;
+		List list = worldObj.getEntitiesWithinAABBExcludingEntity(this, boundingBox.expand(0.2, 0.0D, 0.2));
+
+		if (list != null && !list.isEmpty())
+		{
+			for (int i = 0; i < list.size(); ++i)
+			{
+				Entity entity = (Entity)list.get(i);
+
+				if (entity.canBePushed())
+				{
+					this.collideWithEntity(entity);
+				}
+			}
+		}
+	}
+
+	@Override
+	protected void collideWithEntity(Entity e)
+	{
+		e.applyEntityCollision(this);
+		if (e instanceof EntityLivingBase && !(e instanceof TamedMob)) {
+			if (ReikaEntityHelper.isHostile((EntityLivingBase)e) || this.isNonOwnerPlayer(e)) {
+				//this.attackEntity(e, this.getAttackDamage());
+				e.attackEntityFrom(DamageSource.causeMobDamage(this), this.getAttackDamage());
+				this.applyAttackEffects((EntityLivingBase)e);
+			}
+		}
+	}
+
+	protected final boolean isNonOwnerPlayer(Entity e) {
+		return e instanceof EntityPlayer && !e.getCommandSenderName().equals(this.getMobOwner());
 	}
 
 	public abstract int getAttackDamage();
@@ -465,10 +502,6 @@ public abstract class TamedWolfBase extends EntityWolf implements TamedMob, Tame
 	@Override
 	public boolean shouldDismountInWater(Entity rider) {
 		return false;
-	}
-
-	protected final boolean isNonOwnerPlayer(Entity e) {
-		return e instanceof EntityPlayer && !e.getCommandSenderName().equals(this.getMobOwner());
 	}
 
 	private void teleportAsNecessary() {

@@ -11,8 +11,6 @@ package Reika.CritterPet;
 
 import java.util.List;
 
-import Reika.CritterPet.Registry.CritterType;
-import Reika.DragonAPI.Interfaces.Item.IndexedItemSprites;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
@@ -20,6 +18,9 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
+
+import Reika.CritterPet.Registry.CritterType;
+import Reika.DragonAPI.Interfaces.Item.IndexedItemSprites;
 
 public class ItemTaming extends Item implements IndexedItemSprites {
 
@@ -81,7 +82,7 @@ public class ItemTaming extends Item implements IndexedItemSprites {
 
 	@Override
 	public int getItemSpriteIndex(ItemStack is) {
-		return is.getItemDamage()+1;
+		return is.getItemDamage() == 0 ? 1 : CritterType.critterList[is.getItemDamage()-1].getToolTextureIndex();
 	}
 
 	@Override

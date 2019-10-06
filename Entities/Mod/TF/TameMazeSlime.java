@@ -1,32 +1,25 @@
 /*******************************************************************************
  * @author Reika Kalseki
- * 
+ *
  * Copyright 2017
- * 
+ *
  * All rights reserved.
  * Distribution of the software in any form is only allowed with
  * explicit, prior permission from the owner.
  ******************************************************************************/
-package Reika.CritterPet.Entities;
+package Reika.CritterPet.Entities.Mod.TF;
 
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.DamageSource;
 import net.minecraft.world.World;
 
-import Reika.CritterPet.Entities.Base.EntitySpiderBase;
+import Reika.CritterPet.Entities.Base.EntitySlimeBase;
 import Reika.CritterPet.Registry.CritterType;
 
-public class TameVanilla extends EntitySpiderBase {
+public class TameMazeSlime extends EntitySlimeBase {
 
-	public TameVanilla(World par1World) {
-		super(par1World, CritterType.VANILLA);
-	}
-
-	@Override
-	protected void updateRider() {
-		if (riddenByEntity instanceof EntityLivingBase) {
-			EntityLivingBase rider = (EntityLivingBase)riddenByEntity;
-		}
+	public TameMazeSlime(World world) {
+		super(world, CritterType.MAZESLIME);
 	}
 
 	@Override
@@ -36,16 +29,7 @@ public class TameVanilla extends EntitySpiderBase {
 
 	@Override
 	public boolean canBeHurtBy(DamageSource dsc) {
-		return true;
+		return dsc != DamageSource.fall && !dsc.isExplosion() && dsc != DamageSource.drown;
 	}
 
-	@Override
-	public int getAttackDamage() {
-		return 3;
-	}
-
-	@Override
-	public boolean isRideable() {
-		return true;
-	}
 }

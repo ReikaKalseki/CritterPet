@@ -9,6 +9,8 @@
  ******************************************************************************/
 package Reika.CritterPet;
 
+import org.lwjgl.opengl.GL11;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.model.ModelSpider;
@@ -18,9 +20,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraftforge.client.MinecraftForgeClient;
 
-import org.lwjgl.opengl.GL11;
-
-import Reika.CritterPet.Entities.EntitySpiderBase;
+import Reika.CritterPet.Entities.Base.EntitySpiderBase;
 import Reika.CritterPet.Interfaces.TamedMob;
 import Reika.CritterPet.Registry.CritterType;
 import Reika.DragonAPI.Libraries.Java.ReikaGLHelper.BlendMode;

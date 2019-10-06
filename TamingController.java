@@ -9,27 +9,19 @@
  ******************************************************************************/
 package Reika.CritterPet;
 
-import Reika.CritterPet.Entities.TameFire;
-import Reika.CritterPet.Entities.TameHeatScar;
-import Reika.CritterPet.Entities.TameHedge;
-import Reika.CritterPet.Entities.TameKing;
-import Reika.CritterPet.Entities.TameLavaSlime;
-import Reika.CritterPet.Entities.TameMazeSlime;
-import Reika.CritterPet.Entities.TameMinighast;
-import Reika.CritterPet.Entities.TameMistWolf;
-import Reika.CritterPet.Entities.TameSilverfish;
-import Reika.CritterPet.Entities.TameSlime;
-import Reika.CritterPet.Entities.TameVanilla;
-import Reika.CritterPet.Entities.TameWisp;
-import Reika.CritterPet.Interfaces.TamedMob;
-import Reika.CritterPet.Registry.CritterType;
+import java.util.HashMap;
+
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 
+import Reika.CritterPet.Interfaces.TamedMob;
+import Reika.CritterPet.Registry.CritterType;
+
 public class TamingController {
+
+	private static final HashMap<Class, CritterType> classMap = new HashMap();
 
 	public static boolean TameCritter(Entity e, EntityPlayer ep) {
 		World world = ep.worldObj;
@@ -40,49 +32,9 @@ public class TamingController {
 		if (s == null)
 			return false;
 		if (canTame(s, is)) {
-			TamedMob es = null;
-			switch(s) {
-				case HEATSCAR:
-					es = new TameHeatScar(world);
-					break;
-				case HEDGE:
-					es = new TameHedge(world);
-					break;
-				case KING:
-					es = new TameKing(world);
-					break;
-				case VANILLA:
-					es = new TameVanilla(world);
-					break;
-				case SLIME:
-					es = new TameSlime(world);
-					break;
-				case FIRE:
-					es = new TameFire(world);
-					break;
-				case MAZE:
-					es = new TameMazeSlime(world);
-					break;
-				case MISTWOLF:
-					es = new TameMistWolf(world);
-					break;
-				case WISP:
-					es = new TameWisp(world);
-					break;
-				case SILVERFISH:
-					es = new TameSilverfish(world);
-					break;
-				case LAVASLIME:
-					es = new TameLavaSlime(world);
-					break;
-				case MINIGHAST:
-					es = new TameMinighast(world);
-					break;
-				default:
-					return false;
-			}
-			((Entity)es).setLocationAndAngles(e.posX, e.posY, e.posZ, e.rotationYaw, e.rotationPitch);
-			((EntityLivingBase)es).rotationYawHead = ((EntityLivingBase)e).rotationYawHead;
+			TamedMob es = s.create(world, e);
+			if (es == null)
+				return false;
 			es.setOwner(ep);
 			e.setDead();
 			if (!world.isRemote) {
@@ -107,35 +59,15 @@ public class TamingController {
 	}
 
 	public static CritterType getType(Entity e) {
-		Class c = e.getClass();
-		String n = c.getSimpleName();
-		//ReikaJavaLibrary.pConsole(e+":"+c+":"+n);
-		if (n.equalsIgnoreCase("HeatscarSpider"))
-			return CritterType.HEATSCAR;
-		if (n.equalsIgnoreCase("EntityTFKingSpider"))
-			return CritterType.KING;
-		if (n.equalsIgnoreCase("EntityTFHedgeSpider"))
-			return CritterType.HEDGE;
-		if (n.equalsIgnoreCase("EntitySpider"))
-			return CritterType.VANILLA;
-		if (n.equalsIgnoreCase("EntityLegacySpider")) //LegacyCraft
-			return CritterType.VANILLA;
-		if (n.equalsIgnoreCase("EntityTFSlimeBeetle"))
-			return CritterType.SLIME;
-		if (n.equalsIgnoreCase("EntityTFFireBeetle"))
-			return CritterType.FIRE;
-		if (n.equalsIgnoreCase("EntityTFMazeSlime"))
-			return CritterType.MAZE;
-		if (n.equalsIgnoreCase("EntityWisp"))
-			return CritterType.WISP;
-		if (n.equalsIgnoreCase("EntityTFMistWolf"))
-			return CritterType.MISTWOLF;
-		if (n.equalsIgnoreCase("EntitySilverfish"))
-			return CritterType.SILVERFISH;
-		if (n.equalsIgnoreCase("EntityMagmaCube"))
-			return CritterType.LAVASLIME;
-		if (n.equalsIgnoreCase("EntityTFMiniGhast"))
-			return CritterType.MINIGHAST;
+		if (classMap.containsKey(e.getClass()))
+			return classMap.get(e.getClass());
+		for (CritterType type : CritterType.critterList) {
+			if (type.isAvailable() && type.isValid(e)) {
+				classMap.put(e.getClass(), type);
+				return type;
+			}
+		}
+		classMap.put(e.getClass(), null);
 		return null;
 	}
 

@@ -1,58 +1,54 @@
 /*******************************************************************************
  * @author Reika Kalseki
- * 
+ *
  * Copyright 2017
- * 
+ *
  * All rights reserved.
  * Distribution of the software in any form is only allowed with
  * explicit, prior permission from the owner.
  ******************************************************************************/
-package Reika.CritterPet.Entities;
+package Reika.CritterPet.Entities.Mod;
 
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.DamageSource;
 import net.minecraft.world.World;
+
+import Reika.CritterPet.Entities.Base.EntitySpiderBase;
 import Reika.CritterPet.Registry.CritterType;
 
+public class TameHeatScar extends EntitySpiderBase {
 
-public class TameMistWolf extends TamedWolfBase {
-
-	public TameMistWolf(World world) {
-		super(world, CritterType.MISTWOLF);
+	public TameHeatScar(World par1World) {
+		super(par1World, CritterType.HEATSCAR);
 	}
 
 	@Override
 	protected void updateRider() {
-
+		if (riddenByEntity instanceof EntityLivingBase) {
+			EntityLivingBase rider = (EntityLivingBase)riddenByEntity;
+			rider.addPotionEffect(new PotionEffect(Potion.fireResistance.id, 20, 0));
+		}
 	}
 
 	@Override
 	protected void applyAttackEffects(EntityLivingBase e) {
-		e.addPotionEffect(new PotionEffect(Potion.blindness.id, 300, 1));
+		e.setFire(6);
 	}
 
 	@Override
 	public boolean canBeHurtBy(DamageSource dsc) {
-		return !dsc.isMagicDamage();
+		return !dsc.isFireDamage();
 	}
 
 	@Override
 	public int getAttackDamage() {
-		return 8;
-	}
-
-	@Override
-	public float getBrightness(float par1)
-	{
-		return riddenByEntity != null ? 1 : entityToAttack != null ? 0 : super.getBrightness(par1);
+		return 4;
 	}
 
 	@Override
 	public boolean isRideable() {
 		return true;
 	}
-
-
 }

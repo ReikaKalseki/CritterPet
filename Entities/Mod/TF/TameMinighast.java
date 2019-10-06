@@ -1,9 +1,12 @@
-package Reika.CritterPet.Entities;
+package Reika.CritterPet.Entities.Mod.TF;
 
-import Reika.CritterPet.Registry.CritterType;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.DamageSource;
 import net.minecraft.world.World;
+
+import Reika.CritterPet.Entities.Base.EntityFlyingBase;
+import Reika.CritterPet.Registry.CritterType;
+import Reika.DragonAPI.Libraries.ReikaEntityHelper;
 
 public class TameMinighast extends EntityFlyingBase {
 
@@ -13,7 +16,7 @@ public class TameMinighast extends EntityFlyingBase {
 
 	@Override
 	protected void applyAttackEffects(EntityLivingBase e) {
-
+		ReikaEntityHelper.knockbackEntity(this, e, 1);
 	}
 
 	@Override
@@ -23,7 +26,12 @@ public class TameMinighast extends EntityFlyingBase {
 
 	@Override
 	protected float getAttackDamage() {
-		return 0;
+		return 2;
+	}
+
+	@Override
+	protected double getCoastingHeight() {
+		return 1.2;
 	}
 
 }

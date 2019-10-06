@@ -16,7 +16,8 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent.AllowDespawn;
-import Reika.CritterPet.Entities.EntitySpiderBase;
+
+import Reika.CritterPet.Entities.Base.EntitySpiderBase;
 import Reika.CritterPet.Registry.CritterOptions;
 import Reika.CritterPet.Registry.CritterType;
 import Reika.DragonAPI.DragonAPICore;
@@ -26,6 +27,7 @@ import Reika.DragonAPI.Base.DragonAPIMod;
 import Reika.DragonAPI.Base.DragonAPIMod.LoadProfiler.LoadPhase;
 import Reika.DragonAPI.Instantiable.IO.ControlledConfig;
 import Reika.DragonAPI.Instantiable.IO.ModLogger;
+
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;

@@ -7,41 +7,47 @@
  * Distribution of the software in any form is only allowed with
  * explicit, prior permission from the owner.
  ******************************************************************************/
-package Reika.CritterPet.Entities;
+package Reika.CritterPet.Entities.Base;
 
 import java.util.List;
 
-import Reika.CritterPet.Interfaces.TamedMob;
-import Reika.CritterPet.Registry.CritterType;
-import Reika.DragonAPI.Interfaces.Entity.TameHostile;
-import Reika.DragonAPI.Libraries.ReikaEntityHelper;
-import Reika.DragonAPI.Libraries.IO.ReikaChatHelper;
-import Reika.DragonAPI.Libraries.Java.ReikaRandomHelper;
-import Reika.DragonAPI.Libraries.MathSci.ReikaPhysicsHelper;
-import Reika.DragonAPI.Libraries.Registry.ReikaParticleHelper;
-import Reika.DragonAPI.Libraries.World.ReikaWorldHelper;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityFlying;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.entity.monster.EntitySlime;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.potion.Potion;
+import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.MathHelper;
+import net.minecraft.util.Vec3;
 import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.World;
 
-public abstract class EntityFlyingBase extends EntityFlying implements TamedMob, TameHostile {
+import Reika.CritterPet.Entities.TameLavaSlime;
+import Reika.CritterPet.Interfaces.TamedMob;
+import Reika.CritterPet.Registry.CritterType;
+import Reika.DragonAPI.Auxiliary.Trackers.KeyWatcher;
+import Reika.DragonAPI.Auxiliary.Trackers.KeyWatcher.Key;
+import Reika.DragonAPI.Interfaces.Entity.TameHostile;
+import Reika.DragonAPI.Interfaces.Item.EntityCapturingItem;
+import Reika.DragonAPI.Libraries.ReikaEntityHelper;
+import Reika.DragonAPI.Libraries.IO.ReikaChatHelper;
+import Reika.DragonAPI.Libraries.Java.ReikaRandomHelper;
+import Reika.DragonAPI.Libraries.Registry.ReikaParticleHelper;
+import Reika.DragonAPI.Libraries.World.ReikaWorldHelper;
+
+public abstract class EntitySlimeBase extends EntitySlime implements TamedMob, TameHostile {
 
 	private CritterType base;
 	private Entity entityToAttack;
 
-	public EntityFlyingBase(World par1World, CritterType sp) {
-		super(par1World);
+	public EntitySlimeBase(World world, CritterType sp) {
+		super(world);
 		base = sp;
 		this.setSize(1.8F*sp.size, 1.1F*sp.size/2);
 		this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(this.getCritterMaxHealth());
@@ -49,6 +55,7 @@ public abstract class EntityFlyingBase extends EntityFlying implements TamedMob,
 		experienceValue = 0;
 		height = 1.25F*sp.size;
 		this.func_110163_bv();
+		this.setSlimeSize(4);
 	}
 
 	@Override
@@ -108,7 +115,7 @@ public abstract class EntityFlyingBase extends EntityFlying implements TamedMob,
 	}
 
 	public final float getScaleFactor() {
-		return base.size;
+		return this.getSlimeSize()/2F;
 	}
 
 	@Override
@@ -128,7 +135,25 @@ public abstract class EntityFlyingBase extends EntityFlying implements TamedMob,
 
 	@Override
 	public final int getCritterMaxHealth() {
-		return this.getBaseCritter().maxHealth;
+		return this.getBaseCritter().maxHealth*4;
+	}
+
+	@Override
+	public final void faceEntity(Entity e, float a, float b) {
+		if (!e.getCommandSenderName().equals(this.getMobOwner()))
+			super.faceEntity(e, a, b);
+	}
+
+	@Override
+	protected final int getJumpDelay()
+	{
+		return riddenByEntity != null ? 5 : super.getJumpDelay();
+	}
+
+	@Override
+	public final void setDead()
+	{
+		isDead = true;
 	}
 
 	@Override
@@ -139,37 +164,13 @@ public abstract class EntityFlyingBase extends EntityFlying implements TamedMob,
 			worldObj.difficultySetting = EnumDifficulty.EASY;
 		}
 		super.onUpdate();
-		int y = MathHelper.floor_double(posY-1.2);
-		int x = MathHelper.floor_double(posX);
-		int z = MathHelper.floor_double(posZ);
-		if (worldObj.getBlock(x, y, z) != Blocks.air && worldObj.getBlock(x, y+2, z) == Blocks.air) {
-			motionY += 0.015;
-		}
-		else {
-			motionY -= 0.015;
-		}
-		if (this.isSitting()) {
-			rotationPitch = 0;
-		}
-		else {
-			EntityPlayer ep = this.findOwner();
-			if (ep != null) {
-				double[] angs = ReikaPhysicsHelper.cartesianToPolar(ep.posX-posX, ep.posY-posY-1.5, ep.posZ-posZ);
-				rotationYaw = (float)-angs[2]+180;
-				rotationYawHead = rotationYaw;
-				rotationPitch = (float)angs[1]-90;
-				if (angs[0] > 5.2) {
-					motionX += 0.007*Math.signum(ep.posX-posX);
-					motionZ += 0.007*Math.signum(ep.posZ-posZ);
-					if (ep.posY > posY+2)
-						motionY += 0.075;
-				}
-			}
-		}
-		velocityChanged = true;
-		this.teleportAsNecessary();
 		if (preventDespawn)
 			worldObj.difficultySetting = EnumDifficulty.PEACEFUL;
+		if (riddenByEntity != null)
+			this.updateRider();
+		this.teleportAsNecessary();
+		if (riddenByEntity != null)
+			this.followOwner();
 	}
 
 	@Override
@@ -178,6 +179,42 @@ public abstract class EntityFlyingBase extends EntityFlying implements TamedMob,
 		if (entityToAttack != null)
 			this.faceEntity(entityToAttack, 10.0F, 30.0F);
 		super.updateEntityActionState();
+	}
+
+	protected final void updateRider() {
+		riddenByEntity.fallDistance = 0;
+		if (riddenByEntity instanceof EntityLivingBase) {
+			EntityLivingBase rider = (EntityLivingBase)riddenByEntity;
+			rider.addPotionEffect(new PotionEffect(Potion.jump.id, 5, 10));
+			if (this.followLook())
+				rotationYaw = rider.rotationYawHead;
+			else if (riddenByEntity instanceof EntityPlayer) {
+				if (KeyWatcher.instance.isKeyDown((EntityPlayer)riddenByEntity, Key.LEFT)) {
+					rotationYaw -= 5;
+				}
+				else if (KeyWatcher.instance.isKeyDown((EntityPlayer)riddenByEntity, Key.RIGHT)) {
+					rotationYaw += 5;
+				}
+				else if (KeyWatcher.instance.isKeyDown((EntityPlayer)riddenByEntity, Key.FORWARD)) {
+					float par1 = rider.moveStrafing * 0.5F;
+					float par2 = rider.moveForward;
+					this.moveEntityWithHeading(par1, par2);
+				}
+			}
+		}
+	}
+
+	protected boolean followLook() {
+		return false;
+	}
+
+	private void followOwner() {
+		World world = worldObj;
+		double x = posX;
+		double y = posY;
+		double z = posZ;
+		Vec3 v = riddenByEntity.getLookVec();
+		rotationPitch = 0;
 	}
 
 	protected abstract void applyAttackEffects(EntityLivingBase e);
@@ -192,6 +229,8 @@ public abstract class EntityFlyingBase extends EntityFlying implements TamedMob,
 	protected final boolean interact(EntityPlayer ep)
 	{
 		ItemStack is = ep.getCurrentEquippedItem();
+		if (is != null && is.getItem() instanceof EntityCapturingItem)
+			return false;
 		String owner = this.getMobOwner();
 		if (owner == null || owner.isEmpty()) {
 			if (is != null && is.getItem() == base.tamingItem) {
@@ -203,7 +242,7 @@ public abstract class EntityFlyingBase extends EntityFlying implements TamedMob,
 		}
 		if (ep.getCommandSenderName().equals(owner)) {
 			if (is != null) {
-				if (is.getItem() == Items.glowstone_dust && this.getHealth() < this.getMaxHealth()) {
+				if (is.getItem() == Items.slime_ball && this.getHealth() < this.getMaxHealth()) {
 					this.heal(8);
 					if (!ep.capabilities.isCreativeMode)
 						is.stackSize--;
@@ -219,6 +258,14 @@ public abstract class EntityFlyingBase extends EntityFlying implements TamedMob,
 				boolean flag = super.interact(ep);
 				if (flag)
 					return true;
+			}
+			if (!worldObj.isRemote) {
+				if (riddenByEntity != null && riddenByEntity.equals(ep)) {
+					ep.dismountEntity(this);
+				}
+				else {
+					ep.mountEntity(this);
+				}
 			}
 			return true;
 		}
@@ -255,7 +302,7 @@ public abstract class EntityFlyingBase extends EntityFlying implements TamedMob,
 		else if (dsc.getEntity() != null && dsc.getEntity().getCommandSenderName().equals(this.getMobOwner())) {
 			return false;
 		}
-		else if (!this.canBeHurtBy(dsc)) {
+		else if (dsc == DamageSource.inWall || dsc == DamageSource.fall || !this.canBeHurtBy(dsc)) {
 			return false;
 		}
 		else if (super.attackEntityFrom(dsc, par2)) {
@@ -296,19 +343,33 @@ public abstract class EntityFlyingBase extends EntityFlying implements TamedMob,
 	@Override
 	public final boolean getAlwaysRenderNameTagForRender()
 	{
-		return true;
+		return riddenByEntity == null;
 	}
 
 	@Override
 	public final int getTalkInterval()
 	{
-		return 320;
+		return riddenByEntity != null ? 960 : 320;
+	}
+
+	public final float getStepSoundVolume() {
+		return this.getSoundVolume();
 	}
 
 	@Override
 	protected final float getSoundVolume()
 	{
-		return 0.15F;
+		return riddenByEntity != null ? 0.05F : 0.15F;
+	}
+
+	@Override
+	public final double getMountedYOffset()
+	{
+		double ret = this.getSlimeSize()/2F+0.0625F;
+		if (this instanceof TameLavaSlime) {
+			ret += Math.max(0, squishFactor*2.32);
+		}
+		return ret;
 	}
 
 	@Override
@@ -319,7 +380,7 @@ public abstract class EntityFlyingBase extends EntityFlying implements TamedMob,
 	@Override
 	public final float getShadowSize()
 	{
-		return width*2;
+		return width*4;
 	}
 
 	@Override
@@ -342,6 +403,8 @@ public abstract class EntityFlyingBase extends EntityFlying implements TamedMob,
 			NBT.setString("Owner", "");
 		else
 			NBT.setString("Owner", s);
+
+		NBT.setBoolean("Sitting", this.isSitting());
 	}
 
 	@Override
@@ -353,6 +416,8 @@ public abstract class EntityFlyingBase extends EntityFlying implements TamedMob,
 		if (s.length() > 0) {
 			this.setOwner(s);
 		}
+
+		this.setSitting(NBT.getBoolean("Sitting"));
 	}
 
 	@Override
@@ -372,11 +437,14 @@ public abstract class EntityFlyingBase extends EntityFlying implements TamedMob,
 	{
 		List list = worldObj.getEntitiesWithinAABBExcludingEntity(this, boundingBox.expand(0.2, 0.0D, 0.2));
 
-		if (list != null && !list.isEmpty()) {
-			for (int i = 0; i < list.size(); ++i) {
+		if (list != null && !list.isEmpty())
+		{
+			for (int i = 0; i < list.size(); ++i)
+			{
 				Entity entity = (Entity)list.get(i);
 
-				if (entity.canBePushed()) {
+				if (entity.canBePushed())
+				{
 					this.collideWithEntity(entity);
 				}
 			}
@@ -388,19 +456,26 @@ public abstract class EntityFlyingBase extends EntityFlying implements TamedMob,
 	{
 		e.applyEntityCollision(this);
 		if (e instanceof EntityLivingBase && !(e instanceof TamedMob)) {
-			if (ReikaEntityHelper.isHostile((EntityLivingBase)e)) {
+			if (ReikaEntityHelper.isHostile((EntityLivingBase)e) || this.isNonOwnerPlayer(e)) {
 				//this.attackEntity(e, this.getAttackDamage());
-				e.attackEntityFrom(DamageSource.causeMobDamage(this), this.getAttackDamage());
+				e.attackEntityFrom(DamageSource.causeMobDamage(this), this.getAttackStrength());
 				this.applyAttackEffects((EntityLivingBase)e);
 			}
 		}
 	}
 
-	protected abstract float getAttackDamage();
+	@Override
+	public boolean shouldDismountInWater(Entity rider) {
+		return false;
+	}
+
+	protected final boolean isNonOwnerPlayer(Entity e) {
+		return e instanceof EntityPlayer && !e.getCommandSenderName().equals(this.getMobOwner());
+	}
 
 	private void teleportAsNecessary() {
 		EntityPlayer owner = this.findOwner();
-		if (owner != null && !this.getLeashed() && !this.isSitting()) {
+		if (owner != null && !this.isSitting() && !this.getLeashed()) {
 			if (this.getDistanceSqToEntity(owner) >= 144.0D) {
 				int x = MathHelper.floor_double(owner.posX)-2;
 				int z = MathHelper.floor_double(owner.posZ)-2;
@@ -421,6 +496,34 @@ public abstract class EntityFlyingBase extends EntityFlying implements TamedMob,
 	@Override
 	public final boolean allowLeashing() {
 		return true;
+	}
+
+	@Override
+	protected void updateLeashedState()
+	{
+		super.updateLeashedState();
+
+		if (this.getLeashed() && this.getLeashedToEntity() != null && this.getLeashedToEntity().worldObj == worldObj) {
+			Entity entity = this.getLeashedToEntity();
+			float f = this.getDistanceToEntity(entity);
+
+			if (f > 4.0F) {
+				this.getNavigator().tryMoveToEntityLiving(entity, 1.0D);
+			}
+
+			if (f > 6.0F) {
+				double d0 = (entity.posX - posX) / f;
+				double d1 = (entity.posY - posY) / f;
+				double d2 = (entity.posZ - posZ) / f;
+				motionX += d0 * Math.abs(d0) * 0.4D;
+				motionY += d1 * Math.abs(d1) * 0.4D;
+				motionZ += d2 * Math.abs(d2) * 0.4D;
+			}
+
+			if (f > 10.0F) {
+				this.clearLeashed(true, true);
+			}
+		}
 	}
 
 	@Override

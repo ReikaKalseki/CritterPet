@@ -7,32 +7,41 @@
  * Distribution of the software in any form is only allowed with
  * explicit, prior permission from the owner.
  ******************************************************************************/
-package Reika.CritterPet.Entities;
+package Reika.CritterPet.Entities.Mod.TF;
 
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.potion.Potion;
+import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.DamageSource;
 import net.minecraft.world.World;
+
+import Reika.CritterPet.Entities.Base.EntitySpiderBase;
 import Reika.CritterPet.Registry.CritterType;
 
-public class TameFire extends EntitySpiderBase {
+public class TameKing extends EntitySpiderBase {
 
-	public TameFire(World world) {
-		super(world, CritterType.FIRE);
+	public TameKing(World par1World) {
+		super(par1World, CritterType.KING);
 	}
 
 	@Override
 	protected void updateRider() {
-
+		if (riddenByEntity instanceof EntityLivingBase) {
+			EntityLivingBase rider = (EntityLivingBase)riddenByEntity;
+			rider.removePotionEffect(Potion.poison.id);
+		}
 	}
 
 	@Override
 	protected void applyAttackEffects(EntityLivingBase e) {
-		e.setFire(4);
+		e.addPotionEffect(new PotionEffect(Potion.blindness.id, 100, 0));
 	}
 
 	@Override
 	public boolean canBeHurtBy(DamageSource dsc) {
-		return !dsc.isFireDamage();
+		if (dsc.isMagicDamage())
+			return false;
+		return true;
 	}
 
 	@Override
@@ -44,5 +53,4 @@ public class TameFire extends EntitySpiderBase {
 	public boolean isRideable() {
 		return true;
 	}
-
 }
