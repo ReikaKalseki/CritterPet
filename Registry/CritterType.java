@@ -28,8 +28,6 @@ import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.world.World;
 
-import Reika.ChromatiCraft.Entity.EntityTunnelNuker;
-import Reika.ChromatiCraft.Render.Entity.RenderTunnelNuker;
 import Reika.CritterPet.CritterClient;
 import Reika.CritterPet.CritterPet;
 import Reika.CritterPet.Entities.TameLavaSlime;
@@ -185,7 +183,8 @@ public enum CritterType {
 					Class c10 = Class.forName("twilightforest.client.renderer.entity.RenderTFIceShooter");
 					return (Render)c10.newInstance();
 				case LUMAFLY:
-					return new RenderTunnelNuker();
+					Class c11 = Class.forName("Reika.ChromatiCraft.Render.Entity.RenderTunnelNuker");
+					return (Render)c11.newInstance();
 				default:
 					return CritterClient.critter;
 			}
@@ -229,7 +228,7 @@ public enum CritterType {
 			case SLIME:
 				return c == EntitySlime.class;
 			case LUMAFLY:
-				return c == EntityTunnelNuker.class;
+				return n.equals("EntityTunnelNuker");
 		}
 		return false;
 	}
