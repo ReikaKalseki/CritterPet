@@ -48,6 +48,7 @@ import Reika.CritterPet.Entities.Mod.TF.TameSlimeBeetle;
 import Reika.CritterPet.Interfaces.TamedMob;
 import Reika.CritterPet.Renders.RenderCustomMagmaCube;
 import Reika.DragonAPI.ModList;
+import Reika.DragonAPI.Exception.RegistrationException;
 import Reika.DragonAPI.Libraries.ReikaEntityHelper;
 
 import cpw.mods.fml.relauncher.Side;
@@ -55,21 +56,21 @@ import cpw.mods.fml.relauncher.SideOnly;
 
 public enum CritterType {
 
-	VANILLA("Spider",				TameVanilla.class,		CritterClass.SPIDER,	null,					16, 1,		"vanilla",		0x775533, 0xcc0000,	Items.rotten_flesh),
-	HEATSCAR("Heatscar Spider",		TameHeatScar.class,		CritterClass.SPIDER,	ModList.NATURA,			50, 3.25F,	"heatscar",		0x771100, 0x331100,	Items.blaze_powder),
-	KING("King Spider",				TameKing.class,			CritterClass.SPIDER,	ModList.TWILIGHT,		60, 2,		"king",			0x774400, 0xffdd00,	Items.gold_ingot),
-	HEDGE("Hedge Spider",			TameHedge.class,		CritterClass.SPIDER,	ModList.TWILIGHT,		20, 1,		"hedge",		0x053305, 0x229922,	Items.melon),
-	SLIMEBEETLE("Slime Beetle",		TameSlimeBeetle.class,	CritterClass.BEETLE,	ModList.TWILIGHT,		25, 0.8F,	"",				0x78BF5A, 0x1A330F, Items.slime_ball),
-	FIREBEETLE("Fire Beetle",		TameFire.class,			CritterClass.BEETLE,	ModList.TWILIGHT,		25, 0.8F,	"",				0xEC872C, 0x383540, Items.fire_charge),
-	MAZESLIME("Maze Slime",			TameMazeSlime.class,	CritterClass.SLIME,		ModList.TWILIGHT,		32, 3,		"",				0x656F66, 0x859289, Items.brick),
-	WISP("Wisp",					TameWispDummy.class,	CritterClass.FLYING,	ModList.THAUMCRAFT,		22, 1,		"",				0xFF19FB, 0xFFBDFD, Items.glowstone_dust),
-	MISTWOLF("Mist Wolf",			TameMistWolf.class,		CritterClass.WOLF,		ModList.TWILIGHT,		32, 2F,		"",				0x6D2C1F, 0xC1B064, Items.porkchop),
-	SILVERFISH("Silverfish",		TameSilverfish.class,	CritterClass.BUG,		null,					8, 0.25F,	"silverfish",	3158064, 7237230,	Blocks.stonebrick),
-	LAVASLIME("Lava Slime",			TameLavaSlime.class,	CritterClass.SLIME,		null,					32, 3,		"",				0x606020, 0xff6000, Items.magma_cream),
-	MINIGHAST("Carminite Ghastling", TameMinighast.class,	CritterClass.FLYING,	ModList.TWILIGHT,		20, 1.5F,	"minighast",	0xf0f0f0, 0xB87878,	Items.redstone),
-	SLIME("Slime",					TameSlime.class,		CritterClass.SLIME,		null,					32, 3F,		"",				0x416345, 0x57DB67,	Items.reeds),
-	ICECORE("Ice Core", 			TameIceCore.class,		CritterClass.FLYING,	ModList.TWILIGHT,		20, 1,		"icecore",		0x0094FF, 0x00FFFF,	Items.snowball),
-	LUMAFLY("Lumafly", 				TameLumafly.class,		CritterClass.FLYING,	ModList.CHROMATICRAFT,	12, 0.6F,	"",				0x8E4C3E, 0xFFB900,	Items.feather);
+	VANILLA("Spider",				TameVanilla.class,													CritterClass.SPIDER,	null,					16, 1,		"vanilla",		0x775533, 0xcc0000,	Items.rotten_flesh),
+	HEATSCAR("Heatscar Spider",		TameHeatScar.class,													CritterClass.SPIDER,	ModList.NATURA,			50, 3.25F,	"heatscar",		0x771100, 0x331100,	Items.blaze_powder),
+	KING("King Spider",				TameKing.class,														CritterClass.SPIDER,	ModList.TWILIGHT,		60, 2,		"king",			0x774400, 0xffdd00,	Items.gold_ingot),
+	HEDGE("Hedge Spider",			TameHedge.class,													CritterClass.SPIDER,	ModList.TWILIGHT,		20, 1,		"hedge",		0x053305, 0x229922,	Items.melon),
+	SLIMEBEETLE("Slime Beetle",		TameSlimeBeetle.class,												CritterClass.BEETLE,	ModList.TWILIGHT,		25, 0.8F,	"",				0x78BF5A, 0x1A330F, Items.slime_ball),
+	FIREBEETLE("Fire Beetle",		TameFire.class,														CritterClass.BEETLE,	ModList.TWILIGHT,		25, 0.8F,	"",				0xEC872C, 0x383540, Items.fire_charge),
+	MAZESLIME("Maze Slime",			TameMazeSlime.class,												CritterClass.SLIME,		ModList.TWILIGHT,		32, 3,		"",				0x656F66, 0x859289, Items.brick),
+	WISP("Wisp",					"Reika.CritterPet.Entities.Mod.TameWisp",	TameWispDummy.class,	CritterClass.FLYING,	ModList.THAUMCRAFT,		22, 1,		"",				0xFF19FB, 0xFFBDFD, Items.glowstone_dust),
+	MISTWOLF("Mist Wolf",			TameMistWolf.class,													CritterClass.WOLF,		ModList.TWILIGHT,		32, 2F,		"",				0x6D2C1F, 0xC1B064, Items.porkchop),
+	SILVERFISH("Silverfish",		TameSilverfish.class,												CritterClass.BUG,		null,					8, 0.25F,	"silverfish",	3158064, 7237230,	Blocks.stonebrick),
+	LAVASLIME("Lava Slime",			TameLavaSlime.class,												CritterClass.SLIME,		null,					32, 3,		"",				0x606020, 0xff6000, Items.magma_cream),
+	MINIGHAST("Carminite Ghastling", TameMinighast.class,												CritterClass.FLYING,	ModList.TWILIGHT,		20, 1.5F,	"minighast",	0xf0f0f0, 0xB87878,	Items.redstone),
+	SLIME("Slime",					TameSlime.class,													CritterClass.SLIME,		null,					32, 3F,		"",				0x416345, 0x57DB67,	Items.reeds),
+	ICECORE("Ice Core", 			TameIceCore.class,													CritterClass.FLYING,	ModList.TWILIGHT,		20, 1,		"icecore",		0x0094FF, 0x00FFFF,	Items.snowball),
+	LUMAFLY("Lumafly", 				TameLumafly.class,													CritterClass.FLYING,	ModList.CHROMATICRAFT,	12, 0.6F,	"",				0x8E4C3E, 0xFFB900,	Items.feather);
 
 	public final CritterClass type;
 	public final int classIndex;
@@ -92,7 +93,16 @@ public enum CritterType {
 	}
 
 	private CritterType(String name, Class c, CritterClass cl, ModList mod, int health, float size, String tex, int c1, int c2, Item i) {
-		entityClass = c;
+		this(name, null, c, cl, mod, health, size, tex, c1, c2, i);
+	}
+
+	private CritterType(String name, String c, Class cb, CritterClass cl, ModList mod, int health, float size, String tex, int c1, int c2, Item i) {
+		try {
+			entityClass = c != null && (mod == null || mod.isLoaded()) ? Class.forName(c) : cb;
+		}
+		catch (ClassNotFoundException e) {
+			throw new RegistrationException(CritterPet.instance, "Could not find entity class for "+this.name()+"!", e);
+		}
 		sourceMod = mod;
 		maxHealth = health;
 		texture = tex != null ? "/Reika/CritterPet/Textures/"+tex+".png" : "";
