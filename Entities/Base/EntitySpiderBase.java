@@ -1,8 +1,8 @@
 /*******************************************************************************
  * @author Reika Kalseki
- * 
+ *
  * Copyright 2017
- * 
+ *
  * All rights reserved.
  * Distribution of the software in any form is only allowed with
  * explicit, prior permission from the owner.
@@ -240,7 +240,7 @@ public abstract class EntitySpiderBase extends EntitySpider implements TamedMob,
 					ep.mountEntity(this);
 				}
 			}
-			return true;
+			return is == null || !(is.getItem() instanceof EntityCapturingItem);
 		}
 		else {
 			ReikaChatHelper.writeString("You do not own this critter.");

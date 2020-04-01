@@ -29,6 +29,7 @@ import net.minecraft.world.World;
 import Reika.CritterPet.Interfaces.TamedMob;
 import Reika.CritterPet.Registry.CritterType;
 import Reika.DragonAPI.Interfaces.Entity.TameHostile;
+import Reika.DragonAPI.Interfaces.Item.EntityCapturingItem;
 import Reika.DragonAPI.Libraries.ReikaEntityHelper;
 import Reika.DragonAPI.Libraries.IO.ReikaChatHelper;
 import Reika.DragonAPI.Libraries.Java.ReikaRandomHelper;
@@ -238,7 +239,7 @@ public abstract class EntityFlyingBase extends EntityFlying implements TamedMob,
 				if (flag)
 					return true;
 			}
-			return true;
+			return is == null || !(is.getItem() instanceof EntityCapturingItem);
 		}
 		else {
 			ReikaChatHelper.writeString("You do not own this critter.");

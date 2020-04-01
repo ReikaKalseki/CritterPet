@@ -267,7 +267,7 @@ public abstract class EntitySlimeBase extends EntitySlime implements TamedMob, T
 					ep.mountEntity(this);
 				}
 			}
-			return true;
+			return is == null || !(is.getItem() instanceof EntityCapturingItem);
 		}
 		else {
 			ReikaChatHelper.writeString("You do not own this critter.");

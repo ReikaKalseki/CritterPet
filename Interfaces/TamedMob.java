@@ -1,8 +1,8 @@
 /*******************************************************************************
  * @author Reika Kalseki
- * 
+ *
  * Copyright 2017
- * 
+ *
  * All rights reserved.
  * Distribution of the software in any form is only allowed with
  * explicit, prior permission from the owner.
@@ -12,8 +12,9 @@ package Reika.CritterPet.Interfaces;
 import net.minecraft.entity.player.EntityPlayer;
 
 import Reika.CritterPet.Registry.CritterType;
+import Reika.DragonAPI.Interfaces.Entity.TameHostile;
 
-public interface TamedMob {
+public interface TamedMob extends TameHostile {
 
 	public String getMobOwner();
 
