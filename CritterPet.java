@@ -1,8 +1,8 @@
 /*******************************************************************************
  * @author Reika Kalseki
- * 
+ *
  * Copyright 2017
- * 
+ *
  * All rights reserved.
  * Distribution of the software in any form is only allowed with
  * explicit, prior permission from the owner.
@@ -13,10 +13,20 @@ import java.io.File;
 import java.net.URL;
 
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
+import net.minecraftforge.common.BiomeDictionary;
+import net.minecraftforge.common.BiomeManager;
+import net.minecraftforge.common.BiomeManager.BiomeEntry;
+import net.minecraftforge.common.BiomeManager.BiomeType;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent.AllowDespawn;
 
+import Reika.CritterPet.Biome.BiomePinkForest;
+import Reika.CritterPet.Biome.BlockPinkGrass;
+import Reika.CritterPet.Biome.BlockPinkLeaves;
+import Reika.CritterPet.Biome.BlockPinkLog;
+import Reika.CritterPet.Biome.BlockRedBamboo;
 import Reika.CritterPet.Entities.Base.EntitySpiderBase;
 import Reika.CritterPet.Registry.CritterOptions;
 import Reika.CritterPet.Registry.CritterType;
@@ -25,6 +35,8 @@ import Reika.DragonAPI.DragonOptions;
 import Reika.DragonAPI.Auxiliary.Trackers.CommandableUpdateChecker;
 import Reika.DragonAPI.Base.DragonAPIMod;
 import Reika.DragonAPI.Base.DragonAPIMod.LoadProfiler.LoadPhase;
+import Reika.DragonAPI.Instantiable.Event.BlockTickEvent;
+import Reika.DragonAPI.Instantiable.Event.IceFreezeEvent;
 import Reika.DragonAPI.Instantiable.IO.ControlledConfig;
 import Reika.DragonAPI.Instantiable.IO.ModLogger;
 
@@ -53,6 +65,13 @@ public class CritterPet extends DragonAPIMod {
 	public static ItemCritterEgg egg;
 	public static ItemTaming tool;
 
+	public static BlockPinkLog log;
+	public static BlockRedBamboo bamboo;
+	public static BlockPinkLeaves leaves;
+	public static BlockPinkGrass grass;
+
+	public static BiomePinkForest pinkforest;
+
 	public static ModLogger logger;
 
 	@SidedProxy(clientSide="Reika.CritterPet.CritterClient", serverSide="Reika.CritterPet.CritterCommon")
@@ -75,6 +94,19 @@ public class CritterPet extends DragonAPIMod {
 		tool.setUnlocalizedName("crittertamer");
 		GameRegistry.registerItem(egg, "petcritteregg");
 		GameRegistry.registerItem(tool, "crittertamer");
+
+		log = new BlockPinkLog();
+		GameRegistry.registerBlock(log, null, "pinklog");
+		LanguageRegistry.addName(log, "Pink Birch Log");
+		bamboo = new BlockRedBamboo();
+		GameRegistry.registerBlock(bamboo, null, "redbamboo");
+		LanguageRegistry.addName(bamboo, "Red Bamboo");
+		leaves = new BlockPinkLeaves();
+		GameRegistry.registerBlock(leaves, null, "pinkleaves");
+		LanguageRegistry.addName(leaves, "Pink Birch Leaves");
+		grass = new BlockPinkGrass();
+		GameRegistry.registerBlock(grass, null, "pinkgrass");
+		LanguageRegistry.addName(grass, "Pink Grass");
 
 		proxy.registerSounds();
 
@@ -103,6 +135,17 @@ public class CritterPet extends DragonAPIMod {
 		proxy.registerRenderers();
 		LanguageRegistry.addName(tool, "Critter Taming Device");
 		GameRegistry.addRecipe(new ItemStack(tool), " ID", " II", "I  ", 'I', Items.iron_ingot, 'D', Items.diamond);
+
+		int id = CritterOptions.BIOMEID.getValue();
+		if (id >= 0) {
+			pinkforest = new BiomePinkForest(CritterOptions.BIOMEID.getValue());
+			BiomeManager.addBiome(BiomeType.COOL, new BiomeEntry(pinkforest, 4));
+			BiomeManager.addSpawnBiome(pinkforest);
+			BiomeManager.addStrongholdBiome(pinkforest);
+			BiomeManager.addVillageBiome(pinkforest, true);
+			BiomeDictionary.registerBiomeType(pinkforest, BiomeDictionary.Type.FOREST, BiomeDictionary.Type.MAGICAL, BiomeDictionary.Type.DENSE, BiomeDictionary.Type.LUSH, BiomeDictionary.Type.MOUNTAIN, BiomeDictionary.Type.WET);
+		}
+
 		this.finishTiming();
 	}
 
@@ -153,6 +196,23 @@ public class CritterPet extends DragonAPIMod {
 	@Override
 	public File getConfigFolder() {
 		return config.getConfigFolder();
+	}
+
+	@SubscribeEvent
+	public void meltSnowIce(BlockTickEvent evt) {
+		if (!evt.world.isRaining() && evt.world.isDaytime() && evt.world.getBiomeGenForCoords(evt.xCoord, evt.zCoord) == pinkforest && evt.world.canBlockSeeTheSky(evt.xCoord, evt.yCoord+1, evt.zCoord)) {
+			if (evt.block == Blocks.snow_layer)
+				evt.world.setBlockToAir(evt.xCoord, evt.yCoord, evt.zCoord);
+			else if (evt.block == Blocks.ice)
+				evt.world.setBlock(evt.xCoord, evt.yCoord, evt.zCoord, Blocks.water);
+		}
+	}
+
+	@SubscribeEvent
+	public void preventNewIce(IceFreezeEvent evt) {
+		if (evt.world.getBiomeGenForCoords(evt.xCoord, evt.zCoord) == pinkforest) {
+			evt.setResult(Result.DENY);
+		}
 	}
 
 }

@@ -1,8 +1,8 @@
 /*******************************************************************************
  * @author Reika Kalseki
- * 
+ *
  * Copyright 2017
- * 
+ *
  * All rights reserved.
  * Distribution of the software in any form is only allowed with
  * explicit, prior permission from the owner.
@@ -11,13 +11,15 @@ package Reika.CritterPet.Registry;
 
 import Reika.CritterPet.CritterPet;
 import Reika.DragonAPI.Interfaces.Configuration.BooleanConfig;
+import Reika.DragonAPI.Interfaces.Configuration.IntegerConfig;
 
-public enum CritterOptions implements BooleanConfig {
+public enum CritterOptions implements BooleanConfig, IntegerConfig {
 
-	NULL("Null", false);
+	BIOMEID("Pink Forest Biome ID", 144);
 
 	private String label;
 	private boolean defaultState;
+	private int defaultValue;
 	private Class type;
 
 	public static final CritterOptions[] optionList = CritterOptions.values();
@@ -28,8 +30,18 @@ public enum CritterOptions implements BooleanConfig {
 		type = boolean.class;
 	}
 
+	private CritterOptions(String l, int d) {
+		label = l;
+		defaultValue = d;
+		type = int.class;
+	}
+
 	public boolean isBoolean() {
 		return type == boolean.class;
+	}
+
+	public boolean isNumeric() {
+		return type == int.class;
 	}
 
 	public Class getPropertyType() {
@@ -44,6 +56,10 @@ public enum CritterOptions implements BooleanConfig {
 		return (Boolean)CritterPet.config.getControl(this.ordinal());
 	}
 
+	public int getValue() {
+		return (Integer)CritterPet.config.getControl(this.ordinal());
+	}
+
 	public boolean isDummiedOut() {
 		return type == null;
 	}
@@ -51,6 +67,11 @@ public enum CritterOptions implements BooleanConfig {
 	@Override
 	public boolean getDefaultState() {
 		return defaultState;
+	}
+
+	@Override
+	public int getDefaultValue() {
+		return defaultValue;
 	}
 
 	@Override
@@ -62,5 +83,25 @@ public enum CritterOptions implements BooleanConfig {
 	public boolean shouldLoad() {
 		return true;
 	}
+	/*
+	@Override
+	public boolean isValueValid(Property p) {
+		switch(this) {
+			case BIOMEID:
+				return p.getInt() >= 40 && p.getInt() <= 255;
+			default:
+				return true;
+		}
+	}
 
+	@Override
+	public String getBoundsAsString() {
+		switch(this) {
+			case BIOMEID:
+				return "(40-255)";
+			default:
+				return "";
+		}
+	}
+	 */
 }

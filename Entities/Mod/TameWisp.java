@@ -16,7 +16,9 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Items;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.DamageSource;
 import net.minecraft.world.EnumDifficulty;
@@ -25,7 +27,9 @@ import net.minecraft.world.World;
 import Reika.CritterPet.Interfaces.TamedMob;
 import Reika.CritterPet.Registry.CritterType;
 import Reika.DragonAPI.Interfaces.Entity.TameHostile;
+import Reika.DragonAPI.Interfaces.Item.EntityCapturingItem;
 import Reika.DragonAPI.Libraries.ReikaEntityHelper;
+import Reika.DragonAPI.Libraries.IO.ReikaChatHelper;
 import Reika.DragonAPI.Libraries.Java.ReikaJavaLibrary;
 import Reika.DragonAPI.Libraries.Java.ReikaRandomHelper;
 import Reika.DragonAPI.Libraries.Registry.ReikaParticleHelper;
@@ -285,6 +289,7 @@ public class TameWisp extends EntityWisp implements TamedMob, TameHostile {
 	protected final void entityInit() {
 		super.entityInit();
 		dataWatcher.addObject(30, ""); //Set empty owner
+		dataWatcher.addObject(31, Byte.valueOf((byte)0)); //Set not sitting
 	}
 
 	private void setOwner(String owner) {
@@ -343,6 +348,55 @@ public class TameWisp extends EntityWisp implements TamedMob, TameHostile {
 	@Override
 	public boolean isInRangeToRenderDist(double dist) {
 		return true;
+	}
+
+	public final void setSitting(boolean sit) {
+		byte s = (byte)(sit ? 1 : 0);
+		dataWatcher.updateObject(31, s);
+	}
+
+	public final boolean isSitting() {
+		return dataWatcher.getWatchableObjectByte(31) == 1;
+	}
+
+	@Override
+	protected final boolean interact(EntityPlayer ep)
+	{
+		ItemStack is = ep.getCurrentEquippedItem();
+		String owner = this.getMobOwner();
+		if (owner == null || owner.isEmpty()) {
+			if (is != null && is.getItem() == CritterType.WISP.tamingItem) {
+				owner = ep.getCommandSenderName();
+				//ReikaChatHelper.writeString("This critter had no owner! You are now the owner.");
+				return true;
+			}
+			return false;
+		}
+		if (ep.getCommandSenderName().equals(owner)) {
+			if (is != null) {
+				if (is.getItem() == Items.glowstone_dust && this.getHealth() < this.getMaxHealth()) {
+					this.heal(8);
+					if (!ep.capabilities.isCreativeMode)
+						is.stackSize--;
+					return true;
+				}
+				if (is.getItem() == Items.bone) {
+					this.setSitting(!this.isSitting());
+					return true;
+				}
+				if (is.getItem() == Items.name_tag) {
+					return false;
+				}
+				boolean flag = super.interact(ep);
+				if (flag)
+					return true;
+			}
+			return is == null || !(is.getItem() instanceof EntityCapturingItem);
+		}
+		else {
+			ReikaChatHelper.writeString("You do not own this critter.");
+			return false;
+		}
 	}
 
 }
