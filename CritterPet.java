@@ -21,6 +21,7 @@ import net.minecraftforge.common.BiomeManager;
 import net.minecraftforge.common.BiomeManager.BiomeEntry;
 import net.minecraftforge.common.BiomeManager.BiomeType;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent.AllowDespawn;
+import net.minecraftforge.event.terraingen.ChunkProviderEvent;
 
 import Reika.CritterPet.Biome.BiomePinkForest;
 import Reika.CritterPet.Biome.BlockPinkGrass;
@@ -212,6 +213,13 @@ public class CritterPet extends DragonAPIMod {
 	public void preventNewIce(IceFreezeEvent evt) {
 		if (evt.world.getBiomeGenForCoords(evt.xCoord, evt.zCoord) == pinkforest) {
 			evt.setResult(Result.DENY);
+		}
+	}
+
+	@SubscribeEvent
+	public void shapePinkForest(ChunkProviderEvent.ReplaceBiomeBlocks evt) {
+		if (evt.world != null && evt.blockArray != null) {
+			pinkforest.shapeTerrain(evt.world, evt.chunkX, evt.chunkZ, evt.blockArray, evt.metaArray);
 		}
 	}
 

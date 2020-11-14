@@ -31,8 +31,6 @@ public class WorldGenPinkGrass extends WorldGenerator {
 
 	@Override
 	public boolean generate(World world, Random rand, int x, int y, int z) {
-		if (true)
-			return false;
 		do {
 			Block at = world.getBlock(x, y, z);
 			if (!(at.isLeaves(world, x, y, z) || at.isAir(world, x, y, z))) {
@@ -49,6 +47,8 @@ public class WorldGenPinkGrass extends WorldGenerator {
 			BlockKey place = this.getBlockToPlace(world, dx, dy, dz, rand);
 
 			if (world.isAirBlock(dx, dy, dz) && place.blockID.canBlockStay(world, dx, dy, dz)) {
+				if (CritterPet.pinkforest.isRoad(world, dx, dz) && rand.nextBoolean())
+					continue;
 				world.setBlock(dx, dy, dz, place.blockID, place.metadata, 2);
 			}
 		}
