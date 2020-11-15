@@ -16,7 +16,7 @@ public class PinkTreeGenerator extends WorldGenAbstractTree {
 
 	@Override
 	public boolean generate(World world, Random rand, int x, int y, int z) {
-		if (CritterPet.pinkforest.isRoad(world, x, z))
+		if (CritterPet.pinkforest.isRoad(world, x, z) | true)
 			return false;
 		int h = ReikaRandomHelper.getRandomBetween(10, 16, rand);
 		for (int i = 0; i <= h; i++) {

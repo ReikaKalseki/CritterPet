@@ -38,6 +38,7 @@ import Reika.DragonAPI.Base.DragonAPIMod;
 import Reika.DragonAPI.Base.DragonAPIMod.LoadProfiler.LoadPhase;
 import Reika.DragonAPI.Instantiable.Event.BlockTickEvent;
 import Reika.DragonAPI.Instantiable.Event.IceFreezeEvent;
+import Reika.DragonAPI.Instantiable.Event.SnowOrIceOnGenEvent;
 import Reika.DragonAPI.Instantiable.IO.ControlledConfig;
 import Reika.DragonAPI.Instantiable.IO.ModLogger;
 
@@ -201,7 +202,7 @@ public class CritterPet extends DragonAPIMod {
 
 	@SubscribeEvent
 	public void meltSnowIce(BlockTickEvent evt) {
-		if (!evt.world.isRaining() && evt.world.isDaytime() && evt.world.getBiomeGenForCoords(evt.xCoord, evt.zCoord) == pinkforest && evt.world.canBlockSeeTheSky(evt.xCoord, evt.yCoord+1, evt.zCoord)) {
+		if (!evt.world.isRaining() && evt.world.isDaytime() && evt.getBiome() == pinkforest && evt.world.canBlockSeeTheSky(evt.xCoord, evt.yCoord+1, evt.zCoord)) {
 			if (evt.block == Blocks.snow_layer)
 				evt.world.setBlockToAir(evt.xCoord, evt.yCoord, evt.zCoord);
 			else if (evt.block == Blocks.ice)
@@ -211,7 +212,14 @@ public class CritterPet extends DragonAPIMod {
 
 	@SubscribeEvent
 	public void preventNewIce(IceFreezeEvent evt) {
-		if (evt.world.getBiomeGenForCoords(evt.xCoord, evt.zCoord) == pinkforest) {
+		if (evt.getBiome() == pinkforest) {
+			evt.setResult(Result.DENY);
+		}
+	}
+
+	@SubscribeEvent
+	public void preventSnowGen(SnowOrIceOnGenEvent evt) {
+		if (evt.getBiome() == pinkforest) {
 			evt.setResult(Result.DENY);
 		}
 	}

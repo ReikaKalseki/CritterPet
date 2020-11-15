@@ -12,8 +12,6 @@ import net.minecraft.world.gen.feature.WorldGenAbstractTree;
 import net.minecraft.world.gen.feature.WorldGenerator;
 
 import Reika.ChromatiCraft.API.Interfaces.DyeTreeBlocker;
-import Reika.DragonAPI.Instantiable.Math.Noise.SimplexNoiseGenerator;
-import Reika.DragonAPI.Instantiable.Math.Noise.VoronoiNoiseGenerator;
 import Reika.DragonAPI.Libraries.IO.ReikaColorAPI;
 import Reika.DragonAPI.Libraries.MathSci.ReikaMathLibrary;
 
@@ -26,15 +24,9 @@ public class BiomePinkForest extends BiomeGenBase implements DyeTreeBlocker {
 
 	private final PinkTreeGenerator treeGen = new PinkTreeGenerator();
 	private final GiantPinkTreeGenerator giantTreeGen = new GiantPinkTreeGenerator();
-	private final RedBambooGenerator bambooGen = new RedBambooGenerator();
 
-	private VoronoiNoiseGenerator sectionNoise;
-	private SimplexNoiseGenerator sectionDisplacementNoiseX;
-	private SimplexNoiseGenerator sectionDisplacementNoiseZ;
-	private SimplexNoiseGenerator upthrustNoise;
-	private SimplexNoiseGenerator streamsMiniCliffNoise;
-	private SimplexNoiseGenerator swampDepressionNoise;
-	private SimplexNoiseGenerator roadNoise;
+	PinkForestNoiseData noise;
+	private final PinkForestTerrainShaper terrain = new PinkForestTerrainShaper();
 
 	public BiomePinkForest(int id) {
 		super(id);
@@ -62,24 +54,10 @@ public class BiomePinkForest extends BiomeGenBase implements DyeTreeBlocker {
 				int z = chunkZ*16+k;
 				BiomeGenBase b = world.getWorldChunkManager().getBiomeGenAt(x, z);
 				if (b == this) {
-					int up = this.getUpthrust(world, x, z);
-					BiomeSection sub = this.getSubBiome(world, x, z);
-					if (sub == BiomeSection.STREAMS) {
-						up += this.getMiniCliffDelta(world, x, z);
-					}
-					else if (sub == BiomeSection.SWAMP) {
-						up -= this.getSwampDepression(world, x, z);
-					}
+					terrain.generateColumn(world, x, z, new Random(chunkX*341873128712L+chunkZ*132897987541L), blockArray, metaArray, b);
 				}
 			}
 		}
-	}
-
-	private int calcPosIndex(int x, int z) {
-		int dx = x & 15;
-		int dz = z & 15;
-		int d = 256;//blockColumn.length / 256;
-		return (dx * 16 + dz) * d;
 	}
 
 	@Override
@@ -158,9 +136,9 @@ public class BiomePinkForest extends BiomeGenBase implements DyeTreeBlocker {
 		for (int i = -1; i <= 1; i++) {
 			for (int k = -1; k <= 1; k++) {
 		 */
-		double dx = x+0*dd+0.5+sectionDisplacementNoiseX.getValue(x+0*dd, z+0*dd)*d;
-		double dz = z+0*dd+0.5+sectionDisplacementNoiseZ.getValue(x+0*dd, z+0*dd)*d;
-		double val = sectionNoise.getValue(dx, dz);
+		double dx = x+0*dd+0.5+noise.sectionDisplacementNoiseX.getValue(x+0*dd, z+0*dd)*d;
+		double dz = z+0*dd+0.5+noise.sectionDisplacementNoiseZ.getValue(x+0*dd, z+0*dd)*d;
+		double val = noise.sectionNoise.getValue(dx, dz);
 		double n = ReikaMathLibrary.normalizeToBounds(val, 0, BiomeSection.list.length-0.001);
 		int idx = MathHelper.floor_double(n);
 		avg = idx;
@@ -171,43 +149,42 @@ public class BiomePinkForest extends BiomeGenBase implements DyeTreeBlocker {
 		return BiomeSection.list[avg];
 	}
 
-	private int getUpthrust(World world, int x, int z) {
+	int getUpthrust(World world, int x, int z) {
 		this.initNoise(world);
-		return (int)Math.round(ReikaMathLibrary.normalizeToBounds(upthrustNoise.getValue(x, z), 0, 12));
+		return (int)Math.round(ReikaMathLibrary.normalizeToBounds(noise.upthrustNoise.getValue(x, z), 0, 12));
 	}
 
-	private int getMiniCliffDelta(World world, int x, int z) {
+	int getMiniCliffDelta(World world, int x, int z) {
 		this.initNoise(world);
-		double val = Math.abs(streamsMiniCliffNoise.getValue(x, z));
+		double val = Math.abs(noise.streamsMiniCliffNoise.getValue(x, z));
 		double ret = Math.max(0, val-0.5)*12;
 		return (int)Math.round(ret);
 	}
 
-	private int getSwampDepression(World world, int x, int z) {
+	int getSwampDepression(World world, int x, int z) {
 		this.initNoise(world);
-		double val = swampDepressionNoise.getValue(x, z);
+		double val = noise.swampDepressionNoise.getValue(x, z);
 		double ret = Math.max(0, val)*4;
 		return (int)Math.round(ret);
 	}
 
-	public boolean isRoad(World world, int x, int z) {
+	public double getRoadFactor(World world, int x, int z) {
 		this.initNoise(world);
-		double n = roadNoise.getValue(x, z);
-		return Math.abs(n) < this.getSubBiome(world, x, z).getRoadThickness();
+		double n = Math.abs(noise.roadNoise.getValue(x, z));
+		double thick = this.getSubBiome(world, x, z).getRoadThickness();
+		if (thick <= 0 || n >= thick)
+			return 0;
+		double f = n/thick;
+		return Math.max(0, 1D-f*f*1.5);
+	}
+
+	public boolean isRoad(World world, int x, int z) {
+		return this.getRoadFactor(world, x, z) > 0;
 	}
 
 	private void initNoise(World world) {
-		if (sectionNoise == null || sectionNoise.seed != world.getSeed()) {
-			sectionNoise = (VoronoiNoiseGenerator)new VoronoiNoiseGenerator(world.getSeed()*3/2).setFrequency(1/72D);//.addOctave(3.6, 0.05).addOctave(8.5, 0.02).addOctave(13, 0.005);
-			sectionNoise.randomFactor = 0.8;
-			sectionNoise.clampEdge = false;
-			double df = 1/15D;//1/12D;//1/12D;
-			sectionDisplacementNoiseX = (SimplexNoiseGenerator)new SimplexNoiseGenerator(720+world.getSeed()/3).setFrequency(df);
-			sectionDisplacementNoiseZ = (SimplexNoiseGenerator)new SimplexNoiseGenerator(720+world.getSeed()*3).setFrequency(df);
-			upthrustNoise = (SimplexNoiseGenerator)new SimplexNoiseGenerator(world.getSeed()/5).setFrequency(1/16D);
-			streamsMiniCliffNoise = (SimplexNoiseGenerator)new SimplexNoiseGenerator(world.getSeed()*12).setFrequency(1/12D);
-			roadNoise = (SimplexNoiseGenerator)new SimplexNoiseGenerator(world.getSeed()+24390).setFrequency(1/21D).addOctave(1.5, 0.42, 82);
-			swampDepressionNoise = (SimplexNoiseGenerator)new SimplexNoiseGenerator(world.getSeed()-34589).setFrequency(1/40D).addOctave(3.1, 0.28, 22);
+		if (noise == null || noise.seed != world.getSeed()) {
+			noise = new PinkForestNoiseData(world.getSeed());
 		}
 	}
 
