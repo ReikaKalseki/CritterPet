@@ -54,7 +54,7 @@ public class BiomePinkForest extends BiomeGenBase implements DyeTreeBlocker {
 				int z = chunkZ*16+k;
 				BiomeGenBase b = world.getWorldChunkManager().getBiomeGenAt(x, z);
 				if (b == this) {
-					terrain.generateColumn(world, x, z, new Random(chunkX*341873128712L+chunkZ*132897987541L), blockArray, metaArray, b);
+					terrain.generateColumn(world, x, z, chunkX, chunkZ, blockArray, metaArray, b);
 				}
 			}
 		}
@@ -107,6 +107,7 @@ public class BiomePinkForest extends BiomeGenBase implements DyeTreeBlocker {
 		}
 		World world = Minecraft.getMinecraft().theWorld;
 		return ReikaColorAPI.mixColors(0xEDBFB1, 0xCD8988, f); //this.isRoad(world, x, z) ? ReikaColorAPI.getModifiedHue(0xff0000, this.getSubBiome(world, x, z).ordinal()*120) : 0;//
+		//return this.getRoadFactor(world, x, z) > Math.abs(noise.roadEdgeNoise.getValue(x, z)*0.75) ? 0xffffff : 0;
 	}
 
 	@Override

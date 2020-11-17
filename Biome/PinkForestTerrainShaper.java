@@ -31,7 +31,8 @@ public class PinkForestTerrainShaper extends TerrainShaper {
 		this.shiftVertical(x, z, up, Blocks.stone, 0);
 		double road = bp.getRoadFactor(world, x, z);
 		//if (road > 0 && (road >= 0.75 || rand2.nextDouble() < road*0.75)) {
-		if (road > 0 && road >= Math.abs(bp.noise.roadEdgeNoise.getValue(x, z)))? {
+		//if (road > 0 && road >= Math.abs(bp.noise.roadEdgeNoise.getValue(x, z)*0.75)) {
+		if (road > 0 && road >= 0.875 || rand.nextDouble() < road*0.6) { //was 0.875 and 0.75
 			int y = this.getTopNonAir(x, z);
 			this.setBlock(x, y, z, Blocks.sand);
 		}

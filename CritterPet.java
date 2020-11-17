@@ -16,6 +16,8 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.IIcon;
+import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeManager;
 import net.minecraftforge.common.BiomeManager.BiomeEntry;
@@ -39,6 +41,7 @@ import Reika.DragonAPI.Base.DragonAPIMod.LoadProfiler.LoadPhase;
 import Reika.DragonAPI.Instantiable.Event.BlockTickEvent;
 import Reika.DragonAPI.Instantiable.Event.IceFreezeEvent;
 import Reika.DragonAPI.Instantiable.Event.SnowOrIceOnGenEvent;
+import Reika.DragonAPI.Instantiable.Event.Client.GrassIconEvent;
 import Reika.DragonAPI.Instantiable.IO.ControlledConfig;
 import Reika.DragonAPI.Instantiable.IO.ModLogger;
 
@@ -54,6 +57,8 @@ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.registry.EntityRegistry;
 import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.common.registry.LanguageRegistry;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 @Mod( modid = "CritterPet", name="Critter Pet", version = "v@MAJOR_VERSION@@MINOR_VERSION@", certificateFingerprint = "@GET_FINGERPRINT@", dependencies="required-after:DragonAPI")
 
@@ -73,6 +78,9 @@ public class CritterPet extends DragonAPIMod {
 	public static BlockPinkGrass grass;
 
 	public static BiomePinkForest pinkforest;
+
+	private IIcon biomeGrassIcon;
+	private IIcon biomeGrassIconSide;
 
 	public static ModLogger logger;
 
@@ -228,6 +236,22 @@ public class CritterPet extends DragonAPIMod {
 	public void shapePinkForest(ChunkProviderEvent.ReplaceBiomeBlocks evt) {
 		if (evt.world != null && evt.blockArray != null) {
 			pinkforest.shapeTerrain(evt.world, evt.chunkX, evt.chunkZ, evt.blockArray, evt.metaArray);
+		}
+	}
+
+	@SubscribeEvent
+	public void retextureGrass(GrassIconEvent evt) {
+		if (evt.getBiome() == pinkforest) {
+			evt.icon = evt.isTop ? biomeGrassIcon : biomeGrassIconSide;
+		}
+	}
+
+	@SubscribeEvent
+	@SideOnly(Side.CLIENT)
+	public void textureHook(TextureStitchEvent.Pre event) {
+		if (event.map.getTextureType() == 0) {
+			biomeGrassIcon = event.map.registerIcon("critterpet:grass_top");
+			biomeGrassIconSide = event.map.registerIcon("critterpet:grass_side_overlay");
 		}
 	}
 
