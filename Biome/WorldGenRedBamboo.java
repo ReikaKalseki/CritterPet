@@ -33,7 +33,7 @@ public class WorldGenRedBamboo extends WorldGenerator {
 			int dy = y + rand.nextInt(4) - rand.nextInt(4);
 			int dz = z + rand.nextInt(8) - rand.nextInt(8);
 
-			if (world.isAirBlock(dx, dy, dz) && !CritterPet.pinkforest.isRoad(world, dx, dz) && CritterPet.bamboo.canBlockStay(world, dx, dy, dz)) {
+			if (world.isAirBlock(dx, dy, dz) && !CritterPet.pinkforest.isRoad(world, dx, dz) && CritterPet.bamboo.canBlockStay(world, dx, dy, dz) & false) {
 				int h = ReikaRandomHelper.getRandomBetween(3, 7, rand); //TODO noisemap?
 				for (int d = 0; d < h; d++) {
 					if (world.isAirBlock(dx, dy+d, dz)) {

@@ -18,16 +18,15 @@ public class PinkForestTerrainShaper extends TerrainShaper {
 		int water = 0;
 		BiomeSection sub = bp.getSubBiome(world, x, z);
 		if (sub == BiomeSection.STREAMS) {
-			up += bp.getMiniCliffDelta(world, x, z);
+			up += bp.getMiniCliffDelta(world, x, z)*0;
 		}
 		else if (sub == BiomeSection.SWAMP) {
 			int dep = bp.getSwampDepression(world, x, z);
 			if (dep >= 2) {
 				water = dep-1;
 			}
-			up -= dep;
+			up -= dep*0;
 		}
-		up = 6;
 		this.shiftVertical(x, z, up, Blocks.stone, 0);
 		double road = bp.getRoadFactor(world, x, z);
 		//if (road > 0 && (road >= 0.75 || rand2.nextDouble() < road*0.75)) {

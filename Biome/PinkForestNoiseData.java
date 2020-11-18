@@ -24,7 +24,7 @@ public class PinkForestNoiseData {
 		double df = 1/15D;//1/12D;//1/12D;
 		sectionDisplacementNoiseX = (SimplexNoiseGenerator)new SimplexNoiseGenerator(720+seed/3).setFrequency(df);
 		sectionDisplacementNoiseZ = (SimplexNoiseGenerator)new SimplexNoiseGenerator(720+seed*3).setFrequency(df);
-		upthrustNoise = (SimplexNoiseGenerator)new SimplexNoiseGenerator(seed/5).setFrequency(1/16D);
+		upthrustNoise = (SimplexNoiseGenerator)new SimplexNoiseGenerator(seed/5).setFrequency(1/1200D); //was 16 then 36 then 72, then 144
 		streamsMiniCliffNoise = (SimplexNoiseGenerator)new SimplexNoiseGenerator(seed*12).setFrequency(1/12D);
 		roadNoise = (SimplexNoiseGenerator)new SimplexNoiseGenerator(seed+24390).setFrequency(1/21D).addOctave(1.5, 0.42, 82);
 		//roadEdgeNoise = (SimplexNoiseGenerator)new SimplexNoiseGenerator(seed+87456).setFrequency(1/1D).addOctave(2.2, 0.19, 23);
