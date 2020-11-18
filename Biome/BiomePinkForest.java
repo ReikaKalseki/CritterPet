@@ -152,13 +152,21 @@ public class BiomePinkForest extends BiomeGenBase implements DyeTreeBlocker {
 
 	int getUpthrust(World world, int x, int z) {
 		this.initNoise(world);
-		return (int)Math.round(ReikaMathLibrary.normalizeToBounds(noise.upthrustNoise.getValue(x, z), 0, 12)); //was 12 then 9, then 6
+		int min = 10; //was 0 then 18
+		int delta = 12; //was 12 then 9, then 6
+		return (int)Math.round(ReikaMathLibrary.normalizeToBounds(noise.upthrustNoise.getValue(x, z), delta, min+delta));
 	}
 
 	int getMiniCliffDelta(World world, int x, int z) {
 		this.initNoise(world);
 		double val = Math.abs(noise.streamsMiniCliffNoise.getValue(x, z));
-		double ret = Math.max(0, val-0.5)*12;
+		double n = Math.abs(noise.roadNoise.getValue(x, z));
+		//if (n < 0.5)
+		//	val *= n*2;
+		double thresh = 0.25; //was 0.5
+		if (n < 0.5)
+			thresh /= n*2;
+		double ret = val <= thresh ? 0 : val*5;
 		return (int)Math.round(ret);
 	}
 
