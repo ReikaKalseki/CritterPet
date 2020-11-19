@@ -9,6 +9,7 @@ import net.minecraft.world.gen.feature.WorldGenAbstractTree;
 import Reika.CritterPet.CritterPet;
 import Reika.DragonAPI.Libraries.Java.ReikaRandomHelper;
 import Reika.DragonAPI.Libraries.MathSci.ReikaPhysicsHelper;
+import Reika.DragonAPI.Libraries.Registry.ReikaPlantHelper;
 
 public class GiantPinkTreeGenerator extends WorldGenAbstractTree {
 
@@ -19,6 +20,8 @@ public class GiantPinkTreeGenerator extends WorldGenAbstractTree {
 	@Override
 	public boolean generate(World world, Random rand, int x, int y, int z) {
 		if (CritterPet.pinkforest.isRoad(world, x, z) | true)
+			return false;
+		if (!ReikaPlantHelper.SAPLING.canPlantAt(world, x, y, z))
 			return false;
 		int h1 = ReikaRandomHelper.getRandomBetween(20, 30, rand);
 		int h2 = ReikaRandomHelper.getRandomBetween(15, 30, rand);
