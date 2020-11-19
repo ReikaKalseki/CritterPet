@@ -38,8 +38,7 @@ public class DecoratorPinkForest extends BiomeDecorator {
 	}
 
 	@Override
-	public void decorateChunk(World par1World, Random par2Random, BiomeGenBase biome, int par3, int par4)
-	{
+	public void decorateChunk(World par1World, Random par2Random, BiomeGenBase biome, int par3, int par4) {
 		if (currentWorld != null) {
 			CritterPet.logger.logError("Already decorating!!");
 		}

@@ -4,19 +4,20 @@ import java.util.List;
 import java.util.Random;
 
 import net.minecraft.world.World;
-import net.minecraft.world.gen.feature.WorldGenAbstractTree;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import Reika.CritterPet.CritterPet;
+import Reika.DragonAPI.Instantiable.Data.Immutable.BlockKey;
 import Reika.DragonAPI.Instantiable.Data.Immutable.DecimalPosition;
 import Reika.DragonAPI.Instantiable.Math.Spline;
 import Reika.DragonAPI.Instantiable.Math.Spline.BasicSplinePoint;
 import Reika.DragonAPI.Instantiable.Math.Spline.SplineType;
+import Reika.DragonAPI.Instantiable.Worldgen.ModifiableBigTree;
 import Reika.DragonAPI.Libraries.ReikaDirectionHelper;
 import Reika.DragonAPI.Libraries.Java.ReikaRandomHelper;
 import Reika.DragonAPI.Libraries.Registry.ReikaPlantHelper;
 
-public class PinkTreeGenerator extends WorldGenAbstractTree {
+public class PinkTreeGenerator extends ModifiableBigTree {
 
 	public PinkTreeGenerator() {
 		super(false);
@@ -28,12 +29,21 @@ public class PinkTreeGenerator extends WorldGenAbstractTree {
 			return false;
 		if (!ReikaPlantHelper.SAPLING.canPlantAt(world, x, y, z))
 			return false;
-		int h = ReikaRandomHelper.getRandomBetween(10, 16, rand);
+		int h = ReikaRandomHelper.getRandomBetween(10, 16, rand)-2;
+		int hl = Math.min(h-4, ReikaRandomHelper.getRandomBetween(6, 9, rand));
+		this.resetHeight();
+		leafDistanceLimit = rand.nextInt(3) == 0 ? 3 : 2;
+		heightLimitLimit = h;
+		branchSlope = ReikaRandomHelper.getRandomPlusMinus(0, BASE_SLOPE*1.5, rand);
+		heightAttenuation = BASE_ATTENUATION;
+		//minBranchHeight = hl*0+12;
+		minHeight = hl;
+		globalOffset[1] = Math.max(hl-4, 0);
+		/*
 		for (int i = 0; i <= h; i++) {
 			if (!world.getBlock(x, y+i, z).isAir(world, x, y+i, z))
 				return false;
 		}
-		int hl = Math.min(h-4, ReikaRandomHelper.getRandomBetween(6, 9, rand));
 		for (int i = 0; i < h; i++) {
 			world.setBlock(x, y+i, z, CritterPet.log);
 
@@ -42,7 +52,7 @@ public class PinkTreeGenerator extends WorldGenAbstractTree {
 				if (rand.nextDouble() < 0.2) {
 					double ang = this.generateBranch(world, rand, x, y+i, z);
 				}
-			}*/
+			}*//*
 		}
 		int branches = ReikaRandomHelper.getRandomBetween(6, 18, rand);
 		double ang = 360D/branches;
@@ -52,6 +62,16 @@ public class PinkTreeGenerator extends WorldGenAbstractTree {
 			this.generateBranch(world, rand, x, y+dy, z, a1);
 		}
 		return true;
+			 */
+		if (super.generate(world, rand, x, y, z)) {
+			for (int i = 0; i < globalOffset[1]; i++) {
+				world.setBlock(x, y+i, z, CritterPet.log, 0, 2);
+			}
+			return true;
+		}
+		else {
+			return false;
+		}
 	}
 
 	private void generateBranch(World world, Random rand, int x, int y, int z, double ang) {
@@ -159,5 +179,25 @@ public class PinkTreeGenerator extends WorldGenAbstractTree {
 	private double generateBranch(World world, Random rand, int x, int y, int z	) {
 
 	}*/
+
+	@Override
+	protected BlockKey getLogBlock(int x, int y, int z) {
+		return new BlockKey(CritterPet.log, 0);
+	}
+
+	@Override
+	protected BlockKey getLeafBlock(int x, int y, int z) {
+		return new BlockKey(CritterPet.leaves, BlockPinkLeaves.LeafTypes.TREE.ordinal());
+	}
+
+	@Override
+	protected float layerSize(int layer) {
+		return super.layerSize(layer)*0.8F;
+	}
+
+	@Override
+	protected float leafSize(int r) {
+		return super.leafSize(r);
+	}
 
 }

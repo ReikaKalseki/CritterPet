@@ -12,7 +12,6 @@ public class BlockPinkLeaves extends BlockOldLeaf {
 	public static enum LeafTypes {
 		TREE,
 		GIANTTREE,
-		BAMBOO,
 		BUSH1,
 		BUSH2,
 		BUSH3;
