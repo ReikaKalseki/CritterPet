@@ -25,6 +25,8 @@ public class PinkTreeGenerator extends ModifiableBigTree {
 
 	@Override
 	public boolean generate(World world, Random rand, int x, int y, int z) {
+		if (y < ?)
+			return false;
 		if (CritterPet.pinkforest.isRoad(world, x, z))
 			return false;
 		if (!ReikaPlantHelper.SAPLING.canPlantAt(world, x, y, z))

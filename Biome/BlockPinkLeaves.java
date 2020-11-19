@@ -9,6 +9,8 @@ import cpw.mods.fml.relauncher.SideOnly;
 
 public class BlockPinkLeaves extends BlockOldLeaf {
 
+	make not biome tint, but Y tint, with giant leaves using a different y bounds
+
 	public static enum LeafTypes {
 		TREE,
 		GIANTTREE,
