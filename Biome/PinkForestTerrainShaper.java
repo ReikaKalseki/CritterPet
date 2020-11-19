@@ -18,8 +18,11 @@ public class PinkForestTerrainShaper extends TerrainShaper {
 		int up = bp.getUpthrust(world, x, z);
 		int water = 0;
 		BiomeSection sub = bp.getSubBiome(world, x, z);
-		if (sub == BiomeSection.STREAMS || true) {
-			up += bp.getMiniCliffDelta(world, x, z);
+		boolean thinDirt = false;
+		if (sub == BiomeSection.STREAMS) {
+			int delta = bp.getMiniCliffDelta(world, x, z);
+			thinDirt |= delta > 0;
+			up += delta;
 		}
 		else if (sub == BiomeSection.SWAMP) {
 			int dep = bp.getSwampDepression(world, x, z);
@@ -71,6 +74,15 @@ public class PinkForestTerrainShaper extends TerrainShaper {
 			else if (road > 0 && road >= 0.875 || rand.nextDouble() < road*0.6) { //was 0.875 and 0.75
 				this.setBlock(x, y, z, Blocks.sand);
 			}
+			int dirtThickness = bp.getDirtThickness(world, x, z);
+			if (thinDirt) {
+				dirtThickness -= 2;
+			}
+			dirtThickness = Math.max(1, dirtThickness);
+			for (int dt = 1; dt <= dirtThickness; dt++) {
+				this.setBlock(x, y-dt, z, Blocks.dirt);
+			}
+
 		}
 	}
 

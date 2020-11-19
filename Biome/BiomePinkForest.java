@@ -4,6 +4,7 @@ import java.util.Random;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
+import net.minecraft.init.Blocks;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeDecorator;
@@ -38,6 +39,8 @@ public class BiomePinkForest extends BiomeGenBase implements DyeTreeBlocker {
 
 		temperature = 0.14F;
 		rainfall = 0.65F;
+
+		fillerBlock = Blocks.stone;
 
 		this.setHeight(new Height(1.75F, 0.25F));
 	}
@@ -96,8 +99,8 @@ public class BiomePinkForest extends BiomeGenBase implements DyeTreeBlocker {
 		//https://i.imgur.com/uj47T6U.jpg
 		//https://i.imgur.com/ThGytyc.jpg
 		//CD8988 to E0A29B to EDBFB1
-		int min = 92;//64;
-		int max = 112;//72;
+		int min = 100;//92;//64;
+		int max = 120;//112;//72;
 		float f = 0;
 		if (y >= max) {
 			f = 1;
@@ -159,14 +162,20 @@ public class BiomePinkForest extends BiomeGenBase implements DyeTreeBlocker {
 
 	int getMiniCliffDelta(World world, int x, int z) {
 		this.initNoise(world);
+		double size = 3.5;
+		int min = 1; //was 0-5, then 1-4
 		double val = Math.abs(noise.streamsMiniCliffNoise.getValue(x, z));
+		val = ReikaMathLibrary.normalizeToBounds(val, min, size, 0, 1);
 		double n = Math.abs(noise.roadNoise.getValue(x, z));
 		//if (n < 0.5)
 		//	val *= n*2;
-		double thresh = 0.25; //was 0.5
-		if (n < 0.5)
-			thresh /= n*2;
-		double ret = val <= thresh ? 0 : val*5;
+		double f = Math.max(0, (1-n*1.25)*0.875+0.125);
+		//double f = Math.max(0, n > 0 ? 0.5/n : 0);
+		double thresh = 0.33; //was 0.5, then 0.25
+		if (n < thresh)
+			f = 0;
+		double sc = 1;//.125;
+		double ret = Math.min(size, val*(size*sc)*f);
 		return (int)Math.round(ret);
 	}
 
@@ -175,6 +184,10 @@ public class BiomePinkForest extends BiomeGenBase implements DyeTreeBlocker {
 		double val = noise.swampDepressionNoise.getValue(x, z);
 		double ret = Math.max(0, val)*4;
 		return (int)Math.round(ret);
+	}
+
+	int getDirtThickness(World world, int x, int z) {
+		return (int)Math.round(ReikaMathLibrary.normalizeToBounds(noise.dirtThicknessNoise.getValue(x, z), 1, 3.6));
 	}
 
 	public double getRoadFactor(World world, int x, int z) {
