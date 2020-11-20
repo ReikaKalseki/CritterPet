@@ -13,7 +13,6 @@ import net.minecraft.world.gen.feature.WorldGenAbstractTree;
 import net.minecraft.world.gen.feature.WorldGenerator;
 
 import Reika.ChromatiCraft.API.Interfaces.DyeTreeBlocker;
-import Reika.CritterPet.CritterPet;
 import Reika.DragonAPI.Libraries.IO.ReikaColorAPI;
 import Reika.DragonAPI.Libraries.MathSci.ReikaMathLibrary;
 
@@ -57,7 +56,7 @@ public class BiomePinkForest extends BiomeGenBase implements DyeTreeBlocker {
 				int x = chunkX*16+i;
 				int z = chunkZ*16+k;
 				BiomeGenBase b = world.getWorldChunkManager().getBiomeGenAt(x, z);
-				if (b == this || b == CritterPet.pinkriver) {
+				if (b == this) { // || b == CritterPet.pinkriver) {
 					terrain.generateColumn(world, x, z, chunkX, chunkZ, blockArray, metaArray, b);
 				}
 			}
@@ -111,10 +110,19 @@ public class BiomePinkForest extends BiomeGenBase implements DyeTreeBlocker {
 		}
 		World world = Minecraft.getMinecraft().theWorld;
 		this.initNoise(world);
-		//return ReikaColorAPI.mixColors(0xEDBFB1, 0xCD8988, f); //this.isRoad(world, x, z) ? ReikaColorAPI.getModifiedHue(0xff0000, this.getSubBiome(world, x, z).ordinal()*120) : 0;//
+		return ReikaColorAPI.mixColors(0xEDBFB1, 0xCD8988, f); //this.isRoad(world, x, z) ? ReikaColorAPI.getModifiedHue(0xff0000, this.getSubBiome(world, x, z).ordinal()*120) : 0;//
 		//return this.getRoadFactor(world, x, z) > Math.abs(noise.roadEdgeNoise.getValue(x, z)*0.75) ? 0xffffff : 0;
 		//return ReikaColorAPI.mixColors(0, 0xffffff, (float)ReikaMathLibrary.normalizeToBounds(noise.riverNoise.getValue(x, z), 0, 1));
-		return ReikaColorAPI.getModifiedHue(0xff0000,  noise.riverNoise.getEdgeRatio(x, z) < 5 ? 0 : 180);
+		//return ReikaColorAPI.getModifiedHue(0xff0000,  noise.riverNoise.getEdgeRatio(x, z) < 5 ? 0 : (int)((noise.riverNoise.getEdgeRatio(x, z)-5)*5));
+		/*
+		double df = 1/36D;
+		double sc = 15;
+		SimplexNoiseGenerator s1 = (SimplexNoiseGenerator)new SimplexNoiseGenerator(world.getSeed()-34589).setFrequency(df).addOctave(4.1, 0.17).addOctave(0.08, 15.7);
+		SimplexNoiseGenerator s2 = (SimplexNoiseGenerator)new SimplexNoiseGenerator(world.getSeed()-34589).setFrequency(df).addOctave(4.1, 0.17).addOctave(0.08, 15.7);
+		s1.clampEdge = true;
+		s2.clampEdge = true;
+		return ReikaColorAPI.mixColors(0, 0xffffff,  noise.riverNoise.getEdgeRatio(x+s1.getValue(x, z)*sc, z+s2.getValue(x, z)*sc) < 5 ? 0 : 1);
+		 */
 	}
 
 	@Override
@@ -137,24 +145,21 @@ public class BiomePinkForest extends BiomeGenBase implements DyeTreeBlocker {
 
 	public BiomeSection getSubBiome(World world, int x, int z) {
 		this.initNoise(world);
-		double d = 13;//14;//9;//12;//4;
+		/*
 		int avg = 0;
 		int dd = 5;
-		/*
 		for (int i = -1; i <= 1; i++) {
 			for (int k = -1; k <= 1; k++) {
 		 */
-		double dx = x+0*dd+0.5+noise.sectionDisplacementNoiseX.getValue(x+0*dd, z+0*dd)*d;
-		double dz = z+0*dd+0.5+noise.sectionDisplacementNoiseZ.getValue(x+0*dd, z+0*dd)*d;
-		double val = noise.sectionNoise.getValue(dx, dz);
+		double val = noise.sectionNoise.getValue(x, z);
 		double n = ReikaMathLibrary.normalizeToBounds(val, 0, BiomeSection.list.length-0.001);
 		int idx = MathHelper.floor_double(n);
-		avg = idx;
-		/*avg += idx;
+		/*avg = idx;
+		avg += idx;
 			}
 		}
 		avg /= 9;*/
-		return BiomeSection.list[avg];
+		return BiomeSection.list[idx];
 	}
 
 	int getUpthrust(World world, int x, int z) {
@@ -182,18 +187,19 @@ public class BiomePinkForest extends BiomeGenBase implements DyeTreeBlocker {
 		double ret = Math.min(size, val*(size*sc)*f);
 		return (int)Math.round(ret);
 	}
-
+	/*
 	int getRiverDelta(World world, int x, int z) {
-		this.initNoise(world);
+		//this.initNoise(world);
 		int depth = 5;
-		double thresh = 0.2;
 		//double val = Math.abs(noise.riverNoise.getValue(x, z));
+
+		double thresh = 0.2;
 		double val = noise.riverNoise.getEdgeRatio(x, z);
 		if (val > thresh) {
 			return 0;
 		}
 		return (int)((1-val/thresh)*depth);
-	}
+	}*/
 
 	int getSwampDepression(World world, int x, int z) {
 		this.initNoise(world);

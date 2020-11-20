@@ -26,7 +26,6 @@ import net.minecraftforge.event.entity.living.LivingSpawnEvent.AllowDespawn;
 import net.minecraftforge.event.terraingen.ChunkProviderEvent;
 
 import Reika.CritterPet.Biome.BiomePinkForest;
-import Reika.CritterPet.Biome.BiomePinkRiver;
 import Reika.CritterPet.Biome.BlockPinkGrass;
 import Reika.CritterPet.Biome.BlockPinkLeaves;
 import Reika.CritterPet.Biome.BlockPinkLog;
@@ -80,7 +79,7 @@ public class CritterPet extends DragonAPIMod {
 	public static BlockPinkGrass grass;
 
 	public static BiomePinkForest pinkforest;
-	public static BiomePinkRiver pinkriver;
+	//public static BiomePinkRiver pinkriver;
 
 	private IIcon biomeGrassIcon;
 	private IIcon biomeGrassIconSide;
@@ -158,7 +157,7 @@ public class CritterPet extends DragonAPIMod {
 			//BiomeManager.addVillageBiome(pinkforest, true);
 			BiomeDictionary.registerBiomeType(pinkforest, BiomeDictionary.Type.FOREST, BiomeDictionary.Type.MAGICAL, BiomeDictionary.Type.DENSE, BiomeDictionary.Type.LUSH, BiomeDictionary.Type.MOUNTAIN, BiomeDictionary.Type.WET);
 
-			pinkriver = new BiomePinkRiver();
+			//pinkriver = new BiomePinkRiver();
 		}
 
 		this.finishTiming();

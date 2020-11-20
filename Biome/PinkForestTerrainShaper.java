@@ -18,13 +18,15 @@ public class PinkForestTerrainShaper extends TerrainShaper {
 	protected void generateColumn(World world, int x, int z, Random rand, BiomeGenBase biome) {
 		BiomePinkForest bp = (BiomePinkForest)biome;
 		//boolean river = bp == CritterPet.pinkriver;
-		int river = bp.getRiverDelta(world, x, z);
+		double river = PinkForestRiverShaper.instance.getIntensity(x, z);
 		int up = bp.getUpthrust(world, x, z);
 		int water = 0;
 		BiomeSection sub = bp.getSubBiome(world, x, z);
 		boolean thinDirt = false;
 		if (sub == BiomeSection.STREAMS) {
 			int delta = bp.getMiniCliffDelta(world, x, z);
+			if (river > 0)
+				delta = 0;
 			thinDirt |= delta > 0;
 			up += delta;
 		}
@@ -37,7 +39,7 @@ public class PinkForestTerrainShaper extends TerrainShaper {
 		}
 		int d = 4;
 		int top = this.getTopNonAir(x, z);
-		boolean edge = false;//world.getBiomeGenForCoords(x-d, z) != biome || world.getBiomeGenForCoords(x+d, z) != biome || world.getBiomeGenForCoords(x, z-d) != biome || world.getBiomeGenForCoords(x, z+d) != biome;
+		boolean edge = world.getBiomeGenForCoords(x-d, z) != biome || world.getBiomeGenForCoords(x+d, z) != biome || world.getBiomeGenForCoords(x, z-d) != biome || world.getBiomeGenForCoords(x, z+d) != biome;
 		if (edge) {
 			/*
 			int n = 0;
@@ -54,12 +56,12 @@ public class PinkForestTerrainShaper extends TerrainShaper {
 			}
 			avg /= n;
 			 */
-			int avg = Math.max((int)(90+6*bp.noise.borderHeightNoise.getValue(x, z)), top+3);
-			up = avg+3-top;
+			//int avg = Math.max((int)(90+6*bp.noise.borderHeightNoise.getValue(x, z)), top+3);
+			//up = avg+3-top;
 		}
 		Block at = this.getBlock(x, top, z);
 		if (at != Blocks.water) {
-			this.shiftVertical(x, z, up, Blocks.stone, 0);
+			this.shiftVertical(x, z, up, Blocks.stone, 0, false);
 			double f = top >= 90 ? 1 : (top-60)/30D;
 			double road = f*bp.getRoadFactor(world, x, z);
 			//if (road > 0 && (road >= 0.75 || rand2.nextDouble() < road*0.75)) {
@@ -71,7 +73,7 @@ public class PinkForestTerrainShaper extends TerrainShaper {
 				}
 			}
 			int y = this.getTopNonAir(x, z);
-			if (edge) {
+			if (edge && false) {
 				for (int i = 0; i < 32; i++)
 					this.setBlock(x, y-i, z, Blocks.cobblestone);
 			}
@@ -87,9 +89,33 @@ public class PinkForestTerrainShaper extends TerrainShaper {
 				this.setBlock(x, y-dt, z, Blocks.dirt);
 			}
 			if (river > 0) {
-				top = this.getTopNonAir(x, z);
-				this.setBlock(x, top, z, Blocks.brick_block);
+				if (edge)
+					river *= 0.33;
+				int depth = 3;
+				/*
+				int base = 105;//108;//96;//82;
+				top = this.getLowestSurface(x, z);
+				int put = (int)(base*river+(1D-river)*top);
+				//this.setBlock(x, top, z, Blocks.brick_block);
+				this.shiftVertical(x, z, Math.min(-1, put-top));
+				if (put < base+depth+1) {
+					for (int i = put; i <= base+depth; i++) {
+						if (i < top-1)// || river > 0.6)
+							this.setBlock(x, i, z, Blocks.water);
+					}
+				}
+				 */
+				int dy = (int)(5*river);
+				if (dy > 0) {
+					top = this.getLowestSurface(x, z);
+					for (int i = 0; i < dy; i++) {
+						Block b = i >= depth ? Blocks.water : Blocks.air;
+						this.setBlock(x, top-i, z, b);
+					}
+				}
 			}
+
+			this.cleanColumn(world, x, z, biome);
 		}
 	}
 
