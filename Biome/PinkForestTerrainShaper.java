@@ -12,9 +12,13 @@ import Reika.DragonAPI.Instantiable.Worldgen.TerrainShaper;
 
 public class PinkForestTerrainShaper extends TerrainShaper {
 
+	//elevate rivers too
+
 	@Override
 	protected void generateColumn(World world, int x, int z, Random rand, BiomeGenBase biome) {
 		BiomePinkForest bp = (BiomePinkForest)biome;
+		//boolean river = bp == CritterPet.pinkriver;
+		int river = bp.getRiverDelta(world, x, z);
 		int up = bp.getUpthrust(world, x, z);
 		int water = 0;
 		BiomeSection sub = bp.getSubBiome(world, x, z);
@@ -82,7 +86,10 @@ public class PinkForestTerrainShaper extends TerrainShaper {
 			for (int dt = 1; dt <= dirtThickness; dt++) {
 				this.setBlock(x, y-dt, z, Blocks.dirt);
 			}
-
+			if (river > 0) {
+				top = this.getTopNonAir(x, z);
+				this.setBlock(x, top, z, Blocks.brick_block);
+			}
 		}
 	}
 

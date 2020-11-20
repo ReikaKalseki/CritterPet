@@ -25,7 +25,7 @@ public class PinkTreeGenerator extends ModifiableBigTree {
 
 	@Override
 	public boolean generate(World world, Random rand, int x, int y, int z) {
-		if (y < ?)
+		if (y < 96) //was 90
 			return false;
 		if (CritterPet.pinkforest.isRoad(world, x, z))
 			return false;

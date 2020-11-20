@@ -16,6 +16,11 @@ import cpw.mods.fml.relauncher.SideOnly;
 
 public class BlockPinkLog extends BlockOldLog {
 
+	public BlockPinkLog() {
+		super();
+		this.setResistance(120);
+	}
+
 	@Override
 	@SideOnly(Side.CLIENT)
 	public void registerBlockIcons(IIconRegister ico) {

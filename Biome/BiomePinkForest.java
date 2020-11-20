@@ -13,6 +13,7 @@ import net.minecraft.world.gen.feature.WorldGenAbstractTree;
 import net.minecraft.world.gen.feature.WorldGenerator;
 
 import Reika.ChromatiCraft.API.Interfaces.DyeTreeBlocker;
+import Reika.CritterPet.CritterPet;
 import Reika.DragonAPI.Libraries.IO.ReikaColorAPI;
 import Reika.DragonAPI.Libraries.MathSci.ReikaMathLibrary;
 
@@ -33,7 +34,7 @@ public class BiomePinkForest extends BiomeGenBase implements DyeTreeBlocker {
 		super(id);
 		biomeName = "Pink Birch Forest";
 		theBiomeDecorator.treesPerChunk = 6;
-		theBiomeDecorator.grassPerChunk = 12;
+		theBiomeDecorator.grassPerChunk = 24; //was 12
 		enableRain = true;
 		enableSnow = true; //but melt the snow when it is daytime and sunny, and disallow all water freezing to ice
 
@@ -56,7 +57,7 @@ public class BiomePinkForest extends BiomeGenBase implements DyeTreeBlocker {
 				int x = chunkX*16+i;
 				int z = chunkZ*16+k;
 				BiomeGenBase b = world.getWorldChunkManager().getBiomeGenAt(x, z);
-				if (b == this) {
+				if (b == this || b == CritterPet.pinkriver) {
 					terrain.generateColumn(world, x, z, chunkX, chunkZ, blockArray, metaArray, b);
 				}
 			}
@@ -177,6 +178,16 @@ public class BiomePinkForest extends BiomeGenBase implements DyeTreeBlocker {
 		double sc = 1;//.125;
 		double ret = Math.min(size, val*(size*sc)*f);
 		return (int)Math.round(ret);
+	}
+
+	int getRiverDelta(World world, int x, int z) {
+		this.initNoise(world);
+		double val = Math.abs(noise.riverNoise.getValue(x, z));
+		int depth = 5;
+		if (val > 0.2) {
+			return 0;
+		}
+		return (int)((1-val*5)*depth);
 	}
 
 	int getSwampDepression(World world, int x, int z) {

@@ -11,6 +11,7 @@ import Reika.DragonAPI.Instantiable.Worldgen.ModifiableBigTree;
 import Reika.DragonAPI.Libraries.Java.ReikaRandomHelper;
 import Reika.DragonAPI.Libraries.MathSci.ReikaPhysicsHelper;
 import Reika.DragonAPI.Libraries.Registry.ReikaPlantHelper;
+import Reika.DragonAPI.Libraries.World.ReikaWorldHelper;
 
 public class GiantPinkTreeGenerator extends ModifiableBigTree {
 
@@ -21,7 +22,7 @@ public class GiantPinkTreeGenerator extends ModifiableBigTree {
 
 	@Override
 	public boolean generate(World world, Random rand, int x, int y, int z) {
-		if (y < ?)
+		if (y < 108) //was 96
 			return false;
 		if (CritterPet.pinkforest.isRoad(world, x, z))
 			return false;
@@ -65,8 +66,14 @@ public class GiantPinkTreeGenerator extends ModifiableBigTree {
 			double dt = ReikaRandomHelper.getRandomBetween(5, 20, rand);
 			double dp = ReikaRandomHelper.getRandomPlusMinus(0, 12, rand);
 			double dpa = ReikaRandomHelper.getRandomPlusMinus(0, 4, rand);
-			while (dy >= y-0.5) {
-				world.setBlock(MathHelper.floor_double(dx), MathHelper.floor_double(dy), MathHelper.floor_double(dz), CritterPet.log);
+			int ix = MathHelper.floor_double(dx);
+			int iy = MathHelper.floor_double(dy);
+			int iz = MathHelper.floor_double(dz);
+			while (dy >= y-0.5 || ReikaWorldHelper.softBlocks(world, ix, iy-1, iz)) {
+				ix = MathHelper.floor_double(dx);
+				iy = MathHelper.floor_double(dy);
+				iz = MathHelper.floor_double(dz);
+				world.setBlock(ix, iy, iz, CritterPet.log);
 				xyz = ReikaPhysicsHelper.polarToCartesian(0.5, theta, phi);
 				dx += xyz[0];
 				dy += xyz[1];

@@ -3,13 +3,14 @@ package Reika.CritterPet.Biome;
 import net.minecraft.block.BlockOldLeaf;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.util.IIcon;
+import net.minecraft.world.IBlockAccess;
+
+import Reika.CritterPet.CritterPet;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
 public class BlockPinkLeaves extends BlockOldLeaf {
-
-	make not biome tint, but Y tint, with giant leaves using a different y bounds
 
 	public static enum LeafTypes {
 		TREE,
@@ -17,6 +18,27 @@ public class BlockPinkLeaves extends BlockOldLeaf {
 		BUSH1,
 		BUSH2,
 		BUSH3;
+
+		private static final LeafTypes[] list = values();
+	}
+
+	public BlockPinkLeaves() {
+		super();
+		this.setLightOpacity(0);
+	}
+
+	@Override
+	public int getRenderColor(int mta) {
+		return CritterPet.pinkforest.getBiomeFoliageColor(0, 64, 0);
+	}
+
+	@Override
+	public int colorMultiplier(IBlockAccess world, int x, int y, int z) {
+		LeafTypes l = LeafTypes.list[world.getBlockMetadata(x, y, z)%8];
+		if (l == LeafTypes.GIANTTREE) {
+			y -= 24; //was 18
+		}
+		return CritterPet.pinkforest.getBiomeFoliageColor(x, y, z);
 	}
 
 	@Override

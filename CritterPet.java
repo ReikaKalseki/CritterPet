@@ -26,6 +26,7 @@ import net.minecraftforge.event.entity.living.LivingSpawnEvent.AllowDespawn;
 import net.minecraftforge.event.terraingen.ChunkProviderEvent;
 
 import Reika.CritterPet.Biome.BiomePinkForest;
+import Reika.CritterPet.Biome.BiomePinkRiver;
 import Reika.CritterPet.Biome.BlockPinkGrass;
 import Reika.CritterPet.Biome.BlockPinkLeaves;
 import Reika.CritterPet.Biome.BlockPinkLog;
@@ -39,6 +40,7 @@ import Reika.DragonAPI.Auxiliary.Trackers.CommandableUpdateChecker;
 import Reika.DragonAPI.Base.DragonAPIMod;
 import Reika.DragonAPI.Base.DragonAPIMod.LoadProfiler.LoadPhase;
 import Reika.DragonAPI.Instantiable.Event.BlockTickEvent;
+import Reika.DragonAPI.Instantiable.Event.GenLayerRiverEvent;
 import Reika.DragonAPI.Instantiable.Event.IceFreezeEvent;
 import Reika.DragonAPI.Instantiable.Event.SnowOrIceOnGenEvent;
 import Reika.DragonAPI.Instantiable.Event.Client.GrassIconEvent;
@@ -78,6 +80,7 @@ public class CritterPet extends DragonAPIMod {
 	public static BlockPinkGrass grass;
 
 	public static BiomePinkForest pinkforest;
+	public static BiomePinkRiver pinkriver;
 
 	private IIcon biomeGrassIcon;
 	private IIcon biomeGrassIconSide;
@@ -152,8 +155,10 @@ public class CritterPet extends DragonAPIMod {
 			BiomeManager.addBiome(BiomeType.COOL, new BiomeEntry(pinkforest, 4));
 			BiomeManager.addSpawnBiome(pinkforest);
 			BiomeManager.addStrongholdBiome(pinkforest);
-			BiomeManager.addVillageBiome(pinkforest, true);
+			//BiomeManager.addVillageBiome(pinkforest, true);
 			BiomeDictionary.registerBiomeType(pinkforest, BiomeDictionary.Type.FOREST, BiomeDictionary.Type.MAGICAL, BiomeDictionary.Type.DENSE, BiomeDictionary.Type.LUSH, BiomeDictionary.Type.MOUNTAIN, BiomeDictionary.Type.WET);
+
+			pinkriver = new BiomePinkRiver();
 		}
 
 		this.finishTiming();
@@ -210,7 +215,7 @@ public class CritterPet extends DragonAPIMod {
 
 	@SubscribeEvent
 	public void meltSnowIce(BlockTickEvent evt) {
-		if (!evt.world.isRaining() && evt.world.isDaytime() && evt.getBiome() == pinkforest && evt.world.canBlockSeeTheSky(evt.xCoord, evt.yCoord+1, evt.zCoord)) {
+		if (!evt.world.isRaining() && evt.world.isDaytime() && evt.getBiome() instanceof BiomePinkForest && evt.world.canBlockSeeTheSky(evt.xCoord, evt.yCoord+1, evt.zCoord)) {
 			if (evt.block == Blocks.snow_layer)
 				evt.world.setBlockToAir(evt.xCoord, evt.yCoord, evt.zCoord);
 			else if (evt.block == Blocks.ice)
@@ -220,14 +225,14 @@ public class CritterPet extends DragonAPIMod {
 
 	@SubscribeEvent
 	public void preventNewIce(IceFreezeEvent evt) {
-		if (evt.getBiome() == pinkforest) {
+		if (evt.getBiome() instanceof BiomePinkForest) {
 			evt.setResult(Result.DENY);
 		}
 	}
 
 	@SubscribeEvent
 	public void preventSnowGen(SnowOrIceOnGenEvent evt) {
-		if (evt.getBiome() == pinkforest) {
+		if (evt.getBiome() instanceof BiomePinkForest) {
 			evt.setResult(Result.DENY);
 		}
 	}
@@ -241,7 +246,7 @@ public class CritterPet extends DragonAPIMod {
 
 	@SubscribeEvent
 	public void retextureGrass(GrassIconEvent evt) {
-		if (evt.getBiome() == pinkforest) {
+		if (evt.getBiome() instanceof BiomePinkForest) {
 			evt.icon = evt.isTop ? biomeGrassIcon : biomeGrassIconSide;
 		}
 	}
@@ -252,6 +257,14 @@ public class CritterPet extends DragonAPIMod {
 		if (event.map.getTextureType() == 0) {
 			biomeGrassIcon = event.map.registerIcon("critterpet:grass_top");
 			biomeGrassIconSide = event.map.registerIcon("critterpet:grass_side_overlay");
+		}
+	}
+
+	@SubscribeEvent
+	public void changePinkRivers(GenLayerRiverEvent evt) {
+		if (evt.originalBiomeID == pinkforest.biomeID) {
+			//evt.riverBiomeID = pinkriver.biomeID;
+			evt.setResult(Result.DENY);
 		}
 	}
 
