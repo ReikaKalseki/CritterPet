@@ -51,38 +51,7 @@ public class GiantPinkTreeGenerator extends ModifiableBigTree {
 			world.setBlock(x+2, y+i, z+2, CritterPet.log);
 			world.setBlock(x-1, y+i, z+2, CritterPet.log);
 		}
-		 */
-		int n = ReikaRandomHelper.getRandomBetween(5, 8, rand); //was 4-8
-		double angsplit = 360D/n;
-		for (int i = 0; i < n; i++) {
-			double dx = x+0.5;
-			double dz = z+0.5;
-			double dy = y+h0+0.5;
-			double phi = ReikaRandomHelper.getRandomPlusMinus(angsplit*i, 15, rand);//rand.nextDouble()*360;
-			double theta = ReikaRandomHelper.getRandomBetween(-15, 5, rand);
-			double[] xyz = ReikaPhysicsHelper.polarToCartesian(1.5, theta, phi);
-			dx += xyz[0];
-			dz += xyz[2];
-			double dt = ReikaRandomHelper.getRandomBetween(5, 20, rand);
-			double dp = ReikaRandomHelper.getRandomPlusMinus(0, 12, rand);
-			double dpa = ReikaRandomHelper.getRandomPlusMinus(0, 4, rand);
-			int ix = MathHelper.floor_double(dx);
-			int iy = MathHelper.floor_double(dy);
-			int iz = MathHelper.floor_double(dz);
-			while (dy >= y-0.5 || ReikaWorldHelper.softBlocks(world, ix, iy-1, iz)) {
-				ix = MathHelper.floor_double(dx);
-				iy = MathHelper.floor_double(dy);
-				iz = MathHelper.floor_double(dz);
-				world.setBlock(ix, iy, iz, CritterPet.log);
-				xyz = ReikaPhysicsHelper.polarToCartesian(0.5, theta, phi);
-				dx += xyz[0];
-				dy += xyz[1];
-				dz += xyz[2];
-				theta = Math.max(-90, theta-dt);
-				phi += dp;
-				dp += dpa;
-			}
-		}/*
+		 *//*
 		for (int i = h0; i < y1; i++) {
 			world.setBlock(x, y+i, z, CritterPet.log);
 			world.setBlock(x+1, y+i, z, CritterPet.log);
@@ -117,6 +86,38 @@ public class GiantPinkTreeGenerator extends ModifiableBigTree {
 						if (i == 0 || k == 0)
 							world.setBlock(x+i, y+dy, z+k, CritterPet.log, 0, 2);
 					}
+				}
+			}
+
+			int n = ReikaRandomHelper.getRandomBetween(5, 8, rand); //was 4-8
+			double angsplit = 360D/n;
+			for (int i = 0; i < n; i++) {
+				double dx = x+0.5;
+				double dz = z+0.5;
+				double dy = y+h0+0.5;
+				double phi = ReikaRandomHelper.getRandomPlusMinus(angsplit*i, 15, rand);//rand.nextDouble()*360;
+				double theta = ReikaRandomHelper.getRandomBetween(-15, 5, rand);
+				double[] xyz = ReikaPhysicsHelper.polarToCartesian(1.5, theta, phi);
+				dx += xyz[0];
+				dz += xyz[2];
+				double dt = ReikaRandomHelper.getRandomBetween(5, 20, rand);
+				double dp = ReikaRandomHelper.getRandomPlusMinus(0, 12, rand);
+				double dpa = ReikaRandomHelper.getRandomPlusMinus(0, 4, rand);
+				int ix = MathHelper.floor_double(dx);
+				int iy = MathHelper.floor_double(dy);
+				int iz = MathHelper.floor_double(dz);
+				while (dy >= y-0.5 || ReikaWorldHelper.softBlocks(world, ix, iy-1, iz)) {
+					ix = MathHelper.floor_double(dx);
+					iy = MathHelper.floor_double(dy);
+					iz = MathHelper.floor_double(dz);
+					world.setBlock(ix, iy, iz, CritterPet.log);
+					xyz = ReikaPhysicsHelper.polarToCartesian(0.5, theta, phi);
+					dx += xyz[0];
+					dy += xyz[1];
+					dz += xyz[2];
+					theta = Math.max(-90, theta-dt);
+					phi += dp;
+					dp += dpa;
 				}
 			}
 			return true;

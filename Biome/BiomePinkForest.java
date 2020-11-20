@@ -110,8 +110,11 @@ public class BiomePinkForest extends BiomeGenBase implements DyeTreeBlocker {
 			f = (y-min)/(float)(max-min);
 		}
 		World world = Minecraft.getMinecraft().theWorld;
-		return ReikaColorAPI.mixColors(0xEDBFB1, 0xCD8988, f); //this.isRoad(world, x, z) ? ReikaColorAPI.getModifiedHue(0xff0000, this.getSubBiome(world, x, z).ordinal()*120) : 0;//
+		this.initNoise(world);
+		//return ReikaColorAPI.mixColors(0xEDBFB1, 0xCD8988, f); //this.isRoad(world, x, z) ? ReikaColorAPI.getModifiedHue(0xff0000, this.getSubBiome(world, x, z).ordinal()*120) : 0;//
 		//return this.getRoadFactor(world, x, z) > Math.abs(noise.roadEdgeNoise.getValue(x, z)*0.75) ? 0xffffff : 0;
+		//return ReikaColorAPI.mixColors(0, 0xffffff, (float)ReikaMathLibrary.normalizeToBounds(noise.riverNoise.getValue(x, z), 0, 1));
+		return ReikaColorAPI.getModifiedHue(0xff0000,  noise.riverNoise.getEdgeRatio(x, z) < 5 ? 0 : 180);
 	}
 
 	@Override
@@ -182,12 +185,14 @@ public class BiomePinkForest extends BiomeGenBase implements DyeTreeBlocker {
 
 	int getRiverDelta(World world, int x, int z) {
 		this.initNoise(world);
-		double val = Math.abs(noise.riverNoise.getValue(x, z));
 		int depth = 5;
-		if (val > 0.2) {
+		double thresh = 0.2;
+		//double val = Math.abs(noise.riverNoise.getValue(x, z));
+		double val = noise.riverNoise.getEdgeRatio(x, z);
+		if (val > thresh) {
 			return 0;
 		}
-		return (int)((1-val*5)*depth);
+		return (int)((1-val/thresh)*depth);
 	}
 
 	int getSwampDepression(World world, int x, int z) {
@@ -216,7 +221,7 @@ public class BiomePinkForest extends BiomeGenBase implements DyeTreeBlocker {
 	}
 
 	private void initNoise(World world) {
-		if (noise == null || noise.seed != world.getSeed()) {
+		if (noise == null || noise.seed != world.getSeed() | true) {
 			noise = new PinkForestNoiseData(world.getSeed());
 		}
 	}

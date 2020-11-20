@@ -17,7 +17,8 @@ public class PinkForestNoiseData {
 	//final SimplexNoiseGenerator roadEdgeNoise;
 	final SimplexNoiseGenerator borderHeightNoise;
 	final SimplexNoiseGenerator dirtThicknessNoise;
-	final SimplexNoiseGenerator riverNoise;
+	//final SimplexNoiseGenerator riverNoise;
+	final VoronoiNoiseGenerator riverNoise;
 
 	PinkForestNoiseData(long s) {
 		seed = s;
@@ -34,7 +35,10 @@ public class PinkForestNoiseData {
 		swampDepressionNoise = (SimplexNoiseGenerator)new SimplexNoiseGenerator(seed-34589).setFrequency(1/40D).addOctave(3.1, 0.28, 22);
 		borderHeightNoise = (SimplexNoiseGenerator)new SimplexNoiseGenerator(seed-23897).setFrequency(1/64D);
 		dirtThicknessNoise = (SimplexNoiseGenerator)new SimplexNoiseGenerator(seed-87456).setFrequency(1/16D);
-		riverNoise = (SimplexNoiseGenerator)new SimplexNoiseGenerator(seed+345987).setFrequency(1/270D).addOctave(1.3, 0.37, 12);
+		//riverNoise = (SimplexNoiseGenerator)new SimplexNoiseGenerator(seed+345987).setFrequency(1/270D).addOctave(1.3, 0.37, 12);
+		riverNoise = (VoronoiNoiseGenerator)new VoronoiNoiseGenerator(seed*51+283471123).setFrequency(1/150D*4);
+		riverNoise.randomFactor = 0.9;
+		riverNoise.calculateDistance = false;
 	}
 
 }
