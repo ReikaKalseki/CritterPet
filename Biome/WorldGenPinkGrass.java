@@ -24,8 +24,8 @@ public class WorldGenPinkGrass extends WorldGenerator {
 	WorldGenPinkGrass() {
 		grassTypes.addDynamicEntry(BASE);
 		grassTypes.addDynamicEntry(new GrassType(CritterPet.grass, GrassTypes.PEACH_FRINGE.ordinal(), new Interpolation(false).addPoint(60, 0).addPoint(80, 10).addPoint(100, 40).addPoint(128, 20)));
-		grassTypes.addDynamicEntry(new GrassType(CritterPet.grass, GrassTypes.RED_STRANDS_1.ordinal(), new Interpolation(false).addPoint(70, 20).addPoint(96, 40).addPoint(144, 25)));
-		grassTypes.addDynamicEntry(new GrassType(CritterPet.grass, GrassTypes.RED_STRANDS_2.ordinal(), new Interpolation(false).addPoint(60, 20).addPoint(90, 30).addPoint(112, 10)));
+		grassTypes.addDynamicEntry(new GrassType(CritterPet.grass, GrassTypes.RED_STRANDS_1.ordinal(), new Interpolation(false).addPoint(55, 0).addPoint(70, 20).addPoint(96, 40).addPoint(144, 25)));
+		grassTypes.addDynamicEntry(new GrassType(CritterPet.grass, GrassTypes.RED_STRANDS_2.ordinal(), new Interpolation(false).addPoint(55, 0).addPoint(60, 20).addPoint(90, 30).addPoint(112, 10)));
 		grassTypes.addDynamicEntry(new GrassType(CritterPet.grass, GrassTypes.TINY_PINK_LUMPS.ordinal(), new Interpolation(false).addPoint(72, 0).addPoint(80, 10).addPoint(144, 50)));
 	}
 

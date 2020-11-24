@@ -39,7 +39,7 @@ public class PinkForestTerrainShaper extends TerrainShaper {
 		}
 		int d = 4;
 		int top = this.getTopNonAir(x, z);
-		boolean edge = world.getBiomeGenForCoords(x-d, z) != biome || world.getBiomeGenForCoords(x+d, z) != biome || world.getBiomeGenForCoords(x, z-d) != biome || world.getBiomeGenForCoords(x, z+d) != biome;
+		boolean edge = false;//world.getBiomeGenForCoords(x-d, z) != biome || world.getBiomeGenForCoords(x+d, z) != biome || world.getBiomeGenForCoords(x, z-d) != biome || world.getBiomeGenForCoords(x, z+d) != biome;
 		if (edge) {
 			/*
 			int n = 0;
@@ -89,6 +89,9 @@ public class PinkForestTerrainShaper extends TerrainShaper {
 				this.setBlock(x, y-dt, z, Blocks.dirt);
 			}
 			if (river > 0) {
+				int mainDepth = 6;//5;
+				//river += Math.sqrt(river);
+				river = Math.min(1, river+river*river*2);
 				if (edge)
 					river *= 0.33;
 				int depth = 3;
@@ -105,13 +108,19 @@ public class PinkForestTerrainShaper extends TerrainShaper {
 					}
 				}
 				 */
-				int dy = (int)(5*river);
+				int dy = (int)(mainDepth*river);
 				if (dy > 0) {
 					top = this.getLowestSurface(x, z);
+					/*
 					for (int i = 0; i < dy; i++) {
-						Block b = i >= depth ? Blocks.water : Blocks.air;
+						Block b = Blocks.air;//i >= depth ? Blocks.water : Blocks.air;
 						this.setBlock(x, top-i, z, b);
 					}
+					 */
+					this.shiftVertical(x, z, 0, top, -dy, Blocks.air, 0, false);
+					this.setBlock(x, top-dy, z, dy > depth ? Blocks.clay : Blocks.sand);
+					this.setBlock(x, top-dy-1, z, Blocks.sand);
+					this.setBlock(x, top, z, Blocks.glass);
 				}
 			}
 

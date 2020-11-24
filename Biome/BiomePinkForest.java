@@ -23,8 +23,8 @@ import cpw.mods.fml.relauncher.SideOnly;
 //gens with snow
 public class BiomePinkForest extends BiomeGenBase implements DyeTreeBlocker {
 
-	private final PinkTreeGenerator treeGen = new PinkTreeGenerator();
-	private final GiantPinkTreeGenerator giantTreeGen = new GiantPinkTreeGenerator();
+	//private final PinkTreeGenerator treeGen = new PinkTreeGenerator();
+	//private final GiantPinkTreeGenerator giantTreeGen = new GiantPinkTreeGenerator();
 
 	PinkForestNoiseData noise;
 	private final PinkForestTerrainShaper terrain = new PinkForestTerrainShaper();
@@ -85,7 +85,7 @@ public class BiomePinkForest extends BiomeGenBase implements DyeTreeBlocker {
 
 	@Override
 	public WorldGenAbstractTree func_150567_a(Random rand) {
-		return rand.nextInt(4) == 0 ? giantTreeGen : treeGen;
+		return rand.nextInt(4) == 0 ? new GiantPinkTreeGenerator() : new PinkTreeGenerator();
 	}
 
 	@Override

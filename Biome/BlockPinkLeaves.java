@@ -36,7 +36,7 @@ public class BlockPinkLeaves extends BlockOldLeaf {
 	public int colorMultiplier(IBlockAccess world, int x, int y, int z) {
 		LeafTypes l = LeafTypes.list[world.getBlockMetadata(x, y, z)%8];
 		if (l == LeafTypes.GIANTTREE) {
-			y -= 24; //was 18
+			y -= 50; //was 18 then 24
 		}
 		return CritterPet.pinkforest.getBiomeFoliageColor(x, y, z);
 	}
