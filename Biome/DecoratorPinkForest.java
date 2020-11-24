@@ -9,14 +9,18 @@
  ******************************************************************************/
 package Reika.CritterPet.Biome;
 
+import java.util.ArrayList;
+
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeGenBase;
+import net.minecraftforge.common.util.ForgeDirection;
 
 import Reika.CritterPet.CritterPet;
 import Reika.DragonAPI.Instantiable.IO.ModLogger;
 import Reika.DragonAPI.Instantiable.Worldgen.StackableBiomeDecorator;
+import Reika.DragonAPI.Libraries.ReikaDirectionHelper;
 import Reika.DragonAPI.Libraries.World.ReikaWorldHelper;
 
 public class DecoratorPinkForest extends StackableBiomeDecorator {
@@ -24,6 +28,7 @@ public class DecoratorPinkForest extends StackableBiomeDecorator {
 	private final WorldGenRedBamboo redBambooGenerator = new WorldGenRedBamboo();
 
 	private int riverHeight;
+	private int glassHeight;
 
 	public DecoratorPinkForest() {
 		super();
@@ -36,7 +41,7 @@ public class DecoratorPinkForest extends StackableBiomeDecorator {
 				int dx = chunk_X+i;
 				int dz = chunk_Z+k;
 				int top = this.getTrueTopAt(currentWorld, dx, dz);
-				if (currentWorld.getBiomeGenForCoords(dx, dz) == biome) {
+				if (currentWorld.getBiomeGenForCoords(dx, dz) == biome || currentWorld.getBlock(dx, top, dz) == Blocks.clay) {
 					this.cleanColumn(currentWorld, dx, top, dz);
 				}
 			}
@@ -75,6 +80,7 @@ public class DecoratorPinkForest extends StackableBiomeDecorator {
 				world.setBlock(x, top-i, z, b);
 		}
 		if (river) {
+			/*
 			riverHeight = -1;
 			double avg = this.getAverageHeight(world, x, z, 15); //was 6 then 9
 			int watermax = (int)(Math.min(avg-1.5, riverHeight));
@@ -86,12 +92,57 @@ public class DecoratorPinkForest extends StackableBiomeDecorator {
 			else {
 				world.setBlock(x, top, z, Blocks.sand);
 			}
+			 */
+			if (!this.tryPlaceWaterAt(world, x, top+1, z)) {
+				world.setBlock(x, top, z, Blocks.sand);
+			}
 		}
 
 		for (int h = 0; h < 10; h++) {
 			if (world.getBlock(x, top+h, z) == Blocks.glass)
 				world.setBlock(x, top+h, z, Blocks.air);
 		}
+	}
+
+	private boolean tryPlaceWaterAt(World world, int x, int y, int z) {
+		int r = 15;//12;
+		ArrayList<ForgeDirection> open = new ArrayList();
+		for (int i = 0; i < 4; i++) {
+			ForgeDirection dir = ForgeDirection.VALID_DIRECTIONS[i+2];
+			for (int d = 1; d <= r; d++) {
+				int dx = x+d*dir.offsetX;
+				int dz = z+d*dir.offsetZ;
+				Block at = world.getBlock(dx, y, dz);
+				boolean soft = at != Blocks.sand && at != Blocks.stone && at != Blocks.dirt && at != Blocks.clay;//ReikaWorldHelper.softBlocks(world, dx, y, dz);
+				if (!soft) {
+					break;
+				}
+				if (soft && d == r)
+					open.add(dir);
+			}
+		}
+		boolean can = open.size() <= 1 || (open.size() == 2 && !ReikaDirectionHelper.arePerpendicular(open.get(0), open.get(1)));
+		if (can) {
+			world.setBlock(x, y, z, Blocks.water);
+			for (int d = 1; d <= r; d++) {
+				for (ForgeDirection dir : open) {
+					int dy = y;
+					int dx = x+d*dir.offsetX;
+					int dz = z+d*dir.offsetZ;
+					int floor = dy-1;
+					while (ReikaWorldHelper.softBlocks(world, x, floor, z)) {
+						floor--;
+					}
+					if (world.getBlock(dx, floor, dz) == Blocks.clay) {
+						int max = floor+3;
+						for (int dy2 = floor+1; dy2 <= max; dy2++) {
+							world.setBlock(dx, dy2, dz, Blocks.water);
+						}
+					}
+				}
+			}
+		}
+		return can;
 	}
 
 	private double getAverageHeight(World world, int x, int z, int r) {

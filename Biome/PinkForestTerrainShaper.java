@@ -120,7 +120,7 @@ public class PinkForestTerrainShaper extends TerrainShaper {
 					this.shiftVertical(x, z, 0, top, -dy, Blocks.air, 0, false);
 					this.setBlock(x, top-dy, z, dy > depth ? Blocks.clay : Blocks.sand);
 					this.setBlock(x, top-dy-1, z, Blocks.sand);
-					this.setBlock(x, top, z, Blocks.glass);
+					//this.setBlock(x, top, z, Blocks.glass);
 				}
 			}
 
