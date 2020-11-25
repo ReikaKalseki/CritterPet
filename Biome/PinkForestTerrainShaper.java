@@ -18,7 +18,7 @@ public class PinkForestTerrainShaper extends TerrainShaper {
 	protected void generateColumn(World world, int x, int z, Random rand, BiomeGenBase biome) {
 		BiomePinkForest bp = (BiomePinkForest)biome;
 		//boolean river = bp == CritterPet.pinkriver;
-		double river = PinkForestRiverShaper.instance.getIntensity(x, z);
+		double river = 0;//PinkForestRiverShaper.instance.getIntensity(x, z);
 		int up = bp.getUpthrust(world, x, z);
 		int water = 0;
 		BiomeSection sub = bp.getSubBiome(world, x, z);

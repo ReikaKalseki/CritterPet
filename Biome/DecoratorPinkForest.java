@@ -27,8 +27,11 @@ public class DecoratorPinkForest extends StackableBiomeDecorator {
 
 	private final WorldGenRedBamboo redBambooGenerator = new WorldGenRedBamboo();
 
-	private int riverHeight;
-	private int glassHeight;
+	//private int riverHeight;
+	//private int glassHeight;
+
+	private static final double RIVER_DEPTH = 5.5;
+	private static final double RIVER_WATER_MAX_DEPTH = 3;
 
 	public DecoratorPinkForest() {
 		super();
@@ -41,8 +44,25 @@ public class DecoratorPinkForest extends StackableBiomeDecorator {
 				int dx = chunk_X+i;
 				int dz = chunk_Z+k;
 				int top = this.getTrueTopAt(currentWorld, dx, dz);
-				if (currentWorld.getBiomeGenForCoords(dx, dz) == biome || currentWorld.getBlock(dx, top, dz) == Blocks.clay) {
-					this.cleanColumn(currentWorld, dx, top, dz);
+				if (currentWorld.getBiomeGenForCoords(dx, dz) == biome) {
+					//this.cleanColumn(currentWorld, dx, top, dz);
+					double river = PinkForestRiverShaper.instance.getIntensity(dx, dz);
+					if (river > 0) {
+						double avg = this.getAverageHeight(currentWorld, dx, dz, 12);
+						double yb = avg-RIVER_DEPTH;
+						double yRes = Math.min(top, river*yb+(1-river)*Math.min(top, avg));
+						if (yRes < avg && yRes < top) {
+							int yf = (int)yRes;
+							for (int y = yf+1; y <= top; y++) {
+								Block b = Blocks.air;
+								if (y-yf <= RIVER_WATER_MAX_DEPTH && y < avg)
+									b = Blocks.water;
+								currentWorld.setBlock(dx, y, dz, b);
+							}
+							currentWorld.setBlock(dx, yf, dz, Blocks.sand);
+							currentWorld.setBlock(dx, yf-1, dz, Blocks.dirt);
+						}
+					}
 				}
 			}
 		}
@@ -62,15 +82,19 @@ public class DecoratorPinkForest extends StackableBiomeDecorator {
 	private int getTrueTopAt(World currentWorld, int dx, int dz) {
 		int top = currentWorld.getTopSolidOrLiquidBlock(dx, dz);
 		Block at = currentWorld.getBlock(dx, top, dz);
-		while (at == Blocks.air || at == CritterPet.log || at == CritterPet.leaves || at == Blocks.glass || at.isLeaves(currentWorld, dx, top, dz) || ReikaWorldHelper.softBlocks(currentWorld, dx, top, dz)) {
+		while (top > 0 && (at == Blocks.air || at == CritterPet.log || at == CritterPet.leaves || at.isLeaves(currentWorld, dx, top, dz) || ReikaWorldHelper.softBlocks(currentWorld, dx, top, dz))) {
 			top--;
 			at = currentWorld.getBlock(dx, top, dz);
+		}
+		at = currentWorld.getBlock(dx, top+1, dz);
+		while (top < 255 && at == Blocks.glass) {
+			top++;
+			at = currentWorld.getBlock(dx, top+1, dz);
 		}
 		return top;
 	}
 
 	private void cleanColumn(World world, int x, int top, int z) {
-		boolean river = world.getBlock(x, top, z) == Blocks.clay;
 		for (int i = top; i >= top-6; i--) {
 			Block b = i == 0 ? Blocks.grass : Blocks.stone;
 			Block at = world.getBlock(x, top-i, z);
@@ -79,7 +103,8 @@ public class DecoratorPinkForest extends StackableBiomeDecorator {
 			if (at != b)
 				world.setBlock(x, top-i, z, b);
 		}
-		if (river) {
+		/*
+		if (river > 0) {
 			/*
 			riverHeight = -1;
 			double avg = this.getAverageHeight(world, x, z, 15); //was 6 then 9
@@ -92,16 +117,21 @@ public class DecoratorPinkForest extends StackableBiomeDecorator {
 			else {
 				world.setBlock(x, top, z, Blocks.sand);
 			}
-			 */
+		 */
+
+		/*
 			if (!this.tryPlaceWaterAt(world, x, top+1, z)) {
 				world.setBlock(x, top, z, Blocks.sand);
 			}
+		 *//*
 		}
 
+		/*
 		for (int h = 0; h < 10; h++) {
 			if (world.getBlock(x, top+h, z) == Blocks.glass)
 				world.setBlock(x, top+h, z, Blocks.air);
 		}
+		  */
 	}
 
 	private boolean tryPlaceWaterAt(World world, int x, int y, int z) {
@@ -153,6 +183,7 @@ public class DecoratorPinkForest extends StackableBiomeDecorator {
 				int dx = x+i;
 				int dz = z+k;
 				int top = this.getTrueTopAt(world, dx, dz);
+				/*
 				if (world.getBlock(dx, top, dz) == Blocks.clay) {
 					riverHeight = Math.max(riverHeight, top+1);
 
@@ -168,15 +199,15 @@ public class DecoratorPinkForest extends StackableBiomeDecorator {
 						n++;
 					}
 				}
-				else {
-					avg += top;
-					n++;
-				}
+				else {*/
+				avg += top;
+				n++;
+				//}
 			}
 		}
 		if (n > 0)
 			avg /= n;
-		return n == 0 ? riverHeight : avg;
+		return avg;//n == 0 ? riverHeight : avg;
 	}
 
 	@Override
