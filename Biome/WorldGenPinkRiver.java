@@ -24,7 +24,6 @@ import Reika.DragonAPI.Instantiable.Math.Spline.BasicSplinePoint;
 import Reika.DragonAPI.Instantiable.Math.Spline.SplineType;
 import Reika.DragonAPI.Instantiable.Math.Noise.SimplexNoiseGenerator;
 import Reika.DragonAPI.Libraries.ReikaDirectionHelper.CubeDirections;
-import Reika.DragonAPI.Libraries.Java.ReikaJavaLibrary;
 import Reika.DragonAPI.Libraries.Java.ReikaRandomHelper;
 import Reika.DragonAPI.Libraries.MathSci.ReikaMathLibrary;
 import Reika.DragonAPI.Libraries.World.ReikaBlockHelper;
@@ -79,7 +78,7 @@ public class WorldGenPinkRiver extends WorldGenerator {
 			flag |= l.generate(world);
 		}
 		if (flag) {
-			ReikaJavaLibrary.pConsole(loc);
+			//ReikaJavaLibrary.pConsole(loc);
 			River r = new River(l, edgeLocation);
 			r.calculate(world, x, y, z, rand);
 			r.generate(world);
@@ -124,6 +123,9 @@ public class WorldGenPinkRiver extends WorldGenerator {
 		private Spline path;
 		private int riverY;
 
+		private final HashSet<Coordinate> waterCoords = new HashSet();
+		private final HashSet<Coordinate> airCoords = new HashSet();
+
 		private River(Lake l, Coordinate c) {
 			lake = l;
 			endpoint = c;
@@ -136,8 +138,9 @@ public class WorldGenPinkRiver extends WorldGenerator {
 			b.setRandom(rand);
 
 			b.variance = 6;
-			b.velocity = b.variance;
-			b.update();
+			//b.velocity = b.variance*0.75;
+			//b.update();
+			b.maximize();
 
 			path = new Spline(SplineType.CENTRIPETAL);
 
@@ -161,18 +164,36 @@ public class WorldGenPinkRiver extends WorldGenerator {
 				riverY = Math.max(limit, (int)p.yCoord);
 				this.carveAt(world, p, top, i/(double)li.size());
 			}
+
+			for (Entry<Coordinate, Integer> e : carve.entrySet()) {
+				Coordinate c = e.getKey();
+				boolean water = c.yCoord < e.getValue();
+				if (water)
+					waterCoords.add(c);
+				else
+					airCoords.add(c);
+			}
+			airCoords.removeAll(waterCoords);
+			Iterator<Coordinate> it = waterCoords.iterator();
+			while (it.hasNext()) {
+				Coordinate c = it.next();
+				if (!this.canPlaceWater(world, c)) {
+					airCoords.add(c);
+					it.remove();
+				}
+			}
 		}
 
 		private void carveAt(World world, DecimalPosition p, int surface, double f) {
 			double r = 3.25;
 			int maxY = MathHelper.floor_double(riverY+r);
-			int maxvalley = 6;
+			int maxvalley = 5;//6;
 			if (f > 0.75) {
-				double distance = edgeDistance*(1-f);
-				if (distance < 24) {
-					maxvalley += (24D-distance)/4D;
-				}
 				r *= (1-f)*4;
+			}
+			double distance = edgeDistance*(1-f);
+			if (distance < 16) { //was 24
+				maxvalley += (16D-distance)/4D;
 			}
 			if (maxY < surface && surface-riverY <= maxvalley) {
 				maxY = surface;
@@ -203,10 +224,32 @@ public class WorldGenPinkRiver extends WorldGenerator {
 		}
 
 		private boolean generate(World world) {
-			for (Entry<Coordinate, Integer> e : carve.entrySet()) {
-				Coordinate c = e.getKey();
-				boolean water = c.yCoord < e.getValue();
-				c.setBlock(world, water ? Blocks.water : Blocks.air);
+			for (Coordinate c : airCoords) {
+				c.setBlock(world, Blocks.air);
+				c = c.offset(0, 1, 0);
+				Block at = c.getBlock(world);
+				if (c.offset(0, 1, 0).softBlock(world) && (at == Blocks.grass || at == Blocks.dirt || at.getMaterial() == Material.ground || at.getMaterial() == Material.clay || at.getMaterial() == Material.sand)) {
+					c.setBlock(world, Blocks.air);
+				}
+			}
+			for (Coordinate c : waterCoords) {
+				c.setBlock(world, Blocks.water);
+				c = c.offset(0, -1, 0);
+				while (c.isEmpty(world)) {
+					c.setBlock(world, Blocks.water);
+					c = c.offset(0, -1, 0);
+				}
+			}
+			return true;
+		}
+
+		private boolean canPlaceWater(World world, Coordinate c) {
+			if (!CritterPet.isPinkForest(c.getBiome(world)))
+				return false;
+			for (int i = 0; i < 4; i++) {
+				ForgeDirection dir = ForgeDirection.VALID_DIRECTIONS[i+2];
+				if (c.offset(dir, 1).isEmpty(world))
+					return false;
 			}
 			return true;
 		}

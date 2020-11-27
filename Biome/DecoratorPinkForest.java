@@ -9,18 +9,14 @@
  ******************************************************************************/
 package Reika.CritterPet.Biome;
 
-import java.util.ArrayList;
-
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeGenBase;
-import net.minecraftforge.common.util.ForgeDirection;
 
 import Reika.CritterPet.CritterPet;
 import Reika.DragonAPI.Instantiable.IO.ModLogger;
 import Reika.DragonAPI.Instantiable.Worldgen.StackableBiomeDecorator;
-import Reika.DragonAPI.Libraries.ReikaDirectionHelper;
 import Reika.DragonAPI.Libraries.World.ReikaWorldHelper;
 
 public class DecoratorPinkForest extends StackableBiomeDecorator {
@@ -70,8 +66,10 @@ public class DecoratorPinkForest extends StackableBiomeDecorator {
 		}
 		 */
 
-		if (ReikaWorldHelper.getNaturalGennedBiomeAt(currentWorld, chunk_X, chunk_Z) == biome)
+		if (ReikaWorldHelper.getNaturalGennedBiomeAt(currentWorld, chunk_X, chunk_Z) == biome) {
 			new WorldGenPinkRiver().generate(currentWorld, randomGenerator, chunk_X, 0, chunk_Z);
+			new WorldGenUraniumCave().generate(currentWorld, randomGenerator, chunk_X, 0, chunk_Z);
+		}
 
 		super.genDecorations(biome);
 
@@ -140,6 +138,7 @@ public class DecoratorPinkForest extends StackableBiomeDecorator {
 		  */
 	}
 
+	/*
 	private boolean tryPlaceWaterAt(World world, int x, int y, int z) {
 		int r = 15;//12;
 		ArrayList<ForgeDirection> open = new ArrayList();
@@ -180,7 +179,7 @@ public class DecoratorPinkForest extends StackableBiomeDecorator {
 		}
 		return can;
 	}
-
+	 */
 	private double getAverageHeight(World world, int x, int z, int r) {
 		double avg = 0;
 		int n = 0;

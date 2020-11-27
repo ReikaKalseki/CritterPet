@@ -33,6 +33,7 @@ import Reika.CritterPet.Biome.BlockPinkLeaves;
 import Reika.CritterPet.Biome.BlockPinkLog;
 import Reika.CritterPet.Biome.BlockRedBamboo;
 import Reika.CritterPet.Biome.WorldGenPinkRiver;
+import Reika.CritterPet.Biome.WorldGenUraniumCave;
 import Reika.CritterPet.Entities.Base.EntitySpiderBase;
 import Reika.CritterPet.Registry.CritterOptions;
 import Reika.CritterPet.Registry.CritterType;
@@ -279,11 +280,13 @@ public class CritterPet extends DragonAPIMod {
 	@SubscribeEvent(priority = EventPriority.LOWEST)
 	public void clearBiomeRiver(SinglePlayerLogoutEvent evt) {
 		WorldGenPinkRiver.clearLakeCache();
+		WorldGenUraniumCave.clearLakeCache();
 	}
 
 	@SubscribeEvent(priority = EventPriority.LOWEST)
 	public void clearBiomeRiver(ClientDisconnectionFromServerEvent evt) {
 		WorldGenPinkRiver.clearLakeCache();
+		WorldGenUraniumCave.clearLakeCache();
 	}
 
 	public static boolean isPinkForest(World world, int x, int z) {
