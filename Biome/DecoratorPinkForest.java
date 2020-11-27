@@ -26,6 +26,7 @@ import Reika.DragonAPI.Libraries.World.ReikaWorldHelper;
 public class DecoratorPinkForest extends StackableBiomeDecorator {
 
 	private final WorldGenRedBamboo redBambooGenerator = new WorldGenRedBamboo();
+	//private final WorldGenPinkRiver riverGenerator = new WorldGenPinkRiver();
 
 	//private int riverHeight;
 	//private int glassHeight;
@@ -39,6 +40,7 @@ public class DecoratorPinkForest extends StackableBiomeDecorator {
 
 	@Override
 	protected void genDecorations(BiomeGenBase biome) {
+		/*
 		for (int i = 0; i < 16; i++) {
 			for (int k = 0; k < 16; k++) {
 				int dx = chunk_X+i;
@@ -66,6 +68,10 @@ public class DecoratorPinkForest extends StackableBiomeDecorator {
 				}
 			}
 		}
+		 */
+
+		if (ReikaWorldHelper.getNaturalGennedBiomeAt(currentWorld, chunk_X, chunk_Z) == biome)
+			new WorldGenPinkRiver().generate(currentWorld, randomGenerator, chunk_X, 0, chunk_Z);
 
 		super.genDecorations(biome);
 
@@ -79,7 +85,7 @@ public class DecoratorPinkForest extends StackableBiomeDecorator {
 		redBambooGenerator.generate(currentWorld, randomGenerator, x, top, z);
 	}
 
-	private int getTrueTopAt(World currentWorld, int dx, int dz) {
+	static int getTrueTopAt(World currentWorld, int dx, int dz) {
 		int top = currentWorld.getTopSolidOrLiquidBlock(dx, dz);
 		Block at = currentWorld.getBlock(dx, top, dz);
 		while (top > 0 && (at == Blocks.air || at == CritterPet.log || at == CritterPet.leaves || at.isLeaves(currentWorld, dx, top, dz) || ReikaWorldHelper.softBlocks(currentWorld, dx, top, dz))) {

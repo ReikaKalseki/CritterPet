@@ -17,6 +17,8 @@ import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
+import net.minecraft.world.World;
+import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeManager;
@@ -30,6 +32,7 @@ import Reika.CritterPet.Biome.BlockPinkGrass;
 import Reika.CritterPet.Biome.BlockPinkLeaves;
 import Reika.CritterPet.Biome.BlockPinkLog;
 import Reika.CritterPet.Biome.BlockRedBamboo;
+import Reika.CritterPet.Biome.WorldGenPinkRiver;
 import Reika.CritterPet.Entities.Base.EntitySpiderBase;
 import Reika.CritterPet.Registry.CritterOptions;
 import Reika.CritterPet.Registry.CritterType;
@@ -43,9 +46,11 @@ import Reika.DragonAPI.Instantiable.Event.GenLayerRiverEvent;
 import Reika.DragonAPI.Instantiable.Event.IceFreezeEvent;
 import Reika.DragonAPI.Instantiable.Event.SnowOrIceOnGenEvent;
 import Reika.DragonAPI.Instantiable.Event.Client.GrassIconEvent;
+import Reika.DragonAPI.Instantiable.Event.Client.SinglePlayerLogoutEvent;
 import Reika.DragonAPI.Instantiable.IO.ControlledConfig;
 import Reika.DragonAPI.Instantiable.IO.ModLogger;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
@@ -54,7 +59,9 @@ import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.eventhandler.Event.Result;
+import cpw.mods.fml.common.eventhandler.EventPriority;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent;
 import cpw.mods.fml.common.registry.EntityRegistry;
 import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.common.registry.LanguageRegistry;
@@ -123,6 +130,7 @@ public class CritterPet extends DragonAPIMod {
 		proxy.registerSounds();
 
 		this.basicSetup(evt);
+		FMLCommonHandler.instance().bus().register(this);
 		this.finishTiming();
 	}
 
@@ -155,6 +163,7 @@ public class CritterPet extends DragonAPIMod {
 			BiomeManager.addSpawnBiome(pinkforest);
 			BiomeManager.addStrongholdBiome(pinkforest);
 			//BiomeManager.addVillageBiome(pinkforest, true);
+			BiomeManager.removeVillageBiome(pinkforest);
 			BiomeDictionary.registerBiomeType(pinkforest, BiomeDictionary.Type.FOREST, BiomeDictionary.Type.MAGICAL, BiomeDictionary.Type.DENSE, BiomeDictionary.Type.LUSH, BiomeDictionary.Type.MOUNTAIN, BiomeDictionary.Type.WET);
 
 			//pinkriver = new BiomePinkRiver();
@@ -265,6 +274,24 @@ public class CritterPet extends DragonAPIMod {
 			//evt.riverBiomeID = pinkriver.biomeID;
 			evt.setResult(Result.DENY);
 		}
+	}
+
+	@SubscribeEvent(priority = EventPriority.LOWEST)
+	public void clearBiomeRiver(SinglePlayerLogoutEvent evt) {
+		WorldGenPinkRiver.clearLakeCache();
+	}
+
+	@SubscribeEvent(priority = EventPriority.LOWEST)
+	public void clearBiomeRiver(ClientDisconnectionFromServerEvent evt) {
+		WorldGenPinkRiver.clearLakeCache();
+	}
+
+	public static boolean isPinkForest(World world, int x, int z) {
+		return isPinkForest(world.getWorldChunkManager().getBiomeGenAt(x, z));
+	}
+
+	public static boolean isPinkForest(BiomeGenBase b) {
+		return b instanceof BiomePinkForest;
 	}
 
 }

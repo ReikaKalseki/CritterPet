@@ -57,7 +57,7 @@ public class WorldGenPinkGrass extends WorldGenerator {
 	}
 
 	private BlockKey getBlockToPlace(World world, int dx, int dy, int dz, Random rand) {
-		if (dy < 62 || world.getBiomeGenForCoords(dx, dz) != CritterPet.pinkforest)
+		if (dy < 62 || !CritterPet.isPinkForest(world, dx, dz))
 			return BASE.block;
 		grassTypes.setRNG(rand);
 		for (GrassType gr : grassTypes.getValues()) {
