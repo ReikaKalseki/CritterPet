@@ -65,26 +65,23 @@ public class WorldGenPinkRiver extends WorldGenerator {
 		if (edgeDistance < MIN_DIST || edgeDistance > MAX_DIST)
 			return false;
 
-		usedLocations.add(loc);
-
 		this.setupNoise(rand);
 
 		Lake l = new Lake();
 		l.calculate(world, x, y, z, rand);
 
-		boolean flag = false;
-
 		if (l.isValid()) {
-			flag |= l.generate(world);
-		}
-		if (flag) {
-			//ReikaJavaLibrary.pConsole(loc);
-			River r = new River(l, edgeLocation);
-			r.calculate(world, x, y, z, rand);
-			r.generate(world);
+			usedLocations.add(loc);
+			if (l.generate(world)) {
+				//ReikaJavaLibrary.pConsole(loc);
+				River r = new River(l, edgeLocation);
+				r.calculate(world, x, y, z, rand);
+				r.generate(world);
+				return true;
+			}
 		}
 
-		return flag;
+		return false;
 	}
 
 	private void setupNoise(Random rand) {
@@ -120,7 +117,6 @@ public class WorldGenPinkRiver extends WorldGenerator {
 
 		private final HashMap<Coordinate, Integer> carve = new HashMap();
 
-		private Spline path;
 		private int riverY;
 
 		private final HashSet<Coordinate> waterCoords = new HashSet();
@@ -142,7 +138,7 @@ public class WorldGenPinkRiver extends WorldGenerator {
 			//b.update();
 			b.maximize();
 
-			path = new Spline(SplineType.CENTRIPETAL);
+			Spline path = new Spline(SplineType.CENTRIPETAL);
 
 			for (int i = 0; i <= b.nsteps; i++) {
 				path.addPoint(new BasicSplinePoint(b.getPosition(i)));
