@@ -19,8 +19,6 @@ import Reika.DragonAPI.Libraries.MathSci.ReikaMathLibrary;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-//Village gen is fucked
-//gens with snow
 public class BiomePinkForest extends BiomeGenBase implements DyeTreeBlocker {
 
 	//private final PinkTreeGenerator treeGen = new PinkTreeGenerator();
@@ -85,7 +83,7 @@ public class BiomePinkForest extends BiomeGenBase implements DyeTreeBlocker {
 
 	@Override
 	public WorldGenAbstractTree func_150567_a(Random rand) {
-		return rand.nextInt(4) == 0 ? new GiantPinkTreeGenerator() : new PinkTreeGenerator();
+		return rand.nextInt(4) == 0 ? new GiantPinkTreeGenerator(false) : new PinkTreeGenerator();
 	}
 
 	@Override

@@ -15,21 +15,26 @@ import Reika.DragonAPI.Libraries.World.ReikaWorldHelper;
 
 public class GiantPinkTreeGenerator extends ModifiableBigTree {
 
-	public GiantPinkTreeGenerator() {
+	private final boolean forceGen;
+
+	public GiantPinkTreeGenerator(boolean force) {
 		super(false);
 		trunkSize = 3;
+		forceGen = force;
 	}
 
 	@Override
 	public boolean generate(World world, Random rand, int x, int y, int z) {
-		if (y < 108) //was 96
-			return false;
-		if (CritterPet.pinkforest.isRoad(world, x, z))
-			return false;
-		if (!ReikaPlantHelper.SAPLING.canPlantAt(world, x, y, z))
-			return false;
-		int h1 = ReikaRandomHelper.getRandomBetween(12, 24, rand); //was 20-30, then 18-25
-		int h2 = ReikaRandomHelper.getRandomBetween(36, 64, rand); //was 15-30, then 40-72
+		if (!forceGen) {
+			if (y < 108) //was 96
+				return false;
+			if (CritterPet.pinkforest.isRoad(world, x, z))
+				return false;
+			if (!ReikaPlantHelper.SAPLING.canPlantAt(world, x, y, z))
+				return false;
+		}
+		int h1 = ReikaRandomHelper.getRandomBetween(10, 18, rand); //was 20-30, then 18-25, then 12-24
+		int h2 = ReikaRandomHelper.getRandomBetween(64, 80, rand); //was 15-30, then 40-72, then 36-64, then 48-72, then 55-80
 		int h0 = ReikaRandomHelper.getRandomBetween(3, 6, rand); //was 2-5, then 3-6
 		/*
 		int y1 = h0+h1;
@@ -129,7 +134,7 @@ public class GiantPinkTreeGenerator extends ModifiableBigTree {
 
 	@Override
 	protected BlockKey getLogBlock(int x, int y, int z) {
-		return new BlockKey(CritterPet.log, 0);
+		return new BlockKey(CritterPet.log, 1);
 	}
 
 	@Override
@@ -139,7 +144,15 @@ public class GiantPinkTreeGenerator extends ModifiableBigTree {
 
 	@Override
 	protected float layerSize(int layer) {
-		return super.layerSize(layer)*0.5F; //was 1.3
+		float f = 0.5F; //was 1.3, then 0.5
+		float h = layer/(float)heightLimitLimit;
+		double th = 0.5;//0.67;//0.75;
+		if (h > th) {
+			double dh = th/h;
+			f *= Math.pow(dh, 0.8);
+		}
+		//ReikaJavaLibrary.pConsole(layer+" of "+heightLimitLimit+" > "+h+" > "+f);
+		return super.layerSize(layer)*f;
 	}
 
 	@Override
