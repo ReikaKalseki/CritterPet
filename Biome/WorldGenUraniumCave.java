@@ -99,9 +99,9 @@ public class WorldGenUraniumCave extends WorldGenerator {
 			t1.calculate(world, rand);
 			t2.calculate(world, rand);
 
-			cc.generate(world);
 			t1.generate(world);
 			t2.generate(world);
+			cc.generate(world);
 		}
 
 		return true;
@@ -180,8 +180,8 @@ public class WorldGenUraniumCave extends WorldGenerator {
 			DecimalPosition pre = i == 0 ? null : li.get(i-1);
 			DecimalPosition at = li.get(i);
 			DecimalPosition post = i == li.size()-1 ? null : li.get(i+1);
-			double ang1 = pre == null ? -1 : Math.toDegrees(Math.atan2(at.xCoord-pre.xCoord, at.zCoord-pre.zCoord));
-			double ang2 = post == null ? -1 : Math.toDegrees(Math.atan2(post.xCoord-at.xCoord, post.zCoord-at.zCoord));
+			double ang1 = pre == null ? -1 : Math.toDegrees(Math.atan2(at.zCoord-pre.zCoord, at.xCoord-pre.xCoord));
+			double ang2 = post == null ? -1 : Math.toDegrees(Math.atan2(post.zCoord-at.zCoord, post.xCoord-at.xCoord));
 			if (pre == null)
 				return ang2;
 			else if (post == null)
@@ -192,11 +192,16 @@ public class WorldGenUraniumCave extends WorldGenerator {
 		private void generate(World world) {
 			for (Coordinate c : carve.keySet()) {
 				c.setBlock(world, Blocks.air);
+				for (Coordinate c2 : c.getAdjacentCoordinates()) {
+					if (c2.yCoord <= 58 && c2.softBlock(world) && !carve.containsKey(c2)) {
+						c2.setBlock(world, Blocks.stone);
+					}
+				}
 			}
 		}
 
 		private void carveAt(World world, DecimalPosition p, double angle) {
-			//angle += 90;
+			angle += 90;
 			double ax = Math.abs(Math.cos(Math.toRadians(angle)));
 			double az = Math.abs(Math.sin(Math.toRadians(angle)));
 			double w = 2.5;
@@ -248,6 +253,19 @@ public class WorldGenUraniumCave extends WorldGenerator {
 					if (outer.isPointInsideCurve(i, k) && !inner.isPointInsideCurve(i, k)) {
 						for (int j = -h0; j <= h; j++) {
 							double ry = 1;
+							if (j < 0) {
+								ry *= 1+j*0.4/h0;
+							}
+							else if (h-j <= 4) {
+								ry *= Math.pow((h-j)/5D, 0.4);
+							}
+							double dr = Math.sqrt(i*i+k*k);
+							double ang = Math.toDegrees(Math.atan2(k, i));
+							double ar = outer.getRadius(ang)-inner.getRadius(ang);
+							double line = (outer.getRadius(ang)+inner.getRadius(ang))/2D;
+							if (Math.abs(dr-line) <= ar*ry) {
+								carve.add(center.offset(i, j, k));
+							}
 						}
 					}
 				}
