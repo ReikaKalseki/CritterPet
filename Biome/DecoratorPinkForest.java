@@ -86,7 +86,7 @@ public class DecoratorPinkForest extends StackableBiomeDecorator {
 	static int getTrueTopAt(World currentWorld, int dx, int dz) {
 		int top = currentWorld.getTopSolidOrLiquidBlock(dx, dz);
 		Block at = currentWorld.getBlock(dx, top, dz);
-		while (top > 0 && (at == Blocks.air || at == CritterPet.log || at == CritterPet.leaves || at.isLeaves(currentWorld, dx, top, dz) || ReikaWorldHelper.softBlocks(currentWorld, dx, top, dz))) {
+		while (top > 0 && (at == Blocks.air || at == CritterPet.log || at == CritterPet.leaves || at.isWood(currentWorld, dx, top, dz) || at.isLeaves(currentWorld, dx, top, dz) || ReikaWorldHelper.softBlocks(currentWorld, dx, top, dz))) {
 			top--;
 			at = currentWorld.getBlock(dx, top, dz);
 		}

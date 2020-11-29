@@ -17,6 +17,7 @@ import Reika.CritterPet.CritterPet;
 import Reika.DragonAPI.Instantiable.Data.Immutable.Coordinate;
 import Reika.DragonAPI.Instantiable.Data.Immutable.DecimalPosition;
 import Reika.DragonAPI.Instantiable.Effects.LightningBolt;
+import Reika.DragonAPI.Instantiable.Math.LobulatedCurve;
 import Reika.DragonAPI.Instantiable.Math.Spline;
 import Reika.DragonAPI.Instantiable.Math.Spline.BasicSplinePoint;
 import Reika.DragonAPI.Instantiable.Math.Spline.SplineType;
@@ -153,12 +154,17 @@ public class WorldGenUraniumCave extends WorldGenerator {
 			int n = (int)Math.max(4, dd/16);
 			LightningBolt b = new LightningBolt(new DecimalPosition(center.xCoord, center.yCoord, center.zCoord), new DecimalPosition(end), n);
 			b.setRandom(rand);
-			b.variance = 10;//15;
+			//b.variance = 10;//15;
+			b.setVariance(10, 8, 10);
 			b.maximize();
 			Spline path = new Spline(SplineType.CENTRIPETAL);
 
 			for (int i = 0; i <= b.nsteps; i++) {
-				path.addPoint(new BasicSplinePoint(b.getPosition(i)));
+				DecimalPosition pos = b.getPosition(i);
+				if (i <= 1) {
+					pos = new DecimalPosition(pos.xCoord, center.yCoord, pos.zCoord);
+				}
+				path.addPoint(new BasicSplinePoint(pos));
 			}
 
 			List<DecimalPosition> li = path.get(16, false);
@@ -166,8 +172,21 @@ public class WorldGenUraniumCave extends WorldGenerator {
 				DecimalPosition p = li.get(i);
 				int px = MathHelper.floor_double(p.xCoord);
 				int pz = MathHelper.floor_double(p.zCoord);
-				this.carveAt(world, p);
+				this.carveAt(world, p, this.getAngleAt(li, i));
 			}
+		}
+
+		private double getAngleAt(List<DecimalPosition> li, int i) {
+			DecimalPosition pre = i == 0 ? null : li.get(i-1);
+			DecimalPosition at = li.get(i);
+			DecimalPosition post = i == li.size()-1 ? null : li.get(i+1);
+			double ang1 = pre == null ? -1 : Math.toDegrees(Math.atan2(at.xCoord-pre.xCoord, at.zCoord-pre.zCoord));
+			double ang2 = post == null ? -1 : Math.toDegrees(Math.atan2(post.xCoord-at.xCoord, post.zCoord-at.zCoord));
+			if (pre == null)
+				return ang2;
+			else if (post == null)
+				return ang1;
+			return (ang1+ang2)/2D;
 		}
 
 		private void generate(World world) {
@@ -176,12 +195,16 @@ public class WorldGenUraniumCave extends WorldGenerator {
 			}
 		}
 
-		private void carveAt(World world, DecimalPosition p) {
-			double r = 2.5;
+		private void carveAt(World world, DecimalPosition p, double angle) {
+			//angle += 90;
+			double ax = Math.abs(Math.cos(Math.toRadians(angle)));
+			double az = Math.abs(Math.sin(Math.toRadians(angle)));
+			double w = 2.5;
+			double r = 2.25;
 			for (double i = -r; i <= r; i++) {
 				for (double j = -r; j <= r; j++) {
 					for (double k = -r; k <= r; k++) {
-						if (i*i+j*j+k*k <= (r+0.5)*(r+0.5)) {
+						if (ReikaMathLibrary.isPointInsideEllipse(i, j, k, r+0.5+ax*w, r+0.5, r+0.5+az*w)) {
 							int dx = MathHelper.floor_double(p.xCoord+i);
 							int dy = MathHelper.floor_double(p.yCoord+j);
 							int dz = MathHelper.floor_double(p.zCoord+k);
@@ -206,12 +229,29 @@ public class WorldGenUraniumCave extends WorldGenerator {
 
 		private final Coordinate center;
 
+		private final HashSet<Coordinate> carve = new HashSet();
+
 		public CentralCave(int x, int y, int z) {
 			center = new Coordinate(x, y, z);
 		}
 
 		private void calculate(World world, Random rand) {
-
+			int rmax = 24;
+			LobulatedCurve outer = LobulatedCurve.fromMinMaxRadii(16, rmax, 6);
+			LobulatedCurve inner = LobulatedCurve.fromMinMaxRadii(6, 10, 4);
+			outer.generate(rand);
+			inner.generate(rand);
+			int h0 = 3;
+			int h = 8;
+			for (int i = -rmax; i <= rmax; i++) {
+				for (int k = -rmax; k <= rmax; k++) {
+					if (outer.isPointInsideCurve(i, k) && !inner.isPointInsideCurve(i, k)) {
+						for (int j = -h0; j <= h; j++) {
+							double ry = 1;
+						}
+					}
+				}
+			}
 		}
 
 		private void generate(World world) {
@@ -232,6 +272,9 @@ public class WorldGenUraniumCave extends WorldGenerator {
 				}
 			}
 			 */
+			for (Coordinate c : carve) {
+				c.setBlock(world, Blocks.air);
+			}
 		}
 
 	}

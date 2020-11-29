@@ -133,7 +133,7 @@ public class WorldGenPinkRiver extends WorldGenerator {
 
 			b.setRandom(rand);
 
-			b.variance = 6;
+			b.setVariance(6);
 			//b.velocity = b.variance*0.75;
 			//b.update();
 			b.maximize();
