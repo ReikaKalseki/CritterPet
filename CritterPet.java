@@ -280,13 +280,13 @@ public class CritterPet extends DragonAPIMod {
 	@SubscribeEvent(priority = EventPriority.LOWEST)
 	public void clearBiomeRiver(SinglePlayerLogoutEvent evt) {
 		WorldGenPinkRiver.clearLakeCache();
-		WorldGenUraniumCave.clearLakeCache();
+		WorldGenUraniumCave.clearCaveCache();
 	}
 
 	@SubscribeEvent(priority = EventPriority.LOWEST)
 	public void clearBiomeRiver(ClientDisconnectionFromServerEvent evt) {
 		WorldGenPinkRiver.clearLakeCache();
-		WorldGenUraniumCave.clearLakeCache();
+		WorldGenUraniumCave.clearCaveCache();
 	}
 
 	public static boolean isPinkForest(World world, int x, int z) {
