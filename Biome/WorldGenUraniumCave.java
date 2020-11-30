@@ -63,14 +63,14 @@ public class WorldGenUraniumCave extends WorldGenerator {
 		if (bf.calculate(world, x, z)) {
 			usedLocations.add(loc);
 
-			ReikaJavaLibrary.pConsole(loc);
-
 			CentralCave cc = new CentralCave(x, ReikaRandomHelper.getRandomBetween(40, top-30, rand), z);
 			cc.calculate(world, rand);
 
+			ReikaJavaLibrary.pConsole(cc.center);
+
 			double a1 = rand.nextDouble()*360;
 			double a2 = rand.nextDouble()*360;
-			while (Math.abs((a1-a2)%360) < 60) {
+			while (Math.abs((a1-a2)%360) <= 90) { //was 60
 				a2 = rand.nextDouble()*360;
 			}
 
@@ -99,9 +99,9 @@ public class WorldGenUraniumCave extends WorldGenerator {
 			t1.calculate(world, rand);
 			t2.calculate(world, rand);
 
+			cc.generate(world);
 			t1.generate(world);
 			t2.generate(world);
-			cc.generate(world);
 		}
 
 		return true;
@@ -138,9 +138,12 @@ public class WorldGenUraniumCave extends WorldGenerator {
 		private final double endX;
 		private final double endZ;
 
+		private final CentralCave cave;
+
 		private final HashMap<Coordinate, Integer> carve = new HashMap();
 
 		private Tunnel(CentralCave c, double dx, double dz) {
+			cave = c;
 			center = new DecimalPosition(c.center);
 			endX = dx;
 			endZ = dz;
@@ -172,7 +175,7 @@ public class WorldGenUraniumCave extends WorldGenerator {
 				DecimalPosition p = li.get(i);
 				int px = MathHelper.floor_double(p.xCoord);
 				int pz = MathHelper.floor_double(p.zCoord);
-				this.carveAt(world, p, this.getAngleAt(li, i));
+				this.carveAt(world, p, /*this.getAngleAt(li, i)*/0);
 			}
 		}
 
@@ -193,6 +196,8 @@ public class WorldGenUraniumCave extends WorldGenerator {
 			for (Coordinate c : carve.keySet()) {
 				c.setBlock(world, Blocks.air);
 				for (Coordinate c2 : c.getAdjacentCoordinates()) {
+					if (cave.footprint.contains(c2.to2D()))
+						continue;
 					if (c2.yCoord <= 58 && c2.softBlock(world) && !carve.containsKey(c2)) {
 						c2.setBlock(world, Blocks.stone);
 					}
@@ -202,8 +207,8 @@ public class WorldGenUraniumCave extends WorldGenerator {
 
 		private void carveAt(World world, DecimalPosition p, double angle) {
 			angle += 90;
-			double ax = Math.abs(Math.cos(Math.toRadians(angle)));
-			double az = Math.abs(Math.sin(Math.toRadians(angle)));
+			double ax = 0;//Math.abs(Math.cos(Math.toRadians(angle)));
+			double az = 0;//Math.abs(Math.sin(Math.toRadians(angle)));
 			double w = 2.5;
 			double r = 2.25;
 			for (double i = -r; i <= r; i++) {
@@ -214,8 +219,10 @@ public class WorldGenUraniumCave extends WorldGenerator {
 							int dy = MathHelper.floor_double(p.yCoord+j);
 							int dz = MathHelper.floor_double(p.zCoord+k);
 							Coordinate c = new Coordinate(dx, dy, dz);
+							if (cave.footprint.contains(c.to2D()))
+								continue;
 							Block b = c.getBlock(world);
-							if (this.isTerrain(world, c, b)) {
+							if (this.isTerrain(world, c, b) ) {
 								carve.put(c, MathHelper.floor_double(p.yCoord));
 							}
 						}
@@ -234,37 +241,50 @@ public class WorldGenUraniumCave extends WorldGenerator {
 
 		private final Coordinate center;
 
+		private final int rmax = 40; //was 24 then 36
+		private final LobulatedCurve outer = LobulatedCurve.fromMinMaxRadii(18, rmax, 5, true); //was 16
+
 		private final HashSet<Coordinate> carve = new HashSet();
+		private final HashSet<Coordinate> footprint = new HashSet();
 
 		public CentralCave(int x, int y, int z) {
 			center = new Coordinate(x, y, z);
 		}
 
 		private void calculate(World world, Random rand) {
-			int rmax = 24;
-			LobulatedCurve outer = LobulatedCurve.fromMinMaxRadii(16, rmax, 6);
-			LobulatedCurve inner = LobulatedCurve.fromMinMaxRadii(6, 10, 4);
+			LobulatedCurve inner = LobulatedCurve.fromMinMaxRadii(9, 15, 3, true); //was 6,10,3
 			outer.generate(rand);
 			inner.generate(rand);
 			int h0 = 3;
 			int h = 8;
 			for (int i = -rmax; i <= rmax; i++) {
 				for (int k = -rmax; k <= rmax; k++) {
-					if (outer.isPointInsideCurve(i, k) && !inner.isPointInsideCurve(i, k)) {
-						for (int j = -h0; j <= h; j++) {
-							double ry = 1;
-							if (j < 0) {
-								ry *= 1+j*0.4/h0;
-							}
-							else if (h-j <= 4) {
-								ry *= Math.pow((h-j)/5D, 0.4);
-							}
+					if (outer.isPointInsideCurve(i, k)) {
+						footprint.add(center.offset(i, 0, k).to2D());
+						if (!inner.isPointInsideCurve(i, k)) {
+							for (int j = -h0; j <= h; j++) {
+								double ry = 1;
+								if (j < 0) {
+									ry *= 1+j*0.4/h0;
+								}
+								else if (h-j <= 4) {
+									ry *= Math.pow((h-j)/5D, 0.4);
+								}/*
 							double dr = Math.sqrt(i*i+k*k);
 							double ang = Math.toDegrees(Math.atan2(k, i));
 							double ar = outer.getRadius(ang)-inner.getRadius(ang);
 							double line = (outer.getRadius(ang)+inner.getRadius(ang))/2D;
 							if (Math.abs(dr-line) <= ar*ry) {
 								carve.add(center.offset(i, j, k));
+							}
+								 */
+								double i1 = i*ry;
+								double k1 = k*ry;
+								double i2 = i/ry;
+								double k2 = k/ry;
+								if (outer.isPointInsideCurve(i1, k1) && !inner.isPointInsideCurve(i2, k2)) {
+									carve.add(center.offset(i, j, k));
+								}
 							}
 						}
 					}
@@ -290,8 +310,15 @@ public class WorldGenUraniumCave extends WorldGenerator {
 				}
 			}
 			 */
+			int y = -1;
 			for (Coordinate c : carve) {
 				c.setBlock(world, Blocks.air);
+				y = Math.max(y, c.yCoord);
+			}
+
+			for (Coordinate c : footprint) {
+				for (int i = 0; i < 4; i++)
+					c.offset(0, y+i, 0).setBlock(world, Blocks.air);
 			}
 		}
 
