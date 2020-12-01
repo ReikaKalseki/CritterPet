@@ -4,8 +4,16 @@ import java.util.Random;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
+import net.minecraft.entity.monster.EntityCaveSpider;
+import net.minecraft.entity.monster.EntityCreeper;
+import net.minecraft.entity.monster.EntityEnderman;
+import net.minecraft.entity.monster.EntitySkeleton;
+import net.minecraft.entity.monster.EntitySlime;
+import net.minecraft.entity.monster.EntitySpider;
+import net.minecraft.entity.monster.EntityZombie;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.MathHelper;
+import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeDecorator;
 import net.minecraft.world.biome.BiomeGenBase;
@@ -13,6 +21,10 @@ import net.minecraft.world.gen.feature.WorldGenAbstractTree;
 import net.minecraft.world.gen.feature.WorldGenerator;
 
 import Reika.ChromatiCraft.API.Interfaces.DyeTreeBlocker;
+import Reika.DragonAPI.ModList;
+import Reika.DragonAPI.Instantiable.Math.Noise.NoiseGeneratorBase;
+import Reika.DragonAPI.Instantiable.Math.Noise.SimplexNoiseGenerator;
+import Reika.DragonAPI.Instantiable.Worldgen.ModSpawnEntry;
 import Reika.DragonAPI.Libraries.IO.ReikaColorAPI;
 import Reika.DragonAPI.Libraries.MathSci.ReikaMathLibrary;
 
@@ -23,6 +35,7 @@ public class BiomePinkForest extends BiomeGenBase implements DyeTreeBlocker {
 
 	//private final PinkTreeGenerator treeGen = new PinkTreeGenerator();
 	//private final GiantPinkTreeGenerator giantTreeGen = new GiantPinkTreeGenerator();
+	private static final NoiseGeneratorBase waterColorMix = new SimplexNoiseGenerator(~System.currentTimeMillis()).setFrequency(1/5D);
 
 	PinkForestNoiseData noise;
 	private final PinkForestTerrainShaper terrain = new PinkForestTerrainShaper();
@@ -41,6 +54,22 @@ public class BiomePinkForest extends BiomeGenBase implements DyeTreeBlocker {
 		fillerBlock = Blocks.stone;
 
 		this.setHeight(new Height(1.75F, 0.25F));
+
+		spawnableMonsterList.clear();
+
+		//base vanilla mobs, most with halved spawn rates
+		spawnableMonsterList.add(new BiomeGenBase.SpawnListEntry(EntityZombie.class, 50, 4, 4));
+		spawnableMonsterList.add(new BiomeGenBase.SpawnListEntry(EntitySkeleton.class, 50, 4, 4));
+		spawnableMonsterList.add(new BiomeGenBase.SpawnListEntry(EntityCreeper.class, 50, 4, 4));
+		spawnableMonsterList.add(new BiomeGenBase.SpawnListEntry(EntityEnderman.class, 5, 1, 2));
+		spawnableMonsterList.add(new BiomeGenBase.SpawnListEntry(EntitySlime.class, 100, 4, 4));
+
+		spawnableMonsterList.add(new BiomeGenBase.SpawnListEntry(EntitySpider.class, 100, 4, 4)); //large stinger stand-in
+		spawnableMonsterList.add(new BiomeGenBase.SpawnListEntry(EntityCaveSpider.class, 50, 6, 6)); //basic (small) stinger stand-in
+		if (ModList.TWILIGHT.isLoaded()) {
+			ModSpawnEntry msp = new ModSpawnEntry(ModList.TWILIGHT, "twilightforest.entity.EntityTFHedgeSpider", 80, 4, 4); //elite stinger stand-in
+			spawnableMonsterList.add(msp.getEntry());
+		}
 	}
 
 	@Override
@@ -139,6 +168,11 @@ public class BiomePinkForest extends BiomeGenBase implements DyeTreeBlocker {
 			f = (y-min)/(float)(max-min);
 		}
 		return ReikaColorAPI.mixColors(0xFFB3D1, 0xE95F84, f);
+	}
+
+	public int getWaterColor(IBlockAccess world, int x, int y, int z, int l) {
+		float f = (float)ReikaMathLibrary.normalizeToBounds(waterColorMix.getValue(x, z), 0, 1);
+		return ReikaColorAPI.mixColors(0x3C6D76, 0x144D5A, f);//this.getWaterColorMultiplier();
 	}
 
 	public BiomeSection getSubBiome(World world, int x, int z) {

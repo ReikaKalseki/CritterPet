@@ -80,16 +80,17 @@ public class WorldGenUraniumCave extends WorldGenerator {
 			double s2 = Math.sin(Math.toRadians(a2));
 
 			double d = 4;
-			double dx = bf.center.xCoord;
-			double dz = bf.center.zCoord;
+			Vec3 center = bf.getCenter();
+			double dx = center.xCoord;
+			double dz = center.zCoord;
 			while (CritterPet.isPinkForest(world, MathHelper.floor_double(dx), MathHelper.floor_double(dz))) {
 				dx += c1*d;
 				dz += s1*d;
 			}
 			Tunnel t1 = new Tunnel(cc, dx, dz);
 
-			dx = bf.center.xCoord;
-			dz = bf.center.zCoord;
+			dx = center.xCoord;
+			dz = center.zCoord;
 			while (CritterPet.isPinkForest(world, MathHelper.floor_double(dx), MathHelper.floor_double(dz))) {
 				dx += c2*d;
 				dz += s2*d;
@@ -461,59 +462,5 @@ public class WorldGenUraniumCave extends WorldGenerator {
 		protected final boolean isTerrain(World world, Coordinate c, Block b) {
 			return b.isReplaceableOreGen(world, c.xCoord, c.yCoord, c.zCoord, Blocks.stone) || b.getMaterial() == Material.ground || b.getMaterial() == Material.clay || b.getMaterial() == Material.sand || b.isReplaceableOreGen(world, c.xCoord, c.yCoord, c.zCoord, Blocks.grass) || ReikaBlockHelper.isOre(b, c.getBlockMetadata(world));
 		}
-	}
-
-	private static class BiomeFootprint {
-
-		private final HashSet<Coordinate> coords = new HashSet();
-
-		private Vec3 center = Vec3.createVectorHelper(0, 0, 0);
-
-		/* recursive version
-		private void calculate(World world, int x, int z) {
-			Coordinate loc = new Coordinate(x, 0, z);
-			if (!coords.contains(loc) && CritterPet.isPinkForest(world, x, z)) {
-				coords.add(loc);
-				center.xCoord += x+0.5;
-				center.zCoord += z+0.5;
-				this.calculate(world, x-1, z);
-				this.calculate(world, x+1, z);
-				this.calculate(world, x, z-1);
-				this.calculate(world, x, z+1);
-			}
-		}*/
-
-		private boolean calculate(World world, int x, int z) {
-			HashSet<Coordinate> next = new HashSet();
-			Coordinate loc = new Coordinate(x, 0, z);
-			next.add(loc);
-			while (!next.isEmpty()) {
-				HashSet<Coordinate> newNext = new HashSet();
-				for (Coordinate c : next) {
-					this.searchFrom(world, c, newNext);
-				}
-				next = newNext;
-			}
-			if (coords.isEmpty())
-				return false;
-			center.xCoord /= coords.size();
-			center.zCoord /= coords.size();
-			return true;
-		}
-
-		private void searchFrom(World world, Coordinate loc, HashSet<Coordinate> newNext) {
-			int x = loc.xCoord;
-			int z = loc.zCoord;
-			if (!coords.contains(loc) && CritterPet.isPinkForest(world, x, z)) {
-				coords.add(loc);
-				center.xCoord += x+0.5;
-				center.zCoord += z+0.5;
-				newNext.add(new Coordinate(x-1, 0, z));
-				newNext.add(new Coordinate(x+1, 0, z));
-				newNext.add(new Coordinate(x, 0, z-1));
-				newNext.add(new Coordinate(x, 0, z+1));
-			}
-		}
-
 	}
 }

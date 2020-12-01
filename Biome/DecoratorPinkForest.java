@@ -66,10 +66,12 @@ public class DecoratorPinkForest extends StackableBiomeDecorator {
 		}
 		 */
 
+		/*
 		if (ReikaWorldHelper.getNaturalGennedBiomeAt(currentWorld, chunk_X, chunk_Z) == biome) {
 			new WorldGenPinkRiver().generate(currentWorld, randomGenerator, chunk_X, 0, chunk_Z);
 			new WorldGenUraniumCave().generate(currentWorld, randomGenerator, chunk_X, 0, chunk_Z);
 		}
+		 */
 
 		super.genDecorations(biome);
 

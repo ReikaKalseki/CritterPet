@@ -13,10 +13,13 @@ import java.io.File;
 import java.net.URL;
 
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.monster.EntitySpider;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.IIcon;
+import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.client.event.TextureStitchEvent;
@@ -24,7 +27,9 @@ import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeManager;
 import net.minecraftforge.common.BiomeManager.BiomeEntry;
 import net.minecraftforge.common.BiomeManager.BiomeType;
+import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent.AllowDespawn;
+import net.minecraftforge.event.entity.living.LivingSpawnEvent.CheckSpawn;
 import net.minecraftforge.event.terraingen.ChunkProviderEvent;
 
 import Reika.CritterPet.Biome.BiomePinkForest;
@@ -48,6 +53,7 @@ import Reika.DragonAPI.Instantiable.Event.IceFreezeEvent;
 import Reika.DragonAPI.Instantiable.Event.SnowOrIceOnGenEvent;
 import Reika.DragonAPI.Instantiable.Event.Client.GrassIconEvent;
 import Reika.DragonAPI.Instantiable.Event.Client.SinglePlayerLogoutEvent;
+import Reika.DragonAPI.Instantiable.Event.Client.WaterColorEvent;
 import Reika.DragonAPI.Instantiable.IO.ControlledConfig;
 import Reika.DragonAPI.Instantiable.IO.ModLogger;
 
@@ -91,6 +97,7 @@ public class CritterPet extends DragonAPIMod {
 
 	private IIcon biomeGrassIcon;
 	private IIcon biomeGrassIconSide;
+	private IIcon biomeWaterIcon;
 
 	public static ModLogger logger;
 
@@ -266,6 +273,7 @@ public class CritterPet extends DragonAPIMod {
 		if (event.map.getTextureType() == 0) {
 			biomeGrassIcon = event.map.registerIcon("critterpet:grass_top");
 			biomeGrassIconSide = event.map.registerIcon("critterpet:grass_side_overlay");
+			biomeWaterIcon = event.map.registerIcon("critterpet:water_white");
 		}
 	}
 
@@ -289,6 +297,34 @@ public class CritterPet extends DragonAPIMod {
 		WorldGenUraniumCave.clearCaveCache();
 	}
 
+	@SubscribeEvent
+	public void forestWaterColor(WaterColorEvent evt) {
+		if (isPinkForest(evt.getBiome())) {
+			evt.color = pinkforest.getWaterColor(evt.access, evt.xCoord, evt.yCoord, evt.zCoord, evt.getLightLevel());
+		}
+	}
+
+	@SubscribeEvent
+	public void spidersAtAllBrightness(CheckSpawn evt) {
+		if (evt.entity instanceof EntitySpider && this.isPinkForest(evt.entity.worldObj, MathHelper.floor_float(evt.x), MathHelper.floor_float(evt.z))) {
+			evt.setResult(Result.ALLOW);
+		}
+	}
+
+	@SubscribeEvent
+	public void spidersAtAllBrightness(LivingHurtEvent evt) {
+		if (evt.entity instanceof EntitySpider && evt.source == DamageSource.fall && this.isPinkForest(evt.entity.worldObj, MathHelper.floor_double(evt.entity.posX), MathHelper.floor_double(evt.entity.posZ))) {
+			evt.setCanceled(true);
+		}
+	}
+	/*
+	@SubscribeEvent
+	public void spidersAtAllBrightness(LightLevelForSpawnEvent evt) {
+		if (evt.mob instanceof EntitySpider && this.isPinkForest(evt.entity.worldObj, evt.entityX, evt.entityZ)) {
+			evt.setResult(Result.ALLOW);
+		}
+	}
+	 */
 	public static boolean isPinkForest(World world, int x, int z) {
 		return isPinkForest(world.getWorldChunkManager().getBiomeGenAt(x, z));
 	}
