@@ -9,12 +9,19 @@
  ******************************************************************************/
 package Reika.CritterPet.Biome;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map.Entry;
+
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
+import net.minecraft.util.MathHelper;
+import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeGenBase;
 
 import Reika.CritterPet.CritterPet;
+import Reika.DragonAPI.Instantiable.Data.Immutable.Coordinate;
 import Reika.DragonAPI.Instantiable.IO.ModLogger;
 import Reika.DragonAPI.Instantiable.Worldgen.StackableBiomeDecorator;
 import Reika.DragonAPI.Libraries.World.ReikaWorldHelper;
@@ -29,6 +36,8 @@ public class DecoratorPinkForest extends StackableBiomeDecorator {
 
 	private static final double RIVER_DEPTH = 5.5;
 	private static final double RIVER_WATER_MAX_DEPTH = 3;
+
+	private final HashMap<Coordinate, BiomeFootprint> biomeColumns = new HashMap();
 
 	public DecoratorPinkForest() {
 		super();
@@ -73,6 +82,28 @@ public class DecoratorPinkForest extends StackableBiomeDecorator {
 		}
 		 */
 
+		Coordinate c = new Coordinate(chunk_X, 0, chunk_Z);
+		BiomeFootprint at = biomeColumns.get(c);
+		if (at == null) {
+			if (ReikaWorldHelper.getNaturalGennedBiomeAt(currentWorld, chunk_X, chunk_Z) == biome) {
+				BiomeFootprint bf = new BiomeFootprint();
+				if (bf.calculate(currentWorld, chunk_X, chunk_Z)) {
+					for (Coordinate c2 : bf.getCoords()) {
+						biomeColumns.put(c2, bf);
+					}
+				}
+				at = bf;
+			}
+		}
+		if (at != null) {
+			Vec3 center = at.getCenter();
+			int x = MathHelper.floor_double(center.xCoord);
+			int z = MathHelper.floor_double(center.zCoord);
+			if (x >= chunk_X && z >= chunk_Z && x-chunk_X < 16 && z-chunk_Z < 16) {
+				this.generateUniqueCenterFeatures(x, z, at);
+			}
+		}
+
 		super.genDecorations(biome);
 
 		int x = chunk_X + randomGenerator.nextInt(16) + 8;
@@ -85,7 +116,73 @@ public class DecoratorPinkForest extends StackableBiomeDecorator {
 		redBambooGenerator.generate(currentWorld, randomGenerator, x, top, z);
 	}
 
-	static int getTrueTopAt(World currentWorld, int dx, int dz) {
+	private void generateUniqueCenterFeatures(int x, int z, BiomeFootprint bf) {
+		ArrayList<Coordinate> li = new ArrayList(bf.getEdges());
+		if (li.isEmpty())
+			return;
+		HashMap<Coordinate, Double> valid = new HashMap();
+		int idx = randomGenerator.nextInt(li.size());
+		Coordinate c = li.remove(idx);
+		while (valid.size() < 39999 && !li.isEmpty()) {
+			Double ang = this.isValidRiverEndpoint(x, z, c, bf);
+			if (ang != null) {
+				valid.put(c, ang);
+			}
+			idx = randomGenerator.nextInt(li.size());
+			c = li.remove(idx);
+		}
+		for (Entry<Coordinate, Double> e : valid.entrySet()) {
+			double ang = Math.toRadians(e.getValue());
+			double cx = Math.cos(ang);
+			double cz = Math.sin(ang);
+			double angn = Math.toRadians(e.getValue()+90);
+			double cxn = Math.cos(angn);
+			double czn = Math.sin(angn);
+			int r = 4;
+			for (int i = -r; i <= r; i++) {
+				for (int k = -2; k <= 6; k++) {
+					int dx = MathHelper.floor_double(e.getKey().xCoord-k*cxn+i*cx);
+					int dz = MathHelper.floor_double(e.getKey().zCoord-k*czn+i*cz);
+					currentWorld.setBlock(dx, 140, dz, Blocks.wool, Math.abs(i), 2);
+				}
+			}
+		}
+	}
+
+	private Double isValidRiverEndpoint(int x, int z, Coordinate c, BiomeFootprint bf) {
+		double raw = bf.getAngleAt(c, 4);
+		double ang = Math.toRadians(raw);
+		double angn = Math.toRadians(raw+90);
+		double dx = Math.cos(ang);
+		double dz = Math.sin(ang);
+		double dxn = Math.cos(angn);
+		double dzn = Math.sin(angn);
+		double w = 6.5;
+		int dd = 3;
+		int x0 = MathHelper.floor_double(c.xCoord-dxn*dd);
+		int z0 = MathHelper.floor_double(c.zCoord-dzn*dd);
+		if (!CritterPet.isPinkForest(currentWorld, x0, z0))
+			return null;
+		double h = this.getAverageHeight(currentWorld, x0, z0, 2);
+		for (int dl = -1; dl <= 6; dl += 2) {
+			int ddl = dl+dd;
+			int x1 = MathHelper.floor_double(c.xCoord+w*dx-dxn*ddl);
+			int z1 = MathHelper.floor_double(c.zCoord+w*dz-dzn*ddl);
+			int x2 = MathHelper.floor_double(c.xCoord-w*dx-dxn*ddl);
+			int z2 = MathHelper.floor_double(c.zCoord-w*dz-dzn*ddl);
+			if (!CritterPet.isPinkForest(currentWorld, x1, z1))
+				return null;
+			if (!CritterPet.isPinkForest(currentWorld, x2, z2))
+				return null;
+			double h1 = this.getAverageHeight(currentWorld, x1, z1, 2);
+			double h2 = this.getAverageHeight(currentWorld, x1, z1, 2);
+			if (Math.abs(h2-h1) >= 3 || h2 < h-2 || h1 < h-2)
+				return null;
+		}
+		return raw;
+	}
+
+	public static int getTrueTopAt(World currentWorld, int dx, int dz) {
 		int top = currentWorld.getTopSolidOrLiquidBlock(dx, dz);
 		Block at = currentWorld.getBlock(dx, top, dz);
 		while (top > 0 && (at == Blocks.air || at == CritterPet.log || at == CritterPet.leaves || at.isWood(currentWorld, dx, top, dz) || at.isLeaves(currentWorld, dx, top, dz) || ReikaWorldHelper.softBlocks(currentWorld, dx, top, dz))) {

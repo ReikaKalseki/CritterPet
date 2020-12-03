@@ -12,6 +12,7 @@ package Reika.CritterPet;
 import java.io.File;
 import java.net.URL;
 
+import net.minecraft.block.Block;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.monster.EntitySpider;
 import net.minecraft.init.Blocks;
@@ -29,8 +30,8 @@ import net.minecraftforge.common.BiomeManager.BiomeEntry;
 import net.minecraftforge.common.BiomeManager.BiomeType;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent.AllowDespawn;
-import net.minecraftforge.event.entity.living.LivingSpawnEvent.CheckSpawn;
 import net.minecraftforge.event.terraingen.ChunkProviderEvent;
+import net.minecraftforge.fluids.FluidRegistry;
 
 import Reika.CritterPet.Biome.BiomePinkForest;
 import Reika.CritterPet.Biome.BlockPinkGrass;
@@ -49,13 +50,17 @@ import Reika.DragonAPI.Base.DragonAPIMod;
 import Reika.DragonAPI.Base.DragonAPIMod.LoadProfiler.LoadPhase;
 import Reika.DragonAPI.Instantiable.Event.BlockTickEvent;
 import Reika.DragonAPI.Instantiable.Event.GenLayerRiverEvent;
+import Reika.DragonAPI.Instantiable.Event.GetYToSpawnMobEvent;
 import Reika.DragonAPI.Instantiable.Event.IceFreezeEvent;
+import Reika.DragonAPI.Instantiable.Event.LightLevelForSpawnEvent;
 import Reika.DragonAPI.Instantiable.Event.SnowOrIceOnGenEvent;
 import Reika.DragonAPI.Instantiable.Event.Client.GrassIconEvent;
+import Reika.DragonAPI.Instantiable.Event.Client.LiquidBlockIconEvent;
 import Reika.DragonAPI.Instantiable.Event.Client.SinglePlayerLogoutEvent;
 import Reika.DragonAPI.Instantiable.Event.Client.WaterColorEvent;
 import Reika.DragonAPI.Instantiable.IO.ControlledConfig;
 import Reika.DragonAPI.Instantiable.IO.ModLogger;
+import Reika.DragonAPI.Libraries.World.ReikaWorldHelper;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
@@ -98,6 +103,7 @@ public class CritterPet extends DragonAPIMod {
 	private IIcon biomeGrassIcon;
 	private IIcon biomeGrassIconSide;
 	private IIcon biomeWaterIcon;
+	private IIcon biomeWaterIconFlow;
 
 	public static ModLogger logger;
 
@@ -268,12 +274,23 @@ public class CritterPet extends DragonAPIMod {
 	}
 
 	@SubscribeEvent
+	public void retextureWater(LiquidBlockIconEvent evt) {
+		if (evt.getBiome() instanceof BiomePinkForest) {
+			if (evt.originalIcon == FluidRegistry.WATER.getFlowingIcon())
+				evt.icon = biomeWaterIconFlow;
+			else if (evt.originalIcon == FluidRegistry.WATER.getStillIcon())
+				evt.icon = biomeWaterIcon;
+		}
+	}
+
+	@SubscribeEvent
 	@SideOnly(Side.CLIENT)
 	public void textureHook(TextureStitchEvent.Pre event) {
 		if (event.map.getTextureType() == 0) {
 			biomeGrassIcon = event.map.registerIcon("critterpet:grass_top");
 			biomeGrassIconSide = event.map.registerIcon("critterpet:grass_side_overlay");
-			biomeWaterIcon = event.map.registerIcon("critterpet:water_white");
+			biomeWaterIconFlow = event.map.registerIcon("critterpet:water/water_flow");
+			biomeWaterIcon = event.map.registerIcon("critterpet:water/water_still");
 		}
 	}
 
@@ -303,28 +320,48 @@ public class CritterPet extends DragonAPIMod {
 			evt.color = pinkforest.getWaterColor(evt.access, evt.xCoord, evt.yCoord, evt.zCoord, evt.getLightLevel());
 		}
 	}
-
+	/*
 	@SubscribeEvent
 	public void spidersAtAllBrightness(CheckSpawn evt) {
 		if (evt.entity instanceof EntitySpider && this.isPinkForest(evt.entity.worldObj, MathHelper.floor_float(evt.x), MathHelper.floor_float(evt.z))) {
 			evt.setResult(Result.ALLOW);
 		}
 	}
-
+	 */
 	@SubscribeEvent
 	public void spidersAtAllBrightness(LivingHurtEvent evt) {
 		if (evt.entity instanceof EntitySpider && evt.source == DamageSource.fall && this.isPinkForest(evt.entity.worldObj, MathHelper.floor_double(evt.entity.posX), MathHelper.floor_double(evt.entity.posZ))) {
 			evt.setCanceled(true);
 		}
 	}
-	/*
+
 	@SubscribeEvent
 	public void spidersAtAllBrightness(LightLevelForSpawnEvent evt) {
 		if (evt.mob instanceof EntitySpider && this.isPinkForest(evt.entity.worldObj, evt.entityX, evt.entityZ)) {
 			evt.setResult(Result.ALLOW);
 		}
 	}
-	 */
+
+	@SubscribeEvent
+	public void mobSpawnY(GetYToSpawnMobEvent evt) {
+		if (this.isPinkForest(evt.world, evt.xCoord, evt.zCoord)) {
+			int dy = evt.yToTry-1;
+			Block at = evt.world.getBlock(evt.xCoord, dy, evt.zCoord);
+			while (evt.yToTry > 1 && (at == Blocks.air || at == CritterPet.log || at == CritterPet.leaves || at.isWood(evt.world, evt.xCoord, dy, evt.zCoord) || at.isLeaves(evt.world, evt.xCoord, dy, evt.zCoord) || ReikaWorldHelper.softBlocks(evt.world, evt.xCoord, dy, evt.zCoord))) {
+				evt.yToTry--;
+				dy--;
+				at = evt.world.getBlock(evt.xCoord, dy, evt.zCoord);
+			}
+			//ReikaJavaLibrary.pConsole(evt.yToTry+" from "+evt.yCoord+" > "+evt.world.getBlock(evt.xCoord, evt.yCoord, evt.zCoord)+" to "+evt.world.getBlock(evt.xCoord, evt.yToTry, evt.zCoord), evt.yCoord != evt.yToTry);
+			/*
+			int top = DecoratorPinkForest.getTrueTopAt(evt.world, evt.xCoord, evt.zCoord)+1;
+			evt.yToTry = Math.min(evt.yToTry, top);
+			if (false && evt.world.rand.nextInt(2) == 0) {
+				evt.yToTry = top;
+			}*/
+		}
+	}
+
 	public static boolean isPinkForest(World world, int x, int z) {
 		return isPinkForest(world.getWorldChunkManager().getBiomeGenAt(x, z));
 	}

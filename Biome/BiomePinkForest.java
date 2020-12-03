@@ -35,7 +35,8 @@ public class BiomePinkForest extends BiomeGenBase implements DyeTreeBlocker {
 
 	//private final PinkTreeGenerator treeGen = new PinkTreeGenerator();
 	//private final GiantPinkTreeGenerator giantTreeGen = new GiantPinkTreeGenerator();
-	private static final NoiseGeneratorBase waterColorMix = new SimplexNoiseGenerator(~System.currentTimeMillis()).setFrequency(1/5D);
+	private static final NoiseGeneratorBase waterColorMix = new SimplexNoiseGenerator(~System.currentTimeMillis()).setFrequency(1/3.5D);
+	private static final NoiseGeneratorBase waterBrightnessMix = new SimplexNoiseGenerator(~System.currentTimeMillis()).setFrequency(1.5D);
 
 	PinkForestNoiseData noise;
 	private final PinkForestTerrainShaper terrain = new PinkForestTerrainShaper();
@@ -57,10 +58,10 @@ public class BiomePinkForest extends BiomeGenBase implements DyeTreeBlocker {
 
 		spawnableMonsterList.clear();
 
-		//base vanilla mobs, most with halved spawn rates
-		spawnableMonsterList.add(new BiomeGenBase.SpawnListEntry(EntityZombie.class, 50, 4, 4));
-		spawnableMonsterList.add(new BiomeGenBase.SpawnListEntry(EntitySkeleton.class, 50, 4, 4));
-		spawnableMonsterList.add(new BiomeGenBase.SpawnListEntry(EntityCreeper.class, 50, 4, 4));
+		//base vanilla mobs, most with 1/4th spawn rates (or 1/3 for creepers and halved for endermen)
+		spawnableMonsterList.add(new BiomeGenBase.SpawnListEntry(EntityZombie.class, 25, 4, 4));
+		spawnableMonsterList.add(new BiomeGenBase.SpawnListEntry(EntitySkeleton.class, 25, 4, 4));
+		spawnableMonsterList.add(new BiomeGenBase.SpawnListEntry(EntityCreeper.class, 33, 4, 4));
 		spawnableMonsterList.add(new BiomeGenBase.SpawnListEntry(EntityEnderman.class, 5, 1, 2));
 		spawnableMonsterList.add(new BiomeGenBase.SpawnListEntry(EntitySlime.class, 100, 4, 4));
 
@@ -172,7 +173,12 @@ public class BiomePinkForest extends BiomeGenBase implements DyeTreeBlocker {
 
 	public int getWaterColor(IBlockAccess world, int x, int y, int z, int l) {
 		float f = (float)ReikaMathLibrary.normalizeToBounds(waterColorMix.getValue(x, z), 0, 1);
-		return ReikaColorAPI.mixColors(0x3C6D76, 0x144D5A, f);//this.getWaterColorMultiplier();
+		//was 3C6D76, 144D5A, then 0x62939C, 0x144D5A
+		int ret = ReikaColorAPI.mixColors(0xA2E2EE, 0x4F99AA, f);//this.getWaterColorMultiplier();
+		f = (float)ReikaMathLibrary.normalizeToBounds(waterBrightnessMix.getValue(x, z), 0, 1.35);//was 1.5F
+		f = Math.max(1, f);
+		ret = ReikaColorAPI.getColorWithBrightnessMultiplier(ret, f);
+		return ret;
 	}
 
 	public BiomeSection getSubBiome(World world, int x, int z) {
