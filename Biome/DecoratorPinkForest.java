@@ -10,8 +10,13 @@
 package Reika.CritterPet.Biome;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map.Entry;
+
+import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
@@ -22,7 +27,11 @@ import net.minecraft.world.biome.BiomeGenBase;
 
 import Reika.CritterPet.CritterPet;
 import Reika.DragonAPI.Instantiable.Data.Immutable.Coordinate;
+import Reika.DragonAPI.Instantiable.Data.Immutable.DecimalPosition;
 import Reika.DragonAPI.Instantiable.IO.ModLogger;
+import Reika.DragonAPI.Instantiable.Math.Spline;
+import Reika.DragonAPI.Instantiable.Math.Spline.BasicSplinePoint;
+import Reika.DragonAPI.Instantiable.Math.Spline.SplineType;
 import Reika.DragonAPI.Instantiable.Worldgen.StackableBiomeDecorator;
 import Reika.DragonAPI.Libraries.World.ReikaWorldHelper;
 
@@ -120,36 +129,153 @@ public class DecoratorPinkForest extends StackableBiomeDecorator {
 		ArrayList<Coordinate> li = new ArrayList(bf.getEdges());
 		if (li.isEmpty())
 			return;
-		HashMap<Coordinate, Double> valid = new HashMap();
+		HashMap<Coordinate, RiverMouth> valid = new HashMap();
 		int idx = randomGenerator.nextInt(li.size());
 		Coordinate c = li.remove(idx);
 		while (valid.size() < 39999 && !li.isEmpty()) {
-			Double ang = this.isValidRiverEndpoint(x, z, c, bf);
-			if (ang != null) {
-				valid.put(c, ang);
+			for (Coordinate c2 : valid.keySet()) {
+				if (c.getTaxicabDistanceTo(c2) <= 64) {
+					c = null;
+					break;
+				}
+			}
+			if (c != null) {
+				RiverMouth ang = this.isValidRiverEndpoint(x, z, c, bf);
+				if (ang != null) {
+					valid.put(c, ang);
+				}
 			}
 			idx = randomGenerator.nextInt(li.size());
 			c = li.remove(idx);
 		}
-		for (Entry<Coordinate, Double> e : valid.entrySet()) {
-			double ang = Math.toRadians(e.getValue());
-			double cx = Math.cos(ang);
-			double cz = Math.sin(ang);
-			double angn = Math.toRadians(e.getValue()+90);
-			double cxn = Math.cos(angn);
-			double czn = Math.sin(angn);
-			int r = 4;
+		for (Entry<Coordinate, RiverMouth> e : valid.entrySet()) {
+			this.generateRiverAt(e.getKey(), e.getValue());
+		}
+	}
+
+	private void generateRiverAt(Coordinate c, RiverMouth river) {
+		int r = 3;
+		int d = 4;
+		/*
+		for (double i = -r; i <= r; i += 0.5) {
+			for (double k = -2; k <= 18; k += 0.5) {
+				int dx = MathHelper.floor_double(c.xCoord-k*river.cosNormal+i*river.cosTangent);
+				int dz = MathHelper.floor_double(c.zCoord-k*river.sinNormal+i*river.sinTangent);
+				if (CritterPet.isPinkForest(currentWorld, dx, dz)) {
+					//currentWorld.setBlock(dx, 140, dz, Blocks.wool, Math.abs(i), 2);
+
+					int top = this.getTrueTopAt(currentWorld, dx, dz);
+					double depth = d*Math.min(1, 1.125*Math.sqrt(1-Math.abs(i)/r));
+					double target = river.averageHeight-depth;
+					double dh = top-target;
+					if (dh > 0) {
+						for (int h = 0; h <= dh; h++) {
+							int dy = top-h;
+							currentWorld.setBlock(dx, dy, dz, Blocks.glass);
+						}
+					}
+					currentWorld.setBlock(dx, (int)target-1, dz, Blocks.clay);
+				}
+			}
+		}*/
+		double exitY = river.averageHeight;
+		for (double k = 0; k <= 10; k += 0.5) {
+			int dx = MathHelper.floor_double(c.xCoord-k*river.cosNormal);
+			int dz = MathHelper.floor_double(c.zCoord-k*river.sinNormal);
+			int top = this.getTrueTopAt(currentWorld, dx, dz);
+			exitY += top;
+		}
+		exitY /= 12;
+		ArrayList<Coordinate> path = new ArrayList();
+		path.add(c);
+		double pa = river.angle+90;
+		double h = river.averageHeight;
+		double step = 9;
+		int dx = MathHelper.floor_double(c.xCoord-step*river.cosNormal);
+		int dz = MathHelper.floor_double(c.zCoord-step*river.sinNormal);
+		Coordinate c2 = new Coordinate(dx, h, dz);
+		while (c2 != null && path.size() < 4) {
+			path.add(c2);
+			ImmutablePair<Coordinate, Double> pair = this.findNextTarget(c, step, pa, c2, river);
+			c2 = pair != null ? pair.left : null;
+			pa = pair != null ? pair.right : pa;
+		}
+		Spline s = new Spline(SplineType.CENTRIPETAL);
+		for (Coordinate c3 : path) {
+			s.addPoint(new BasicSplinePoint(c3.xCoord+0.5, c3.yCoord+0.5, c3.zCoord+0.5));
+		}
+		List<DecimalPosition> li = s.get(8, false);
+		for (DecimalPosition p : li) {
 			for (int i = -r; i <= r; i++) {
-				for (int k = -2; k <= 6; k++) {
-					int dx = MathHelper.floor_double(e.getKey().xCoord-k*cxn+i*cx);
-					int dz = MathHelper.floor_double(e.getKey().zCoord-k*czn+i*cz);
-					currentWorld.setBlock(dx, 140, dz, Blocks.wool, Math.abs(i), 2);
+				for (int k = -r; k <= r; k++) {
+					if (i*i+k*k <= r*r) {
+						int ddx = MathHelper.floor_double(p.xCoord+i);
+						int ddz = MathHelper.floor_double(p.zCoord+k);
+						int top = this.getTrueTopAt(currentWorld, ddx, ddz);
+						currentWorld.setBlock(ddx, top, ddz, Blocks.glass);
+						currentWorld.setBlock(ddx, top+1, ddz, Blocks.glass);
+						currentWorld.setBlock(ddx, top-1, ddz, Blocks.obsidian);
+					}
 				}
 			}
 		}
 	}
 
-	private Double isValidRiverEndpoint(int x, int z, Coordinate c, BiomeFootprint bf) {
+	private ImmutablePair<Coordinate, Double> findNextTarget(Coordinate root, double step, double pa, Coordinate from, RiverMouth river) {
+		double ra = 30;
+		double da = 2.5;
+		double angmin = pa-ra;
+		double angmax = pa+ra;
+		final int h = from.yCoord;
+		ArrayList<ImmutablePair<Coordinate, Double>> li = new ArrayList();
+		for (double ang = angmin; ang <= angmax; ang += da) {
+			int dx = MathHelper.floor_double(from.xCoord+step*Math.cos(Math.toRadians(ang)));
+			int dz = MathHelper.floor_double(from.zCoord+step*Math.sin(Math.toRadians(ang)));
+			if (CritterPet.isPinkForest(currentWorld, dx, dz)) {
+				double top = this.getAverageHeight(currentWorld, dx, dz, 4);
+				if (true || top >= h-6) {
+					/*
+					double dd = c.getDistanceTo(root);
+					double dw = dd*0.8;
+					double wx = dw*river.cosTangent;
+					double wz = dw*river.sinTangent;
+					int x0 = MathHelper.floor_double(root.xCoord-wx);
+					int x1 = MathHelper.floor_double(root.xCoord+wx);
+					int z0 = MathHelper.floor_double(root.zCoord-wz);
+					int z1 = MathHelper.floor_double(root.zCoord+wz);
+					 */
+					Coordinate c = new Coordinate(dx, (int)top, dz);
+					li.add(new ImmutablePair(c, ang));
+				}
+			}
+		}
+		if (li.isEmpty())
+			return null;
+		Collections.sort(li, new Comparator<ImmutablePair<Coordinate, Double>>() {
+			@Override
+			public int compare(ImmutablePair<Coordinate, Double> o1, ImmutablePair<Coordinate, Double> o2) {
+				double dy1 = o1.left.yCoord-h;
+				double dy2 = o2.left.yCoord-h;
+				if ((dy1 > 0 && dy2 > 0) || (dy1 < 0 && dy2 < 0) || (dy1 == 0 && dy2 == 0)) {
+					return Double.compare(dy1, dy2);
+				}
+				else if (dy1 > 0) {
+					return -1;
+				}
+				else if (dy2 > 0) {
+					return 1;
+				}
+				return 0; //impossible
+			}
+		});
+		return li.get(0);
+	}
+
+	private void addStep(Coordinate from, Coordinate to, double step, int h, RiverMouth river, ArrayList<Coordinate> path) {
+
+	}
+
+	private RiverMouth isValidRiverEndpoint(int x, int z, Coordinate c, BiomeFootprint bf) {
 		double raw = bf.getAngleAt(c, 4);
 		double ang = Math.toRadians(raw);
 		double angn = Math.toRadians(raw+90);
@@ -163,7 +289,7 @@ public class DecoratorPinkForest extends StackableBiomeDecorator {
 		int z0 = MathHelper.floor_double(c.zCoord-dzn*dd);
 		if (!CritterPet.isPinkForest(currentWorld, x0, z0))
 			return null;
-		double h = this.getAverageHeight(currentWorld, x0, z0, 2);
+		double h = this.getAverageHeight(currentWorld, x0, z0, 3);
 		for (int dl = -1; dl <= 6; dl += 2) {
 			int ddl = dl+dd;
 			int x1 = MathHelper.floor_double(c.xCoord+w*dx-dxn*ddl);
@@ -176,10 +302,10 @@ public class DecoratorPinkForest extends StackableBiomeDecorator {
 				return null;
 			double h1 = this.getAverageHeight(currentWorld, x1, z1, 2);
 			double h2 = this.getAverageHeight(currentWorld, x1, z1, 2);
-			if (Math.abs(h2-h1) >= 3 || h2 < h-2 || h1 < h-2)
+			if (Math.abs(h2-h1) >= 3 || h2 < h-2 || h1 < h-2 || h < h1-10 || h < h2-10)
 				return null;
 		}
-		return raw;
+		return new RiverMouth(c, raw, dx, dz, dxn, dzn, h);
 	}
 
 	public static int getTrueTopAt(World currentWorld, int dx, int dz) {
@@ -317,6 +443,28 @@ public class DecoratorPinkForest extends StackableBiomeDecorator {
 	@Override
 	protected ModLogger getLogger() {
 		return CritterPet.logger;
+	}
+
+	private static class RiverMouth {
+
+		private final Coordinate location;
+		private final double angle;
+		private final double cosTangent;
+		private final double sinTangent;
+		private final double cosNormal;
+		private final double sinNormal;
+		private final double averageHeight;
+
+		public RiverMouth(Coordinate c, double raw, double dx, double dz, double dxn, double dzn, double h) {
+			location = c;
+			angle = raw;
+			cosNormal = dxn;
+			sinNormal = dzn;
+			cosTangent = dx;
+			sinTangent = dz;
+			averageHeight = h;
+		}
+
 	}
 
 
