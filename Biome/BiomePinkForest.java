@@ -19,7 +19,6 @@ import net.minecraft.world.biome.BiomeDecorator;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraft.world.gen.feature.WorldGenAbstractTree;
 import net.minecraft.world.gen.feature.WorldGenerator;
-import net.minecraftforge.common.util.ForgeDirection;
 
 import Reika.ChromatiCraft.API.Interfaces.DyeTreeBlocker;
 import Reika.ChromatiCraft.API.Interfaces.NonconvertibleBiome;
@@ -182,9 +181,10 @@ public class BiomePinkForest extends BiomeGenBase implements DyeTreeBlocker, Non
 		f = (float)ReikaMathLibrary.normalizeToBounds(waterBrightnessMix.getValue(x, z), 0, 1.35);//was 1.5F
 		f = Math.max(1, f);
 		ret = ReikaColorAPI.getColorWithBrightnessMultiplier(ret, f);
-		f = 1;
 		boolean flag = true;
-		int r = 6;//4;
+		int r = 3;//6;//4;
+		/*
+		f = 1;
 		for (int d = 1; d < r && flag; d++) {
 			for (int i = 0; i < 4; i++) {
 				ForgeDirection dir = ForgeDirection.VALID_DIRECTIONS[i];
@@ -197,7 +197,19 @@ public class BiomePinkForest extends BiomeGenBase implements DyeTreeBlocker, Non
 				}
 			}
 		}
+		 */
+		int nb = 0;
+		int n = 0;
+		for (int i = -r; i <= r; i++) {
+			for (int k = -r; k <= r; k++) {
+				n++;
+				if (CritterPet.isPinkForest(world.getBiomeGenForCoords(x+i, z+k)))
+					nb++;
+			}
+		}
+		flag = nb == n;
 		if (!flag) {
+			f = nb/(float)n;
 			ret = ReikaColorAPI.mixColors(ret, 0x1845ff, f);
 		}
 		return ret;

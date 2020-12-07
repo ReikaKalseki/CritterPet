@@ -315,6 +315,10 @@ public class DecoratorPinkForest extends StackableBiomeDecorator {
 					continue;
 				}
 				int y = at.averageY;
+				if (force) {
+					c2.setY(y).setBlock(world, Blocks.air);
+					y--;
+				}
 				c2.setY(y).setBlock(world, put);
 				c2.setY(y-1).setBlock(world, Blocks.sand);
 				int yat = at.location.yCoord;
@@ -382,27 +386,52 @@ public class DecoratorPinkForest extends StackableBiomeDecorator {
 		}
 
 		private boolean isValidWater(World world, int y) {
-			int solid = 0;
+			return isValidWater(world, location.yCoord, location.xCoord, y, location.zCoord);
+		}
+
+		private static boolean isValidWater(World world, int y0, int x, int y, int z) {
+			//int solid = 0;
 			int sand = 0;
 			for (int i = 0; i < 4; i++) {
 				ForgeDirection dir = ForgeDirection.VALID_DIRECTIONS[i+2];
-				int dx = location.xCoord+dir.offsetX;
-				int dz = location.zCoord+dir.offsetZ;
-				if (!ReikaWorldHelper.softBlocks(world, dx, y, dz))
-					solid++;
-				for (int h = -1; h <= 1; h++) {
-					if (world.getBlock(dx, location.yCoord+h, dz) == Blocks.sand)
-						sand++;
+				int dx = x+dir.offsetX;
+				int dz = z+dir.offsetZ;
+				//if (!ReikaWorldHelper.softBlocks(world, dx, y, dz))
+				//	solid++;
+				if (isBarrier(world, dx, y, dz)) {
+					for (int h = -1; h <= 1; h++) {
+						if (world.getBlock(dx, y0+h, dz) == Blocks.sand)
+							sand++;
+					}
+				}
+				else {
+					if (!CritterPet.isPinkForest(world, dx, dz))
+						return false;
+					int dy = y;
+					while (dy > 0 && !isBarrier(world, dx, dy, dz)) {
+						dy--;
+					}
+					Block at = world.getBlock(dx, dy, dz);
+					if (at == Blocks.water || at == Blocks.flowing_water)
+						continue;
+					if (at != Blocks.sand || !isValidWater(world, y0, dx, dy, dz))
+						return false;
 				}
 			}
-			return solid >= 3 && sand > 1;
+			//return solid >= 3 && sand > 1;
+			return sand > 1;
+		}
+
+		private static boolean isBarrier(World world, int dx, int dy, int dz) {
+			Block at = world.getBlock(dx, dy, dz);
+			return !ReikaWorldHelper.softBlocks(world, dx, dy, dz) || at == Blocks.water || at == Blocks.flowing_water;
 		}
 
 	}
 
 	private static class SandFinder extends BreadthFirstSearch {
 
-		private int highestY = -1;
+		private double highestY = -1;
 
 		private final PropagationCondition propagation = new PropagationCondition() {
 
@@ -430,8 +459,8 @@ public class DecoratorPinkForest extends StackableBiomeDecorator {
 		}
 
 		@Override
-		protected ArrayList<Coordinate> getNextSearchCoordsFor(Coordinate c) {
-			highestY = Math.max(c.yCoord, highestY);
+		protected ArrayList<Coordinate> getNextSearchCoordsFor(World world, Coordinate c) {
+			highestY = Math.max(DecoratorPinkForest.getAverageHeight(world, c.xCoord, c.zCoord, 2, (w, x, y, z) -> w.getBlock(x, y, z) == Blocks.sand && CritterPet.isPinkForest(w, x, z)), highestY);
 			ArrayList<Coordinate> ret = new ArrayList();
 			/*
 			for (int i = -1; i <= 1; i++) {
@@ -661,14 +690,28 @@ public class DecoratorPinkForest extends StackableBiomeDecorator {
 		return can;
 	}
 	 */
-	private double getAverageHeight(World world, int x, int z, int r) {
+
+	@FunctionalInterface
+	private static interface HeightValidityFunction {
+
+		public boolean apply(World world, int x, int y, int z);
+
+	}
+
+	private static double getAverageHeight(World world, int x, int z, int r) {
+		return getAverageHeight(world, x, z, r, null);
+	}
+
+	private static double getAverageHeight(World world, int x, int z, int r, HeightValidityFunction func) {
 		double avg = 0;
 		int n = 0;
 		for (int i = -r; i <= r; i++) {
 			for (int k = -r; k <= r; k++) {
 				int dx = x+i;
 				int dz = z+k;
-				int top = this.getTrueTopAt(world, dx, dz);
+				int top = getTrueTopAt(world, dx, dz);
+				if (func != null && !func.apply(world, dx, top, dz))
+					continue;
 				/*
 				if (world.getBlock(dx, top, dz) == Blocks.clay) {
 					riverHeight = Math.max(riverHeight, top+1);
