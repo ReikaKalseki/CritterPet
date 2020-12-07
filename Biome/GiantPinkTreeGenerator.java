@@ -111,7 +111,7 @@ public class GiantPinkTreeGenerator extends ModifiableBigTree {
 				int ix = MathHelper.floor_double(dx);
 				int iy = MathHelper.floor_double(dy);
 				int iz = MathHelper.floor_double(dz);
-				while (dy >= y-0.5 || ReikaWorldHelper.softBlocks(world, ix, iy-1, iz)) {
+				while (dy >= y-0.5 || ReikaWorldHelper.softBlocks(world, ix, iy-1, iz)|| world.getBlock(ix, iy-1, iz) == CritterPet.leaves) {
 					ix = MathHelper.floor_double(dx);
 					iy = MathHelper.floor_double(dy);
 					iz = MathHelper.floor_double(dz);

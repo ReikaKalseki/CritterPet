@@ -7,8 +7,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.material.Material;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
@@ -22,7 +20,6 @@ import Reika.DragonAPI.Instantiable.Math.Spline.SplineType;
 import Reika.DragonAPI.Libraries.Java.ReikaJavaLibrary;
 import Reika.DragonAPI.Libraries.Java.ReikaRandomHelper;
 import Reika.DragonAPI.Libraries.MathSci.ReikaMathLibrary;
-import Reika.DragonAPI.Libraries.World.ReikaBlockHelper;
 
 public class UraniumCave {
 
@@ -41,9 +38,13 @@ public class UraniumCave {
 		for (Coordinate c : rivers) {
 			if (tunnels.size() >= 5)
 				continue;
-			Tunnel add = new Tunnel(cc, c);
+			double dx = c.xCoord-cc.center.xCoord;
+			double dz = c.zCoord-cc.center.zCoord;
+			double dd = ReikaMathLibrary.py3d(dx, 0, dz);
+			double dr = 6;
+			Tunnel add = new Tunnel(cc, c.offset((int)(dx/dd*dr), 0, (int)(dz/dd*dr)));
 			for (Tunnel t : tunnels) {
-				if (Math.abs(t.rootAngle-add.rootAngle) <= 20 || Math.abs(360-Math.abs(t.rootAngle-add.rootAngle)) <= 20) {
+				if (Math.abs(t.rootAngle-add.rootAngle) <= 30 || Math.abs(360-Math.abs(t.rootAngle-add.rootAngle)) <= 30) {
 					add = null;
 					break;
 				}
@@ -381,8 +382,7 @@ public class UraniumCave {
 							Coordinate c = new Coordinate(dx, dy, dz);
 							if (this.skipCarve(c))
 								continue;
-							Block b = c.getBlock(world);
-							if (this.isTerrain(world, c, b) ) {
+							if (DecoratorPinkForest.isTerrain(world, c.xCoord, c.yCoord, c.zCoord) ) {
 								carve.put(c, MathHelper.floor_double(p.yCoord));
 							}
 						}
@@ -393,10 +393,6 @@ public class UraniumCave {
 
 		protected boolean skipCarve(Coordinate c) {
 			return false;
-		}
-
-		protected final boolean isTerrain(World world, Coordinate c, Block b) {
-			return b.isReplaceableOreGen(world, c.xCoord, c.yCoord, c.zCoord, Blocks.stone) || b.getMaterial() == Material.ground || b.getMaterial() == Material.clay || b.getMaterial() == Material.sand || b.isReplaceableOreGen(world, c.xCoord, c.yCoord, c.zCoord, Blocks.grass) || ReikaBlockHelper.isOre(b, c.getBlockMetadata(world));
 		}
 	}
 }

@@ -373,6 +373,7 @@ return li.get(0);
 						world.setBlock(c2.xCoord, dy, c2.zCoord, CritterPet.log, 0, 2);
 						dy--;
 					}
+					world.setBlock(c2.xCoord, dy, c2.zCoord, Blocks.dirt);
 				}
 			}
 		}
