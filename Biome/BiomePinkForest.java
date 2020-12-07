@@ -19,19 +19,23 @@ import net.minecraft.world.biome.BiomeDecorator;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraft.world.gen.feature.WorldGenAbstractTree;
 import net.minecraft.world.gen.feature.WorldGenerator;
+import net.minecraftforge.common.util.ForgeDirection;
 
 import Reika.ChromatiCraft.API.Interfaces.DyeTreeBlocker;
+import Reika.ChromatiCraft.API.Interfaces.NonconvertibleBiome;
+import Reika.CritterPet.CritterPet;
 import Reika.DragonAPI.ModList;
 import Reika.DragonAPI.Instantiable.Math.Noise.NoiseGeneratorBase;
 import Reika.DragonAPI.Instantiable.Math.Noise.SimplexNoiseGenerator;
 import Reika.DragonAPI.Instantiable.Worldgen.ModSpawnEntry;
+import Reika.DragonAPI.Libraries.ReikaDirectionHelper.CubeDirections;
 import Reika.DragonAPI.Libraries.IO.ReikaColorAPI;
 import Reika.DragonAPI.Libraries.MathSci.ReikaMathLibrary;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-public class BiomePinkForest extends BiomeGenBase implements DyeTreeBlocker {
+public class BiomePinkForest extends BiomeGenBase implements DyeTreeBlocker, NonconvertibleBiome {
 
 	//private final PinkTreeGenerator treeGen = new PinkTreeGenerator();
 	//private final GiantPinkTreeGenerator giantTreeGen = new GiantPinkTreeGenerator();
@@ -178,6 +182,24 @@ public class BiomePinkForest extends BiomeGenBase implements DyeTreeBlocker {
 		f = (float)ReikaMathLibrary.normalizeToBounds(waterBrightnessMix.getValue(x, z), 0, 1.35);//was 1.5F
 		f = Math.max(1, f);
 		ret = ReikaColorAPI.getColorWithBrightnessMultiplier(ret, f);
+		f = 1;
+		boolean flag = true;
+		int r = 6;//4;
+		for (int d = 1; d < r && flag; d++) {
+			for (int i = 0; i < 4; i++) {
+				ForgeDirection dir = ForgeDirection.VALID_DIRECTIONS[i];
+				int dx = x+d*dir.offsetX;
+				int dz = z+d*dir.offsetZ;
+				if (!CritterPet.isPinkForest(world.getBiomeGenForCoords(dx, dz))) {
+					f = d/(float)r;
+					flag = false;
+					break;
+				}
+			}
+		}
+		if (!flag) {
+			ret = ReikaColorAPI.mixColors(ret, 0x1845ff, f);
+		}
 		return ret;
 	}
 
@@ -257,7 +279,30 @@ public class BiomePinkForest extends BiomeGenBase implements DyeTreeBlocker {
 		if (thick <= 0 || n >= thick)
 			return 0;
 		double f = n/thick;
-		return Math.max(0, 1D-f*f*1.5);
+		double ret = Math.max(0, 1D-f*f*1.5);
+		return ret*this.getRoadBiomeEdgeFactor(world, x, z);
+	}
+
+	private double getRoadBiomeEdgeFactor(World world, int x, int z) {
+		int edge = getNearestBiomeEdge(world, x, z, 18);
+		if (edge < 0 || edge > 18)
+			return 1;
+		if (edge <= 8)
+			return 0;
+		return (edge-8)/10D;
+	}
+
+	public static int getNearestBiomeEdge(World world, int x, int z, int r) {
+		for (int d = 1; d <= r; d++) {
+			for (CubeDirections dir : CubeDirections.list) {
+				int dx = x+d*dir.directionX;
+				int dz = z+d*dir.directionZ;
+				if (!CritterPet.isPinkForest(world, dx, dz)) {
+					return d;
+				}
+			}
+		}
+		return -1;
 	}
 
 	public boolean isRoad(World world, int x, int z) {

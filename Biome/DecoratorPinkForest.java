@@ -10,6 +10,7 @@
 package Reika.CritterPet.Biome;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -19,13 +20,16 @@ import java.util.Map.Entry;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeGenBase;
+import net.minecraftforge.common.util.ForgeDirection;
 
 import Reika.CritterPet.CritterPet;
+import Reika.DragonAPI.Instantiable.Data.BlockStruct.BreadthFirstSearch;
 import Reika.DragonAPI.Instantiable.Data.Immutable.Coordinate;
 import Reika.DragonAPI.Instantiable.Data.Immutable.DecimalPosition;
 import Reika.DragonAPI.Instantiable.IO.ModLogger;
@@ -33,6 +37,7 @@ import Reika.DragonAPI.Instantiable.Math.Spline;
 import Reika.DragonAPI.Instantiable.Math.Spline.BasicSplinePoint;
 import Reika.DragonAPI.Instantiable.Math.Spline.SplineType;
 import Reika.DragonAPI.Instantiable.Worldgen.StackableBiomeDecorator;
+import Reika.DragonAPI.Libraries.World.ReikaBlockHelper;
 import Reika.DragonAPI.Libraries.World.ReikaWorldHelper;
 
 public class DecoratorPinkForest extends StackableBiomeDecorator {
@@ -153,9 +158,7 @@ public class DecoratorPinkForest extends StackableBiomeDecorator {
 		}
 	}
 
-	private void generateRiverAt(Coordinate c, RiverMouth river) {
-		int r = 3;
-		int d = 4;
+	private void generateRiverAt(Coordinate c, RiverMouth mouth) {
 		/*
 		for (double i = -r; i <= r; i += 0.5) {
 			for (double k = -2; k <= 18; k += 0.5) {
@@ -178,47 +181,289 @@ public class DecoratorPinkForest extends StackableBiomeDecorator {
 				}
 			}
 		}*/
-		double exitY = river.averageHeight;
-		for (double k = 0; k <= 10; k += 0.5) {
-			int dx = MathHelper.floor_double(c.xCoord-k*river.cosNormal);
-			int dz = MathHelper.floor_double(c.zCoord-k*river.sinNormal);
-			int top = this.getTrueTopAt(currentWorld, dx, dz);
-			exitY += top;
+		River river = new River(c, mouth);
+		river.calculate(currentWorld);
+		river.generate(currentWorld);
+	}
+
+	private static class River {
+
+		private final RiverMouth mouth;
+		private final Coordinate rootPosition;
+
+		private final HashMap<Coordinate, SandBlock> riverBlocks = new HashMap();
+		private final HashMap<Coordinate, SandBlock> sandBlocks = new HashMap();
+
+		private final ArrayList<Coordinate> path = new ArrayList();
+		private final ArrayList<SandBlock> unconverted = new ArrayList();
+
+		public River(Coordinate cx, RiverMouth rm) {
+			mouth = rm;
+			rootPosition = cx;
 		}
-		exitY /= 12;
-		ArrayList<Coordinate> path = new ArrayList();
-		path.add(c);
-		double pa = river.angle+90;
-		double h = river.averageHeight;
-		double step = 9;
-		int dx = MathHelper.floor_double(c.xCoord-step*river.cosNormal);
-		int dz = MathHelper.floor_double(c.zCoord-step*river.sinNormal);
-		Coordinate c2 = new Coordinate(dx, h, dz);
-		while (c2 != null && path.size() < 4) {
-			path.add(c2);
-			ImmutablePair<Coordinate, Double> pair = this.findNextTarget(c, step, pa, c2, river);
-			c2 = pair != null ? pair.left : null;
-			pa = pair != null ? pair.right : pa;
+
+		private void calculate(World world) {
+			int r = 3;
+			int d = 4;
+
+			double exitY = mouth.averageHeight;
+			for (double k = 0; k <= 10; k += 0.5) {
+				int dx = MathHelper.floor_double(rootPosition.xCoord-k*mouth.cosNormal);
+				int dz = MathHelper.floor_double(rootPosition.zCoord-k*mouth.sinNormal);
+				int top = DecoratorPinkForest.getTrueTopAt(world, dx, dz);
+				exitY += top;
+			}
+			exitY /= 12;
+			path.add(rootPosition);
+			double pa = mouth.angle+90;
+			double h = mouth.averageHeight;
+			//double step = 9;
+			Coordinate end = null;
+			for (double step = 0; step < 40; step += 0.5) {
+				int dx = MathHelper.floor_double(rootPosition.xCoord-step*mouth.cosNormal);
+				int dz = MathHelper.floor_double(rootPosition.zCoord-step*mouth.sinNormal);
+				int top = DecoratorPinkForest.getTrueTopAt(world, dx, dz);
+				Coordinate c2 = new Coordinate(dx, top, dz);
+				if (!path.contains(c2))
+					path.add(c2);
+				if (c2.getBlock(world) == Blocks.sand) {
+					end = c2;
+					break;
+				}
+			}
+			/*
+	Coordinate c2 = new Coordinate(dx, h, dz);
+	while (c2 != null && path.size() < 4) {
+		path.add(c2);
+		ImmutablePair<Coordinate, Double> pair = this.findNextTarget(c, step, pa, c2, river);
+		c2 = pair != null ? pair.left : null;
+		pa = pair != null ? pair.right : pa;
+	}*/
+			Spline s = new Spline(SplineType.CENTRIPETAL);
+			for (Coordinate c3 : path) {
+				s.addPoint(new BasicSplinePoint(c3.xCoord+0.5, c3.yCoord+0.5, c3.zCoord+0.5));
+			}
+			List<DecimalPosition> li = s.get(8, false);
+			for (DecimalPosition p : li) {
+				for (int i = -r; i <= r; i++) {
+					for (int k = -r; k <= r; k++) {
+						if (i*i+k*k <= r*r) {
+							int ddx = MathHelper.floor_double(p.xCoord+i);
+							int ddz = MathHelper.floor_double(p.zCoord+k);
+							int top = DecoratorPinkForest.getTrueTopAt(world, ddx, ddz);
+							if (CritterPet.isPinkForest(world, ddx, ddz) && isTerrain(world, ddx, top, ddz) && this.countSolidSides(world, ddx, top, ddz) >= 2) {
+								Coordinate c2 = new Coordinate(ddx, top, ddz);
+								riverBlocks.put(c2.to2D(), new SandBlock(c2));
+							}
+						}
+					}
+				}
+			}
+
+			SandFinder sf = new SandFinder(end.xCoord, end.yCoord, end.zCoord);
+			sf.complete(world);
+			Collection<Coordinate> ca = sf.getTotalSearchedCoords();
+
+			/*
+			BlockArray arr = new BlockArray();
+			arr.extraSpread = true;
+			arr.maxDepth = 2400;
+			arr.recursiveAdd(world, end.xCoord, end.yCoord, end.zCoord, Blocks.sand);
+			Collection<Coordinate> ca = arr.keySet();
+			 */
+			for (Coordinate c2 : ca) {
+				sandBlocks.put(c2.to2D(), new SandBlock(c2));
+			}
+
+			for (SandBlock sb : riverBlocks.values()) {
+				sb.calculate(world, this.getAverageAround(sb.location));
+			}
+			for (SandBlock sb : sandBlocks.values()) {
+				sb.calculate(world, this.getAverageAround(sb.location));
+			}
 		}
-		Spline s = new Spline(SplineType.CENTRIPETAL);
-		for (Coordinate c3 : path) {
-			s.addPoint(new BasicSplinePoint(c3.xCoord+0.5, c3.yCoord+0.5, c3.zCoord+0.5));
+
+		private int countSolidSides(World world, int x, int y, int z) {
+			int solid = 0;
+			for (int i = 0; i < 4; i++) {
+				ForgeDirection dir = ForgeDirection.VALID_DIRECTIONS[i+2];
+				int dx = x+dir.offsetX;
+				int dz = z+dir.offsetZ;
+				if (!ReikaWorldHelper.softBlocks(world, dx, y, dz))
+					solid++;
+			}
+			return solid;
 		}
-		List<DecimalPosition> li = s.get(8, false);
-		for (DecimalPosition p : li) {
-			for (int i = -r; i <= r; i++) {
-				for (int k = -r; k <= r; k++) {
-					if (i*i+k*k <= r*r) {
-						int ddx = MathHelper.floor_double(p.xCoord+i);
-						int ddz = MathHelper.floor_double(p.zCoord+k);
-						int top = this.getTrueTopAt(currentWorld, ddx, ddz);
-						currentWorld.setBlock(ddx, top, ddz, Blocks.glass);
-						currentWorld.setBlock(ddx, top+1, ddz, Blocks.glass);
-						currentWorld.setBlock(ddx, top-1, ddz, Blocks.obsidian);
+
+		private void generate(World world) {
+			this.carve(riverBlocks, world, Blocks.flowing_water, true);
+			this.carve(sandBlocks, world, Blocks.water, false);
+
+			for (SandBlock sb : unconverted) {
+				if (sb.isLeftover(world)) {
+					sb.location.setBlock(world, Blocks.flowing_water);
+				}
+			}
+		}
+
+		private void carve(HashMap<Coordinate, SandBlock> map, World world, Block put, boolean force) {
+			for (Entry<Coordinate, SandBlock> e : map.entrySet()) {
+				Coordinate c2 = e.getKey();
+				SandBlock at = e.getValue();
+				if (!force && !at.putWater) {
+					unconverted.add(at);
+					continue;
+				}
+				int y = at.averageY;
+				c2.setY(y).setBlock(world, put);
+				c2.setY(y-1).setBlock(world, Blocks.sand);
+				int yat = at.location.yCoord;
+				if (y < yat) {
+					for (int dy = y+1; dy <= yat; dy++) {
+						c2.setY(dy).setBlock(world, Blocks.air);
 					}
 				}
 			}
 		}
+
+		private int getAverageAround(Coordinate c) {
+			int r = 6;//4;//3;
+			int n = 0;
+			double avg = 0;
+			for (int i = -r; i <= r; i++) {
+				for (int k = -r; k <= r; k++) {
+					Coordinate c2 = c.offset(i, 0, k);
+					SandBlock at = riverBlocks.get(c2);
+					if (at == null) {
+						at = sandBlocks.get(c2);
+					}
+					if (at != null) {
+						avg += at.location.yCoord;
+						n++;
+					}
+				}
+			}
+			return n > 0 ? (int)(avg/n) : c.yCoord;
+		}
+
+	}
+
+	private static class SandBlock {
+
+		private final Coordinate location;
+		private boolean putWater;
+		private int averageY;
+
+		private SandBlock(Coordinate c) {
+			location = c;
+		}
+
+		public boolean isLeftover(World world) {
+			for (int i = 0; i < 4; i++) {
+				ForgeDirection dir = ForgeDirection.VALID_DIRECTIONS[i+2];
+				int dx = location.xCoord+dir.offsetX;
+				int dz = location.zCoord+dir.offsetZ;
+				int y = averageY;
+				Block at = world.getBlock(dx, y, dz);
+				while (y > 0 && at == Blocks.air) {
+					y--;
+					at = world.getBlock(dx, y, dz);
+				}
+				if (at == Blocks.water || at == Blocks.flowing_water || !ReikaWorldHelper.softBlocks(world, dx, averageY, dz))
+					continue;
+				return false;
+			}
+			return true;
+		}
+
+		private void calculate(World world, int y) {
+			putWater = this.isValidWater(world, y);
+			averageY = y;
+		}
+
+		private boolean isValidWater(World world, int y) {
+			int solid = 0;
+			int sand = 0;
+			for (int i = 0; i < 4; i++) {
+				ForgeDirection dir = ForgeDirection.VALID_DIRECTIONS[i+2];
+				int dx = location.xCoord+dir.offsetX;
+				int dz = location.zCoord+dir.offsetZ;
+				if (!ReikaWorldHelper.softBlocks(world, dx, y, dz))
+					solid++;
+				for (int h = -1; h <= 1; h++) {
+					if (world.getBlock(dx, location.yCoord+h, dz) == Blocks.sand)
+						sand++;
+				}
+			}
+			return solid >= 3 && sand > 1;
+		}
+
+	}
+
+	private static class SandFinder extends BreadthFirstSearch {
+
+		private int highestY = -1;
+
+		private final PropagationCondition propagation = new PropagationCondition() {
+
+			@Override
+			public boolean isValidLocation(World world, int x, int y, int z, Coordinate from) {
+				return (y >= from.yCoord-1 || root.yCoord-y <= 2) && y >= highestY-2 && CritterPet.isPinkForest(world, x, z) && world.getBlock(x, y, z) == Blocks.sand;
+			}
+
+		};
+		private final TerminationCondition terminate = new TerminationCondition() {
+
+			@Override
+			public boolean isValidTerminus(World world, int x, int y, int z) {
+				return false;
+			}
+
+		};
+
+		public SandFinder(int x, int y, int z) {
+			super(x, y, z);
+		}
+
+		private void complete(World world) {
+			this.complete(world, propagation, terminate );
+		}
+
+		@Override
+		protected ArrayList<Coordinate> getNextSearchCoordsFor(Coordinate c) {
+			highestY = Math.max(c.yCoord, highestY);
+			ArrayList<Coordinate> ret = new ArrayList();
+			/*
+			for (int i = -1; i <= 1; i++) {
+				for (int j = -1; j <= 1; j++) {
+					for (int k = -1; k <= 1; k++) {
+						ret.add(c.offset(i, j, k));
+					}
+				}
+			}
+			 */
+			/*
+			for (int i = 0; i < 4; i++) {
+				ForgeDirection dir = ForgeDirection.VALID_DIRECTIONS[i+2];
+				ret.add(c.offset(dir, 1));
+			}
+			for (int i = -1; i <= 1; i++) {
+				for (int k = -1; k <= 1; k++) {
+					ret.add(c.offset(i, -1, k));
+					ret.add(c.offset(i, 1, k));
+				}
+			}
+			 */
+			for (int i = -2; i <= 2; i++) {
+				for (int j = -1; j <= 1; j++) {
+					for (int k = -2; k <= 2; k++) {
+						ret.add(c.offset(i, j, k));
+					}
+				}
+			}
+			return ret;
+		}
+
 	}
 
 	private ImmutablePair<Coordinate, Double> findNextTarget(Coordinate root, double step, double pa, Coordinate from, RiverMouth river) {
@@ -305,7 +550,18 @@ public class DecoratorPinkForest extends StackableBiomeDecorator {
 			if (Math.abs(h2-h1) >= 3 || h2 < h-2 || h1 < h-2 || h < h1-10 || h < h2-10)
 				return null;
 		}
-		return new RiverMouth(c, raw, dx, dz, dxn, dzn, h);
+		boolean flag = false;
+		for (double dl = 2; dl <= 24; dl += 0.5) {
+			int lx = MathHelper.floor_double(c.xCoord-dxn*dl);
+			int lz = MathHelper.floor_double(c.zCoord-dzn*dl);
+			int top = this.getTrueTopAt(currentWorld, lx, lz);
+			Block at = currentWorld.getBlock(lx, top, lz);
+			if (at == Blocks.sand || at == Blocks.water) {
+				flag = true;
+				break;
+			}
+		}
+		return flag ? new RiverMouth(c, raw, dx, dz, dxn, dzn, h) : null;
 	}
 
 	public static int getTrueTopAt(World currentWorld, int dx, int dz) {
@@ -443,6 +699,11 @@ public class DecoratorPinkForest extends StackableBiomeDecorator {
 	@Override
 	protected ModLogger getLogger() {
 		return CritterPet.logger;
+	}
+
+	static boolean isTerrain(World world, int x, int y, int z) {
+		Block b = world.getBlock(x, y, z);
+		return b.isReplaceableOreGen(world, x, y, z, Blocks.stone) || b.getMaterial() == Material.ground || b.getMaterial() == Material.clay || b.getMaterial() == Material.sand || b.isReplaceableOreGen(world, x, y, z, Blocks.grass) || ReikaBlockHelper.isOre(b, world.getBlockMetadata(x, y, z));
 	}
 
 	private static class RiverMouth {
