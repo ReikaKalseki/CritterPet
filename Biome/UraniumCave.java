@@ -42,15 +42,26 @@ public class UraniumCave {
 			double dz = c.zCoord-cc.center.zCoord;
 			double dd = ReikaMathLibrary.py3d(dx, 0, dz);
 			double dr = 9;
-			Tunnel add = new Tunnel(cc, c.offset((int)(dx/dd*dr), 0, (int)(dz/dd*dr)));
+			Coordinate endpoint = c.offset((int)(dx/dd*dr), 0, (int)(dz/dd*dr));
+			double rootAngle = (Math.toDegrees(Math.atan2(endpoint.yCoord-cc.center.yCoord, endpoint.xCoord-cc.center.xCoord))%360+360)%360;
+			double nearestLow = -99999;
+			double nearestHigh = 99999;
+			boolean flag = false;
 			for (Tunnel t : tunnels) {
-				if (Math.abs(t.rootAngle-add.rootAngle) <= 30 || Math.abs(360-Math.abs(t.rootAngle-add.rootAngle)) <= 30) {
-					add = null;
-					break;
-				}
+				double da = (Math.abs(t.startingAngle-rootAngle)%360+360)%360;
+				if (rootAngle-da > nearestLow)
+					nearestLow = t.startingAngle;
+				if (rootAngle+da < nearestHigh)
+					nearestHigh = t.startingAngle;
+				flag |= da < 30;
 			}
-			if (add != null)
-				tunnels.add(add);
+			if (flag) {
+				if (nearestHigh-nearestLow < 45)
+					continue;
+				rootAngle = (nearestHigh+nearestLow)/2D;
+			}
+			Tunnel add = new Tunnel(cc, endpoint, rootAngle);
+			tunnels.add(add);
 		}
 
 		ReikaJavaLibrary.pConsole(cc.center+" > "+tunnels);
@@ -72,14 +83,14 @@ public class UraniumCave {
 
 		private final Coordinate endpoint;
 		private final CentralCave cave;
-		private final double rootAngle;
+		private final double startingAngle;
 
-		private Tunnel(CentralCave cc, Coordinate c) {
+		private Tunnel(CentralCave cc, Coordinate c, double ang) {
 			super(cc.center);
 			cave = cc;
 			cave.tunnels.add(this);
 			endpoint = c;
-			rootAngle = (Math.toDegrees(Math.atan2(endpoint.yCoord-center.yCoord, endpoint.xCoord-center.xCoord))%360+360)%360;
+			startingAngle = ang;
 		}
 
 		private void calculate(World world, Random rand) {
@@ -136,7 +147,7 @@ public class UraniumCave {
 					if (this.skipCarve(c2))
 						continue;
 					if (c2.yCoord <= 58 && c2.softBlock(world) && !carve.containsKey(c2)) {
-						c2.setBlock(world, Blocks.stone);
+						;//c2.setBlock(world, Blocks.stone);
 					}
 				}
 			}
@@ -149,7 +160,7 @@ public class UraniumCave {
 
 		@Override
 		public String toString() {
-			return "Tunnel "+cave.center+" > "+endpoint+" @ "+rootAngle;
+			return "Tunnel "+cave.center+" > "+endpoint;
 		}
 
 	}
