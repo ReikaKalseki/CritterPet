@@ -360,6 +360,14 @@ return li.get(0);
 					y--;
 				}
 				c2.setY(y).setBlock(world, put);
+				for (int i = 0; i < 4; i++) {
+					ForgeDirection dir = ForgeDirection.VALID_DIRECTIONS[i+2];
+					Coordinate c3 = c2.offset(dir.offsetX, 0, dir.offsetZ);
+					Block pos = c3.getBlock(world);
+					if (pos == Blocks.grass || pos == Blocks.dirt || pos == Blocks.stone || pos == Blocks.gravel) {
+						c3.setBlock(world, Blocks.sand);
+					}
+				}
 				c2.setY(y-1).setBlock(world, Blocks.sand);
 				int yat = at.location.yCoord;
 				if (y < yat) {

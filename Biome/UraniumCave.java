@@ -41,7 +41,7 @@ public class UraniumCave {
 			double dx = c.xCoord-cc.center.xCoord;
 			double dz = c.zCoord-cc.center.zCoord;
 			double dd = ReikaMathLibrary.py3d(dx, 0, dz);
-			double dr = 6;
+			double dr = 9;
 			Tunnel add = new Tunnel(cc, c.offset((int)(dx/dd*dr), 0, (int)(dz/dd*dr)));
 			for (Tunnel t : tunnels) {
 				if (Math.abs(t.rootAngle-add.rootAngle) <= 30 || Math.abs(360-Math.abs(t.rootAngle-add.rootAngle)) <= 30) {
@@ -257,23 +257,23 @@ public class UraniumCave {
 		}
 
 		private void generate(World world) {
-			/*
+
 			int r = 16;
 			int ry = 5;
 			for (int i = -r; i <= r; i++) {
 				for (int j = -ry; j <= ry; j++) {
 					for (int k = -r; k <= r; k++) {
 						if (ReikaMathLibrary.isPointInsideEllipse(i, j, k, r, ry, r)) {
-							int dx = center.xCoord+i;
-							int dy = center.yCoord+j;
-							int dz = center.zCoord+k;
+							int dx = MathHelper.floor_double(center.xCoord+i);
+							int dy = MathHelper.floor_double(center.yCoord+j);
+							int dz = MathHelper.floor_double(center.zCoord+k);
 							Coordinate c = new Coordinate(dx, dy, dz);
 							c.setBlock(world, Blocks.air);
 						}
 					}
 				}
 			}
-			 */
+			/*
 			int y = -1;
 			for (Coordinate c : carve.keySet()) {
 				c.setBlock(world, Blocks.air);
@@ -286,7 +286,7 @@ public class UraniumCave {
 						c2.setBlock(world, Blocks.stone);
 					}
 				}
-			}
+			}*/
 
 			/*
 			for (Coordinate c : footprint) {
@@ -296,7 +296,7 @@ public class UraniumCave {
 			 */
 
 			for (CaveRoom c : rooms) {
-				c.generate(world);
+				//c.generate(world);
 			}
 		}
 
