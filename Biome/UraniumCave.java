@@ -7,12 +7,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 
+import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 
 import Reika.DragonAPI.Instantiable.Data.Immutable.Coordinate;
 import Reika.DragonAPI.Instantiable.Data.Immutable.DecimalPosition;
+import Reika.DragonAPI.Instantiable.Data.Maps.MultiMap;
 import Reika.DragonAPI.Instantiable.Effects.LightningBolt;
 import Reika.DragonAPI.Instantiable.Math.Spline;
 import Reika.DragonAPI.Instantiable.Math.Spline.BasicSplinePoint;
@@ -66,14 +68,28 @@ public class UraniumCave {
 
 		ReikaJavaLibrary.pConsole(cc.center+" > "+tunnels);
 
+		HashSet<Coordinate> carveSet = new HashSet();
+		carveSet.addAll(cc.carve.keySet());
+
 		for (Tunnel t : tunnels) {
 			t.calculate(world, rand);
+			carveSet.addAll(t.carve.keySet());
 		}
 
 		cc.generate(world);
 
 		for (Tunnel t : tunnels) {
 			t.generate(world);
+		}
+
+		for (Coordinate c : carveSet) {
+			for (Coordinate c2 : c.getAdjacentCoordinates()) {
+				if (carveSet.contains(c2))
+					continue;
+				if (c2.yCoord <= 58 && (c2.softBlock(world) || (c2.yCoord-c.yCoord == 1 && c2.getBlock(world) == Blocks.gravel))) {
+					c2.setBlock(world, Blocks.stone);
+				}
+			}
 		}
 
 		return cc;
@@ -117,13 +133,36 @@ public class UraniumCave {
 			}
 
 			List<DecimalPosition> li = path.get(16, false);
+			int last = 0;
 			for (int i = 0; i < li.size(); i++) {
 				DecimalPosition p = li.get(i);
 				int px = MathHelper.floor_double(p.xCoord);
 				int pz = MathHelper.floor_double(p.zCoord);
 				double w = 0;//2.5;
 				double r = 2.25;
-				this.carveAt(world, p, r, w, /*this.getAngleAt(li, i)*/0);
+				if (this.carveAt(world, p, r, w, /*this.getAngleAt(li, i)*/0)) {
+					last = i;
+				}
+			}
+			DecimalPosition p = li.get(last);
+			int r = 3;
+			for (double i = -r; i <= r; i++) {
+				for (double j = 1; j <= r; j++) {
+					for (double k = -r; k <= r; k++) {
+						if (ReikaMathLibrary.isPointInsideEllipse(i, j, k, r+0.5, r*0.75, r+0.5)) {
+							int dx = MathHelper.floor_double(p.xCoord+i);
+							int dy = MathHelper.floor_double(p.yCoord+j);
+							int dz = MathHelper.floor_double(p.zCoord+k);
+							Coordinate c = new Coordinate(dx, dy, dz);
+							if (world.getBlock(dx, dy, dz) == Blocks.dirt) {
+								Block above = world.getBlock(dx, dy+1, dz);
+								if (above == Blocks.water || above == Blocks.flowing_water || above.isAir(world, dx, dy+1, dz) || DecoratorPinkForest.isTerrain(world, dx, dy+1, dz)) {
+									world.setBlock(dx, dy, dz, Blocks.water);
+								}
+							}
+						}
+					}
+				}
 			}
 		}
 
@@ -143,19 +182,21 @@ public class UraniumCave {
 		private void generate(World world) {
 			for (Coordinate c : carve.keySet()) {
 				c.setBlock(world, Blocks.air);
+				/*
 				for (Coordinate c2 : c.getAdjacentCoordinates()) {
 					if (this.skipCarve(c2))
 						continue;
 					if (c2.yCoord <= 58 && c2.softBlock(world) && !carve.containsKey(c2)) {
-						;//c2.setBlock(world, Blocks.stone);
+						c2.setBlock(world, Blocks.stone);
 					}
 				}
+				 */
 			}
 		}
 
 		@Override
 		protected boolean skipCarve(Coordinate c) {
-			return cave.footprint.contains(c.to2D()) || cave.skipCarve(c);
+			return cave.footprint.keySet().contains(c.to2D());
 		}
 
 		@Override
@@ -167,108 +208,79 @@ public class UraniumCave {
 
 	static class CentralCave extends UraniumCavePiece {
 
+		private static final int MIN_TUNNEL_WIDTH = 3;
+
 		//private final int rmax = 40; //was 24 then 36
 		//private final LobulatedCurve outer = LobulatedCurve.fromMinMaxRadii(18, rmax, 5, true); //was 16
 
-		private final HashSet<Coordinate> footprint = new HashSet();
+		private final MultiMap<Coordinate, Coordinate> footprint = new MultiMap();
 
 		private final ArrayList<Tunnel> tunnels = new ArrayList();
-		private final ArrayList<CaveRoom> rooms = new ArrayList();
+
+		private DecimalPosition outerCircleOffset;
+		private DecimalPosition innerCircleOffset;
+		private DecimalPosition outerCircleCenter;
+		private DecimalPosition innerCircleCenter;
+		private double innerCircleRadius;
+		private double outerCircleRadius;
 
 		public CentralCave(int x, int y, int z) {
 			super(new DecimalPosition(x+0.5, y+0.5, z+0.5));
 		}
 
 		private void calculate(World world, Random rand) {
-			/*
-			LobulatedCurve inner = LobulatedCurve.fromMinMaxRadii(9, 15, 3, true); //was 6,10,3
-			outer.generate(rand);
-			inner.generate(rand);
-			int h0 = 3;
-			int h = 8;
-			for (int i = -rmax; i <= rmax; i++) {
-				for (int k = -rmax; k <= rmax; k++) {
-					if (outer.isPointInsideCurve(i, k)) {
-						footprint.add(center.offset(i, 0, k).to2D());
-						if (!inner.isPointInsideCurve(i, k)) {
-							for (int j = -h0; j <= h; j++) {
-								double ry = 1;
-								if (j < 0) {
-									ry *= 1+j*0.4/h0;
-								}
-								else if (h-j <= 4) {
-									ry *= Math.pow((h-j)/5D, 0.4);
-								}/*
-							double dr = Math.sqrt(i*i+k*k);
-							double ang = Math.toDegrees(Math.atan2(k, i));
-							double ar = outer.getRadius(ang)-inner.getRadius(ang);
-							double line = (outer.getRadius(ang)+inner.getRadius(ang))/2D;
-							if (Math.abs(dr-line) <= ar*ry) {
-								carve.add(center.offset(i, j, k));
-							}
-			 *//*
-								double i1 = i*ry;
-								double k1 = k*ry;
-								double i2 = i/ry;
-								double k2 = k/ry;
-								if (outer.isPointInsideCurve(i1, k1) && !inner.isPointInsideCurve(i2, k2)) {
-									carve.add(center.offset(i, j, k));
-								}
-							}
+			double dr = 10;
+			outerCircleOffset = new DecimalPosition(ReikaRandomHelper.getRandomPlusMinus(0, dr, rand), 0, ReikaRandomHelper.getRandomPlusMinus(0, dr, rand));
+			/*do {
+				outerCircleRadius = ReikaRandomHelper.getRandomBetween(24D, 36D, rand);
+				innerCircleRadius = ReikaRandomHelper.getRandomBetween(6D, 15D, rand);
+			} while(outerCircleRadius-innerCircleRadius >= 9);
+			 */
+			outerCircleRadius = ReikaRandomHelper.getRandomBetween(24D, 36D, rand);
+			innerCircleRadius = ReikaRandomHelper.getRandomBetween(Math.max(6D, outerCircleRadius-MIN_TUNNEL_WIDTH*6), outerCircleRadius-MIN_TUNNEL_WIDTH*4, rand);
+			double maxr = outerCircleRadius-innerCircleRadius-MIN_TUNNEL_WIDTH;
+			double offr = ReikaRandomHelper.getRandomBetween(maxr*0.75, maxr, rand);
+			double offa = rand.nextDouble()*360;
+			double offX = offr*Math.cos(Math.toRadians(offa));
+			double offZ = offr*Math.sin(Math.toRadians(offa));
+			//innerCircleCenter = center.offset(ReikaRandomHelper.getRandomPlusMinus(0, maxr, rand), 0, ReikaRandomHelper.getRandomPlusMinus(0, maxr, rand));
+			innerCircleOffset = new DecimalPosition(offX, 0, offZ);
+
+			innerCircleCenter = center.offset(innerCircleOffset);
+			outerCircleCenter = center.offset(outerCircleOffset);
+
+			for (double i = -outerCircleRadius; i <= outerCircleRadius; i++) {
+				for (double k = -outerCircleRadius; k <= outerCircleRadius; k++) {
+					if (ReikaMathLibrary.py3d(i, 0, k) <= outerCircleRadius) {
+						int x = MathHelper.floor_double(outerCircleCenter.xCoord+i);
+						int z = MathHelper.floor_double(outerCircleCenter.zCoord+k);
+						Coordinate c = new Coordinate(x, 0, z);
+						for (int h = 0; h < 8; h++) {
+							Coordinate c2 = c.setY((int)(center.yCoord+h));
+							carve.put(c2, (int)center.yCoord);
+							footprint.addValue(c, c2);
 						}
 					}
 				}
-			}*/
-
-			Spline s = new Spline(SplineType.CENTRIPETAL);
-			int n = 6;
-			double da = 360D/n;
-			for (double a = 0; a < 360; a += da) {
-				double ra = Math.toRadians(ReikaRandomHelper.getRandomPlusMinus(a, da/3, rand));
-				double r = ReikaRandomHelper.getRandomBetween(20, 32, rand);
-				double dx = center.xCoord+r*Math.cos(ra);
-				double dz = center.zCoord+r*Math.sin(ra);
-				double dy = ReikaRandomHelper.getRandomPlusMinus(center.yCoord+0.5, 6, rand);
-				double dd = 2;
-				DecimalPosition p = new DecimalPosition(ReikaRandomHelper.getRandomPlusMinus(dx, dd), dy, ReikaRandomHelper.getRandomPlusMinus(dz, dd));
-				s.addPoint(new BasicSplinePoint(p));
-				dd = 5;//4;
-				rooms.add(new CaveRoom(p.offset(ReikaRandomHelper.getRandomPlusMinus(0, dd), 0, ReikaRandomHelper.getRandomPlusMinus(0, dd))));
 			}
 
-			/*
-			double dr0 = 1.2;
-			double dr1 = 2.5;
-			double dr = ReikaRandomHelper.getRandomBetween(dr0, dr1, rand);
-			double vr = ReikaRandomHelper.getRandomPlusMinus(0.0625, 0.15, rand);
-			if (rand.nextBoolean())
-				vr = -vr;
-			 */
-
-			List<DecimalPosition> li = s.get(24, true);
-			for (int i = 0; i < li.size(); i++) {
-				DecimalPosition p = li.get(i);
-				double dr = ReikaRandomHelper.getRandomBetween(1.6, 2.4, rand);
-				this.carveAt(world, p, dr, 6, 0, 0);
-				/*
-				dr = MathHelper.clamp_double(dr+vr, dr0, dr1);
-
-				if (dr <= dr0 || dr >= dr1) {
-					vr = ReikaRandomHelper.getRandomPlusMinus(0.0625, 0.15, rand);
-					if (dr >= dr1)
-						vr = -vr;
-				}*/
-			}
-
-			ReikaJavaLibrary.getRandomListEntry(rand, rooms).lootTier = 3;
-
-			for (CaveRoom c : rooms) {
-				c.calculate(world, rand);
+			for (double i = -innerCircleRadius; i <= innerCircleRadius; i++) {
+				for (double k = -innerCircleRadius; k <= innerCircleRadius; k++) {
+					if (ReikaMathLibrary.py3d(i, 0, k) <= innerCircleRadius) {
+						int x = MathHelper.floor_double(innerCircleCenter.xCoord+i);
+						int z = MathHelper.floor_double(innerCircleCenter.zCoord+k);
+						Coordinate c = new Coordinate(x, 0, z);
+						for (Coordinate c2 : footprint.get(c)) {
+							carve.remove(c2);
+						}
+					}
+				}
 			}
 		}
 
 		private void generate(World world) {
 
+			/*
 			int r = 16;
 			int ry = 5;
 			for (int i = -r; i <= r; i++) {
@@ -284,12 +296,13 @@ public class UraniumCave {
 					}
 				}
 			}
-			/*
+			 */
 			int y = -1;
 			for (Coordinate c : carve.keySet()) {
 				c.setBlock(world, Blocks.air);
 				y = Math.max(y, c.yCoord);
 
+				/*
 				for (Coordinate c2 : c.getAdjacentCoordinates()) {
 					if (this.skipCarve(c2))
 						continue;
@@ -297,7 +310,8 @@ public class UraniumCave {
 						c2.setBlock(world, Blocks.stone);
 					}
 				}
-			}*/
+				 */
+			}
 
 			/*
 			for (Coordinate c : footprint) {
@@ -305,62 +319,11 @@ public class UraniumCave {
 					c.offset(0, y+i, 0).setBlock(world, Blocks.air);
 			}
 			 */
-
-			for (CaveRoom c : rooms) {
-				//c.generate(world);
-			}
 		}
 
 		@Override
 		protected boolean skipCarve(Coordinate c) {
-			c = c.to2D();
-			for (Tunnel cr : tunnels) {
-				if (cr.carve.containsKey(c))
-					return true;
-			}
-			for (CaveRoom cr : rooms) {
-				if (cr.carve.containsKey(c))
-					return true;
-			}
 			return false;
-		}
-
-	}
-
-	private static class CaveRoom extends UraniumCavePiece {
-
-		private int lootTier;
-
-		public CaveRoom(DecimalPosition p) {
-			super(p);
-		}
-
-		public void generate(World world) {
-			for (Coordinate c : carve.keySet()) {
-				c.setBlock(world, Blocks.air);
-			}
-			center.setBlock(world, Blocks.glowstone);
-			center.offset(0, -1, 0).setBlock(world, Blocks.wool, lootTier);
-		}
-
-		public void calculate(World world, Random rand) {
-			lootTier = Math.max(lootTier, rand.nextInt(3));
-
-			int r = 6;
-			int ry = 2;
-			for (int i = -r; i <= r; i++) {
-				for (int j = -ry; j <= ry; j++) {
-					for (int k = -r; k <= r; k++) {
-						if (ReikaMathLibrary.isPointInsideEllipse(i, j, k, r, ry, r)) {
-							int dx = MathHelper.floor_double(center.xCoord+i);
-							int dy = MathHelper.floor_double(center.yCoord+j);
-							int dz = MathHelper.floor_double(center.zCoord+k);
-							Coordinate c = new Coordinate(dx, dy, dz);
-							carve.put(c, MathHelper.floor_double(center.yCoord));
-						}
-					}
-				}
-			}
 		}
 
 	}
@@ -375,14 +338,15 @@ public class UraniumCave {
 			center = p;
 		}
 
-		protected final void carveAt(World world, DecimalPosition p, double r, double w, double angle) {
-			this.carveAt(world, p, r, r, w, angle);
+		protected final boolean carveAt(World world, DecimalPosition p, double r, double w, double angle) {
+			return this.carveAt(world, p, r, r, w, angle);
 		}
 
-		protected final void carveAt(World world, DecimalPosition p, double r, double h, double w, double angle) {
+		protected final boolean carveAt(World world, DecimalPosition p, double r, double h, double w, double angle) {
 			angle += 90;
-			double ax = Math.abs(Math.cos(Math.toRadians(angle)));
-			double az = Math.abs(Math.sin(Math.toRadians(angle)));
+			boolean flag = false;
+			double ax = w > 0 ? Math.abs(Math.cos(Math.toRadians(angle))) : 0;
+			double az = w > 0 ? Math.abs(Math.sin(Math.toRadians(angle))) : 0;
 			for (double i = -r; i <= r; i++) {
 				for (double j = -r; j <= r; j++) {
 					for (double k = -r; k <= r; k++) {
@@ -393,13 +357,17 @@ public class UraniumCave {
 							Coordinate c = new Coordinate(dx, dy, dz);
 							if (this.skipCarve(c))
 								continue;
-							if (DecoratorPinkForest.isTerrain(world, c.xCoord, c.yCoord, c.zCoord) ) {
+							if (c.isEmpty(world) || DecoratorPinkForest.isTerrain(world, c.xCoord, c.yCoord, c.zCoord)) {
+								if (!carve.containsKey(c)) {
+									flag = true;
+								}
 								carve.put(c, MathHelper.floor_double(p.yCoord));
 							}
 						}
 					}
 				}
 			}
+			return flag;
 		}
 
 		protected boolean skipCarve(Coordinate c) {
