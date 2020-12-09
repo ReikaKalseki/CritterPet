@@ -86,7 +86,8 @@ public class UraniumCave {
 			for (Coordinate c2 : c.getAdjacentCoordinates()) {
 				if (carveSet.contains(c2))
 					continue;
-				if (c2.yCoord <= 58 && (c2.softBlock(world) || (c2.yCoord-c.yCoord == 1 && c2.getBlock(world) == Blocks.gravel))) {
+				Block b = c2.getBlock(world);
+				if (c2.yCoord <= 58 && (c2.softBlock(world) || b == Blocks.planks || b == Blocks.fence || !b.getMaterial().blocksMovement() || (c2.yCoord-c.yCoord == 1 && b == Blocks.gravel))) {
 					c2.setBlock(world, Blocks.stone);
 				}
 			}
@@ -128,6 +129,13 @@ public class UraniumCave {
 				DecimalPosition pos = b.getPosition(i);
 				if (i <= 1) {
 					pos = new DecimalPosition(pos.xCoord, center.yCoord, pos.zCoord);
+				}
+				if (i <= 2) {
+					double dr = pos.getDistanceTo(center);
+					double d = i <= 1 ? 0 : 0.5;
+					double dx = pos.xCoord*d+(1-d)*(center.xCoord+dr*Math.cos(Math.toRadians(startingAngle)));
+					double dz = pos.zCoord*d+(1-d)*(center.zCoord+dr*Math.sin(Math.toRadians(startingAngle)));
+					pos = new DecimalPosition(dx, pos.yCoord, dz);
 				}
 				path.addPoint(new BasicSplinePoint(pos));
 			}
@@ -220,6 +228,11 @@ public class UraniumCave {
 		private SimplexNoiseGenerator floorHeightNoise;
 		private SimplexNoiseGenerator ceilingHeightNoise;
 
+		private SimplexNoiseGenerator xOffset1;
+		private SimplexNoiseGenerator zOffset1;
+		private SimplexNoiseGenerator xOffset2;
+		private SimplexNoiseGenerator zOffset2;
+
 		private DecimalPosition innerCircleOffset;
 		private DecimalPosition innerCircleCenter;
 		private double innerCircleRadius;
@@ -234,6 +247,12 @@ public class UraniumCave {
 			floorHeightNoise = (SimplexNoiseGenerator)new SimplexNoiseGenerator(rand.nextLong()).setFrequency(1/16D).addOctave(2.6, 0.17);
 			ceilingHeightNoise = (SimplexNoiseGenerator)new SimplexNoiseGenerator(rand.nextLong()).setFrequency(1/8D).addOctave(1.34, 0.41);
 
+			double f = 1/5D;
+			xOffset1 = (SimplexNoiseGenerator)new SimplexNoiseGenerator(rand.nextLong()).setFrequency(f);
+			zOffset1 = (SimplexNoiseGenerator)new SimplexNoiseGenerator(rand.nextLong()).setFrequency(f);
+			xOffset2 = (SimplexNoiseGenerator)new SimplexNoiseGenerator(rand.nextLong()).setFrequency(f);
+			zOffset2 = (SimplexNoiseGenerator)new SimplexNoiseGenerator(rand.nextLong()).setFrequency(f);
+
 			int dr = 10;
 			//outerCircleOffset = new DecimalPosition(ReikaRandomHelper.getRandomPlusMinus(0, dr, rand), 0, ReikaRandomHelper.getRandomPlusMinus(0, dr, rand));
 			/*do {
@@ -243,7 +262,7 @@ public class UraniumCave {
 			 */
 			outerCircleRadius = ReikaRandomHelper.getRandomBetween(24D, 36D, rand);
 			innerCircleRadius = ReikaRandomHelper.getRandomBetween(Math.max(6D, outerCircleRadius-MIN_TUNNEL_WIDTH*6), outerCircleRadius-MIN_TUNNEL_WIDTH*4, rand);
-			double maxr = outerCircleRadius-innerCircleRadius-MIN_TUNNEL_WIDTH;
+			double maxr = outerCircleRadius-innerCircleRadius-MIN_TUNNEL_WIDTH-3;
 			double offr = ReikaRandomHelper.getRandomBetween(maxr*0.75, maxr, rand);
 			double offa = rand.nextDouble()*360;
 			double offX = offr*Math.cos(Math.toRadians(offa));
@@ -258,19 +277,19 @@ public class UraniumCave {
 
 			for (double i = -r; i <= r; i++) {
 				for (double k = -r; k <= r; k++) {
-					if (ReikaMathLibrary.py3d(i, 0, k) <= outerCircleRadius) {
-						double di = i-innerCircleOffset.xCoord;
-						double dk = k-innerCircleOffset.zCoord;
-						int x = MathHelper.floor_double(center.xCoord+i);
-						int z = MathHelper.floor_double(center.zCoord+k);
-						Coordinate c = new Coordinate(x, 0, z);
-						footprint.add(c);
-						if (ReikaMathLibrary.py3d(di, 0, dk) >= innerCircleRadius) {
-							int min = (int)(-6+MathHelper.clamp_double(floorHeightNoise.getValue(x, z)*3.2, -2, 2));
-							int max = (int)(6+MathHelper.clamp_double(ceilingHeightNoise.getValue(x, z)*2, -2, 2));
-							for (int h = min; h <= max; h++) {
+					int x = MathHelper.floor_double(center.xCoord+i);
+					int z = MathHelper.floor_double(center.zCoord+k);
+					double di = i-innerCircleOffset.xCoord;
+					double dk = k-innerCircleOffset.zCoord;
+					boolean flag = false;
+					//	if (ReikaMathLibrary.py3d(i, 0, k) <= outerCircleRadius) {
+					//	if (ReikaMathLibrary.py3d(di, 0, dk) >= innerCircleRadius) {
+					int min = (int)(-6+MathHelper.clamp_double(floorHeightNoise.getValue(x, z)*3.2, -2, 2));
+					int max = (int)(6+MathHelper.clamp_double(ceilingHeightNoise.getValue(x, z)*2, -2, 2));
+					for (int h = min; h <= max; h++) {
+						/* not working
 								double d1 = 1;
-								double d2 = 1; not working
+								double d2 = 1;
 								int diff = Math.min(h-min, max-h);
 								if (diff <= 2) {
 									d1 *= diff/3D;
@@ -278,12 +297,37 @@ public class UraniumCave {
 								}
 								double r1 = outerCircleRadius*d1;
 								double r2 = innerCircleRadius*d2;
-								add noise to edges
-								if (ReikaMathLibrary.py3d(i, 0, k) <= r1 && ReikaMathLibrary.py3d(di, 0, dk) >= r2) {
-									carve.put(c.setY((int)(center.yCoord+h)), (int)center.yCoord);
-								}
-							}
+						 */
+
+						//add noise to edges
+						double dn = 4;//5;//3;
+						double r1 = outerCircleRadius;
+						double r2 = innerCircleRadius;
+						int diff = Math.min(h-min, max-h);
+						if (diff <= 2) {
+							int step = 3-diff; //1-3
+							dn += step*0.7;
+
+							r1 -= step*2;
+							r2 += step;
 						}
+						double i2 = i+MathHelper.clamp_double(xOffset1.getValue(x, z)*dn, -3, 3);
+						double k2 = k+MathHelper.clamp_double(zOffset1.getValue(x, z)*dn, -3, 3);
+						double di2 = di+MathHelper.clamp_double(xOffset2.getValue(x, z)*dn, -2, 2);
+						double dk2 = dk+MathHelper.clamp_double(zOffset2.getValue(x, z)*dn, -2, 2);
+						if (ReikaMathLibrary.py3d(i2, 0, k2) <= r1) {
+							if (ReikaMathLibrary.py3d(di2, 0, dk2) >= r2) {
+								Coordinate c = new Coordinate(x, (int)(center.yCoord+h), z);
+								carve.put(c, (int)center.yCoord);
+							}
+							flag = true;
+						}
+					}
+					//}
+					//}
+					if (flag) {
+						Coordinate c = new Coordinate(x, 0, z);
+						footprint.add(c);
 					}
 				}
 			}
@@ -336,6 +380,10 @@ public class UraniumCave {
 		protected boolean skipCarve(Coordinate c) {
 			return false;
 		}
+
+	}
+
+	private static class ResourceNodeRoom extends UraniumCavePiece {
 
 	}
 
