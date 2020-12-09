@@ -14,11 +14,11 @@ import net.minecraft.world.World;
 
 import Reika.DragonAPI.Instantiable.Data.Immutable.Coordinate;
 import Reika.DragonAPI.Instantiable.Data.Immutable.DecimalPosition;
-import Reika.DragonAPI.Instantiable.Data.Maps.MultiMap;
 import Reika.DragonAPI.Instantiable.Effects.LightningBolt;
 import Reika.DragonAPI.Instantiable.Math.Spline;
 import Reika.DragonAPI.Instantiable.Math.Spline.BasicSplinePoint;
 import Reika.DragonAPI.Instantiable.Math.Spline.SplineType;
+import Reika.DragonAPI.Instantiable.Math.Noise.SimplexNoiseGenerator;
 import Reika.DragonAPI.Libraries.Java.ReikaJavaLibrary;
 import Reika.DragonAPI.Libraries.Java.ReikaRandomHelper;
 import Reika.DragonAPI.Libraries.MathSci.ReikaMathLibrary;
@@ -196,7 +196,7 @@ public class UraniumCave {
 
 		@Override
 		protected boolean skipCarve(Coordinate c) {
-			return cave.footprint.keySet().contains(c.to2D());
+			return cave.footprint.contains(c.to2D());
 		}
 
 		@Override
@@ -213,13 +213,14 @@ public class UraniumCave {
 		//private final int rmax = 40; //was 24 then 36
 		//private final LobulatedCurve outer = LobulatedCurve.fromMinMaxRadii(18, rmax, 5, true); //was 16
 
-		private final MultiMap<Coordinate, Coordinate> footprint = new MultiMap();
+		private final HashSet<Coordinate> footprint = new HashSet();
 
 		private final ArrayList<Tunnel> tunnels = new ArrayList();
 
-		private DecimalPosition outerCircleOffset;
+		private SimplexNoiseGenerator floorHeightNoise;
+		private SimplexNoiseGenerator ceilingHeightNoise;
+
 		private DecimalPosition innerCircleOffset;
-		private DecimalPosition outerCircleCenter;
 		private DecimalPosition innerCircleCenter;
 		private double innerCircleRadius;
 		private double outerCircleRadius;
@@ -229,8 +230,12 @@ public class UraniumCave {
 		}
 
 		private void calculate(World world, Random rand) {
-			double dr = 10;
-			outerCircleOffset = new DecimalPosition(ReikaRandomHelper.getRandomPlusMinus(0, dr, rand), 0, ReikaRandomHelper.getRandomPlusMinus(0, dr, rand));
+
+			floorHeightNoise = (SimplexNoiseGenerator)new SimplexNoiseGenerator(rand.nextLong()).setFrequency(1/16D).addOctave(2.6, 0.17);
+			ceilingHeightNoise = (SimplexNoiseGenerator)new SimplexNoiseGenerator(rand.nextLong()).setFrequency(1/8D).addOctave(1.34, 0.41);
+
+			int dr = 10;
+			//outerCircleOffset = new DecimalPosition(ReikaRandomHelper.getRandomPlusMinus(0, dr, rand), 0, ReikaRandomHelper.getRandomPlusMinus(0, dr, rand));
 			/*do {
 				outerCircleRadius = ReikaRandomHelper.getRandomBetween(24D, 36D, rand);
 				innerCircleRadius = ReikaRandomHelper.getRandomBetween(6D, 15D, rand);
@@ -247,31 +252,37 @@ public class UraniumCave {
 			innerCircleOffset = new DecimalPosition(offX, 0, offZ);
 
 			innerCircleCenter = center.offset(innerCircleOffset);
-			outerCircleCenter = center.offset(outerCircleOffset);
+			//outerCircleCenter = center.offset(outerCircleOffset);
 
-			for (double i = -outerCircleRadius; i <= outerCircleRadius; i++) {
-				for (double k = -outerCircleRadius; k <= outerCircleRadius; k++) {
+			double r = outerCircleRadius;//+outerCircleOffset.xCoord+outerCircleOffset.zCoord;
+
+			for (double i = -r; i <= r; i++) {
+				for (double k = -r; k <= r; k++) {
 					if (ReikaMathLibrary.py3d(i, 0, k) <= outerCircleRadius) {
-						int x = MathHelper.floor_double(outerCircleCenter.xCoord+i);
-						int z = MathHelper.floor_double(outerCircleCenter.zCoord+k);
+						double di = i-innerCircleOffset.xCoord;
+						double dk = k-innerCircleOffset.zCoord;
+						int x = MathHelper.floor_double(center.xCoord+i);
+						int z = MathHelper.floor_double(center.zCoord+k);
 						Coordinate c = new Coordinate(x, 0, z);
-						for (int h = 0; h < 8; h++) {
-							Coordinate c2 = c.setY((int)(center.yCoord+h));
-							carve.put(c2, (int)center.yCoord);
-							footprint.addValue(c, c2);
-						}
-					}
-				}
-			}
-
-			for (double i = -innerCircleRadius; i <= innerCircleRadius; i++) {
-				for (double k = -innerCircleRadius; k <= innerCircleRadius; k++) {
-					if (ReikaMathLibrary.py3d(i, 0, k) <= innerCircleRadius) {
-						int x = MathHelper.floor_double(innerCircleCenter.xCoord+i);
-						int z = MathHelper.floor_double(innerCircleCenter.zCoord+k);
-						Coordinate c = new Coordinate(x, 0, z);
-						for (Coordinate c2 : footprint.get(c)) {
-							carve.remove(c2);
+						footprint.add(c);
+						if (ReikaMathLibrary.py3d(di, 0, dk) >= innerCircleRadius) {
+							int min = (int)(-6+MathHelper.clamp_double(floorHeightNoise.getValue(x, z)*3.2, -2, 2));
+							int max = (int)(6+MathHelper.clamp_double(ceilingHeightNoise.getValue(x, z)*2, -2, 2));
+							for (int h = min; h <= max; h++) {
+								double d1 = 1;
+								double d2 = 1; not working
+								int diff = Math.min(h-min, max-h);
+								if (diff <= 2) {
+									d1 *= diff/3D;
+									d2 += (3-diff)*2;
+								}
+								double r1 = outerCircleRadius*d1;
+								double r2 = innerCircleRadius*d2;
+								add noise to edges
+								if (ReikaMathLibrary.py3d(i, 0, k) <= r1 && ReikaMathLibrary.py3d(di, 0, dk) >= r2) {
+									carve.put(c.setY((int)(center.yCoord+h)), (int)center.yCoord);
+								}
+							}
 						}
 					}
 				}
