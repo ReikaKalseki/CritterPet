@@ -92,6 +92,9 @@ public class DecoratorPinkForest extends StackableBiomeDecorator {
 						biomeColumns.put(c2, bf);
 					}
 				}
+				else {
+					bf = null;
+				}
 				at = bf;
 			}
 		}

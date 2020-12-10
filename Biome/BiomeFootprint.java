@@ -37,6 +37,7 @@ public class BiomeFootprint {
 	}*/
 
 	public boolean calculate(World world, int x, int z) {
+		need to handle single biome world
 		HashSet<Coordinate> next = new HashSet();
 		Coordinate loc = new Coordinate(x, 0, z);
 		next.add(loc);
