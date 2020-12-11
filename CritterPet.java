@@ -53,6 +53,8 @@ import Reika.DragonAPI.Instantiable.Event.GenLayerRiverEvent;
 import Reika.DragonAPI.Instantiable.Event.GetYToSpawnMobEvent;
 import Reika.DragonAPI.Instantiable.Event.IceFreezeEvent;
 import Reika.DragonAPI.Instantiable.Event.LightLevelForSpawnEvent;
+import Reika.DragonAPI.Instantiable.Event.LightVisualBrightnessEvent;
+import Reika.DragonAPI.Instantiable.Event.LightVisualBrightnessEvent.LightMixedBrightnessEvent;
 import Reika.DragonAPI.Instantiable.Event.SnowOrIceOnGenEvent;
 import Reika.DragonAPI.Instantiable.Event.Client.GrassIconEvent;
 import Reika.DragonAPI.Instantiable.Event.Client.LiquidBlockIconEvent;
@@ -267,6 +269,7 @@ public class CritterPet extends DragonAPIMod {
 	}
 
 	@SubscribeEvent
+	@SideOnly(Side.CLIENT)
 	public void retextureGrass(GrassIconEvent evt) {
 		if (evt.getBiome() instanceof BiomePinkForest) {
 			evt.icon = evt.isTop ? biomeGrassIcon : biomeGrassIconSide;
@@ -274,6 +277,7 @@ public class CritterPet extends DragonAPIMod {
 	}
 
 	@SubscribeEvent
+	@SideOnly(Side.CLIENT)
 	public void retextureWater(LiquidBlockIconEvent evt) {
 		if (evt.getBiome() instanceof BiomePinkForest) {
 			if (evt.originalIcon == FluidRegistry.WATER.getFlowingIcon())
@@ -302,6 +306,7 @@ public class CritterPet extends DragonAPIMod {
 		}
 	}
 
+	@SideOnly(Side.CLIENT)
 	@SubscribeEvent(priority = EventPriority.LOWEST)
 	public void clearBiomeRiver(SinglePlayerLogoutEvent evt) {
 		WorldGenPinkRiver.clearLakeCache();
@@ -320,6 +325,21 @@ public class CritterPet extends DragonAPIMod {
 			evt.color = pinkforest.getWaterColor(evt.access, evt.xCoord, evt.yCoord, evt.zCoord, evt.getLightLevel());
 		}
 	}
+
+	@SubscribeEvent
+	public void brighterDarkness(LightVisualBrightnessEvent evt) {
+		if (isPinkForest(evt.getBiome())) {
+			//evt.brightness = evt.getBrightnessFor(Math.min(15, evt.lightLevel+1));
+		}
+	}
+
+	@SubscribeEvent
+	public void brighterDarkness(LightMixedBrightnessEvent evt) {
+		if (isPinkForest(evt.getBiome())) {
+			//evt.value = evt.getBrightnessFor(Math.min(15, evt.blockLight+1), Math.min(15, evt.skyLight+2));
+		}
+	}
+
 	/*
 	@SubscribeEvent
 	public void spidersAtAllBrightness(CheckSpawn evt) {
@@ -329,7 +349,7 @@ public class CritterPet extends DragonAPIMod {
 	}
 	 */
 	@SubscribeEvent
-	public void spidersAtAllBrightness(LivingHurtEvent evt) {
+	public void fallproofSpiders(LivingHurtEvent evt) {
 		if (evt.entity instanceof EntitySpider && evt.source == DamageSource.fall && this.isPinkForest(evt.entity.worldObj, MathHelper.floor_double(evt.entity.posX), MathHelper.floor_double(evt.entity.posZ))) {
 			evt.setCanceled(true);
 		}

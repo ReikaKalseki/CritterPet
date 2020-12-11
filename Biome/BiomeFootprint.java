@@ -9,7 +9,11 @@ import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 
 import Reika.CritterPet.CritterPet;
+import Reika.DragonAPI.ModList;
+import Reika.DragonAPI.ASM.DependentMethodStripper.ModDependent;
 import Reika.DragonAPI.Instantiable.Data.Immutable.Coordinate;
+import Reika.DragonAPI.ModInteract.DeepInteract.ReikaMystcraftHelper;
+import Reika.DragonAPI.ModInteract.DeepInteract.ReikaMystcraftHelper.BasicPages;
 
 public class BiomeFootprint {
 
@@ -37,7 +41,8 @@ public class BiomeFootprint {
 	}*/
 
 	public boolean calculate(World world, int x, int z) {
-		need to handle single biome world
+		if (ModList.MYSTCRAFT.isLoaded() && this.isSingleBiomeWorld(world))
+			return false;
 		HashSet<Coordinate> next = new HashSet();
 		Coordinate loc = new Coordinate(x, 0, z);
 		next.add(loc);
@@ -57,6 +62,11 @@ public class BiomeFootprint {
 		center.xCoord /= coords.size();
 		center.zCoord /= coords.size();
 		return true;
+	}
+
+	@ModDependent(ModList.MYSTCRAFT)
+	private boolean isSingleBiomeWorld(World world) {
+		return ReikaMystcraftHelper.isMystAge(world) && ReikaMystcraftHelper.isSymbolPresent(world, BasicPages.BiomeControllerSingle);
 	}
 
 	public Vec3 getCenter() {

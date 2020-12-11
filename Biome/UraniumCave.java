@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Random;
 
 import net.minecraft.block.Block;
@@ -74,8 +75,6 @@ public class UraniumCave {
 		//avg.zCoord /= tunnels.size();
 		avg.normalize();
 
-		ReikaJavaLibrary.pConsole(cc.center+" > "+tunnels);
-
 		HashSet<Coordinate> carveSet = new HashSet();
 		carveSet.addAll(cc.carve.keySet());
 
@@ -84,9 +83,18 @@ public class UraniumCave {
 			carveSet.addAll(t.carve.keySet());
 		}
 
-		double dr = cc.outerCircleRadius+2;
+		double dr = cc.outerCircleRadius+5;
 		ResourceNodeRoom rm = new ResourceNodeRoom(cc.center.offset(-avg.xCoord*dr, 0, -avg.zCoord*dr));
 		rm.calculate(world, rand);
+
+		carveSet.addAll(rm.carve.keySet());
+
+		Tunnel path = new Tunnel(cc, new Coordinate(rm.center), Math.toDegrees(Math.atan2(-avg.xCoord, -avg.zCoord)), 2);
+		path.targetY = path.endpoint.yCoord;
+		path.calculate(world, rand);
+
+		carveSet.addAll(path.carve.keySet());
+		tunnels.add(path);
 
 		cc.generate(world);
 
@@ -94,20 +102,28 @@ public class UraniumCave {
 			t.generate(world);
 		}
 
+		ReikaJavaLibrary.pConsole(cc.center+" > "+rm.center+" & "+tunnels);
+
 		rm.generate(world);
 
+		/*
 		for (Coordinate c : carveSet) {
 			for (Coordinate c2 : c.getAdjacentCoordinates()) {
 				if (carveSet.contains(c2))
 					continue;
 				Block b = c2.getBlock(world);
-				if (c2.yCoord <= 58 && (c2.softBlock(world) || b == Blocks.planks || b == Blocks.fence || !b.getMaterial().blocksMovement() || (c2.yCoord-c.yCoord == 1 && b == Blocks.gravel))) {
-					c2.setBlock(world, Blocks.stone);
+				if (c2.yCoord <= 58) {
+					if (c2.softBlock(world) || b == Blocks.planks || b == Blocks.fence || !b.getMaterial().blocksMovement() || (c2.yCoord-c.yCoord == 1 && b == Blocks.gravel)) {
+						c2.setBlock(world, Blocks.stone);
+					}
+					else if (b == Blocks.stone) {
+						c2.setBlock(world, Blocks.stone);
+					}
 				}
 			}
-		}
+		}*/
 
-		for (int i = 0; i < 12; i++) {
+		for (int i = 0; i < 20; i++) {
 			Coordinate c = ReikaJavaLibrary.getRandomCollectionEntry(rand, cc.carve.keySet());
 			Integer y = cc.footprint.get(c.to2D());
 			while (y == null) {
@@ -115,6 +131,11 @@ public class UraniumCave {
 				y = cc.footprint.get(c.to2D());
 			}
 			this.generateOreClumpAt(world, c.xCoord, y, c.zCoord, rand);
+		}
+
+		for (Entry<DecimalPosition, Integer> e : rm.disks.entrySet()) {
+			DecimalPosition p = e.getKey();
+			this.generateOreClumpAt(world, MathHelper.floor_double(p.xCoord), MathHelper.floor_double(p.yCoord)-1, MathHelper.floor_double(p.zCoord), rand);
 		}
 
 		return cc;
@@ -142,8 +163,6 @@ public class UraniumCave {
 			set = next;
 		}
 
-		ReikaJavaLibrary.pConsole(place);
-
 		for (Coordinate c : place) {
 			BlockKey ore = new BlockKey(Blocks.glowstone);
 			c.setBlock(world, ore.blockID, ore.metadata);
@@ -158,13 +177,21 @@ public class UraniumCave {
 
 		private final double startingDX;
 		private final double startingDZ;
+		private final double radius;
+
+		private int targetY = -1;
 
 		private Tunnel(CentralCave cc, Coordinate c, double ang) {
+			this(cc, c, ang, 3);
+		}
+
+		private Tunnel(CentralCave cc, Coordinate c, double ang, double r) {
 			super(cc.center);
 			cave = cc;
 			cave.tunnels.add(this);
 			endpoint = c;
 			startingAngle = ang;
+			radius = r;
 
 			startingDX = Math.cos(Math.toRadians(startingAngle));
 			startingDZ = Math.sin(Math.toRadians(startingAngle));
@@ -172,11 +199,14 @@ public class UraniumCave {
 
 		@Override
 		protected void calculate(World world, Random rand) {
-			int y = DecoratorPinkForest.getTrueTopAt(world, endpoint.xCoord, endpoint.zCoord);
-			while (world.getBlock(endpoint.xCoord, y+1, endpoint.zCoord) == Blocks.water) {
-				y++;
+			if (targetY < 0) {
+				targetY = DecoratorPinkForest.getTrueTopAt(world, endpoint.xCoord, endpoint.zCoord);
+				while (world.getBlock(endpoint.xCoord, targetY+1, endpoint.zCoord) == Blocks.water) {
+					targetY++;
+				}
+				targetY += 5;
 			}
-			Coordinate end = new Coordinate(endpoint.xCoord, y+5, endpoint.zCoord);
+			Coordinate end = new Coordinate(endpoint.xCoord, targetY, endpoint.zCoord);
 			double dd = ReikaMathLibrary.py3d(endpoint.xCoord-center.xCoord, 0, endpoint.zCoord-center.zCoord);
 			int n = (int)Math.max(4, dd/16);
 			LightningBolt b = new LightningBolt(new DecimalPosition(center.xCoord, center.yCoord, center.zCoord), new DecimalPosition(end), n);
@@ -191,7 +221,7 @@ public class UraniumCave {
 				if (i <= 1) {
 					pos = new DecimalPosition(pos.xCoord, center.yCoord, pos.zCoord);
 				}
-				if (i <= 2) {
+				if (i <= 2 && false) {
 					double dr = pos.getDistanceTo(center);
 					double d = i <= 1 ? 0 : 0.5;
 					double dx = pos.xCoord*d+(1-d)*(center.xCoord+dr*startingDX);
@@ -214,11 +244,10 @@ public class UraniumCave {
 				}
 			}
 			DecimalPosition p = li.get(last);
-			int r = 3;
-			for (double i = -r; i <= r; i++) {
-				for (double j = 1; j <= r; j++) {
-					for (double k = -r; k <= r; k++) {
-						if (ReikaMathLibrary.isPointInsideEllipse(i, j, k, r+0.5, r*0.75, r+0.5)) {
+			for (double i = -radius; i <= radius; i++) {
+				for (double j = 1; j <= radius; j++) {
+					for (double k = -radius; k <= radius; k++) {
+						if (ReikaMathLibrary.isPointInsideEllipse(i, j, k, radius+0.5, radius*0.75, radius+0.5)) {
 							int dx = MathHelper.floor_double(p.xCoord+i);
 							int dy = MathHelper.floor_double(p.yCoord+j);
 							int dz = MathHelper.floor_double(p.zCoord+k);
@@ -255,7 +284,7 @@ public class UraniumCave {
 
 		@Override
 		public String toString() {
-			return "Tunnel "+cave.center+" > "+endpoint;
+			return "Tunnel "+cave.center+" > "+endpoint+" @ "+targetY;
 		}
 
 	}
@@ -391,24 +420,54 @@ public class UraniumCave {
 
 	private static class ResourceNodeRoom extends UraniumCavePiece {
 
+		private final HashMap<DecimalPosition, Integer> disks = new HashMap();
+
 		protected ResourceNodeRoom(DecimalPosition p) {
 			super(p);
 		}
 
 		@Override
 		protected void calculate(World world, Random rand) {
-			int r = 6;
-			int ry = 2;
-			for (int i = -r; i <= r; i++) {
-				for (int j = -ry; j <= ry; j++) {
-					for (int k = -r; k <= r; k++) {
-						if (ReikaMathLibrary.isPointInsideEllipse(i, j, k, r, ry, r)) {
-							int dx = MathHelper.floor_double(center.xCoord+i);
-							int dy = MathHelper.floor_double(center.yCoord+j);
-							int dz = MathHelper.floor_double(center.zCoord+k);
-							Coordinate c = new Coordinate(dx, dy, dz);
-							carve.put(c, dy);
+			int n = ReikaRandomHelper.getRandomBetween(3, 6, rand);
+			for (int i = 0; i < n; i++) {
+				DecimalPosition c = center.offset(ReikaRandomHelper.getRandomPlusMinus(0, 5D, rand), ReikaRandomHelper.getRandomPlusMinus(0, 2D, rand), ReikaRandomHelper.getRandomPlusMinus(0, 5D, rand));
+				int r = ReikaRandomHelper.getRandomBetween(4, 7, rand);
+				disks.put(c, r);
+			}
+			HashSet<Coordinate> floating = new HashSet();
+			for (Entry<DecimalPosition, Integer> e : disks.entrySet()) {
+				DecimalPosition ctr = e.getKey();
+				int r = e.getValue();
+				int ry = (int)(r/2.5);
+				for (int i = -r; i <= r; i++) {
+					for (int j = -ry; j <= ry; j++) {
+						for (int k = -r; k <= r; k++) {
+							if (ReikaMathLibrary.isPointInsideEllipse(i, j, k, r, ry, r)) {
+								int dx = MathHelper.floor_double(ctr.xCoord+i);
+								int dy = MathHelper.floor_double(ctr.yCoord+j);
+								int dz = MathHelper.floor_double(ctr.zCoord+k);
+								Coordinate c = new Coordinate(dx, dy, dz);
+								carve.put(c, dy);
+								floating.addAll(c.getAdjacentCoordinates());
+							}
 						}
+					}
+				}
+			}
+			boolean flag = true;
+			while (flag) {
+				floating.removeAll(carve.keySet());
+				flag = false;
+				for (Coordinate c : floating) {
+					int adjacent = 0;
+					for (Coordinate c2 : c.getAdjacentCoordinates()) {
+						if (!carve.containsKey(c2)) {
+							adjacent++;
+						}
+					}
+					if (adjacent <= 1) {
+						carve.put(c, c.yCoord);
+						flag = true;
 					}
 				}
 			}
