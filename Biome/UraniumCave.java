@@ -9,11 +9,18 @@ import java.util.Map.Entry;
 import java.util.Random;
 
 import net.minecraft.block.Block;
+import net.minecraft.entity.EntityList;
+import net.minecraft.entity.EnumCreatureType;
+import net.minecraft.entity.monster.EntitySpider;
 import net.minecraft.init.Blocks;
+import net.minecraft.tileentity.TileEntityMobSpawner;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
+import net.minecraft.world.biome.BiomeGenBase.SpawnListEntry;
 
+import Reika.CritterPet.CritterPet;
+import Reika.DragonAPI.Instantiable.Data.WeightedRandom;
 import Reika.DragonAPI.Instantiable.Data.Immutable.BlockKey;
 import Reika.DragonAPI.Instantiable.Data.Immutable.Coordinate;
 import Reika.DragonAPI.Instantiable.Data.Immutable.DecimalPosition;
@@ -22,16 +29,25 @@ import Reika.DragonAPI.Instantiable.Math.Spline;
 import Reika.DragonAPI.Instantiable.Math.Spline.BasicSplinePoint;
 import Reika.DragonAPI.Instantiable.Math.Spline.SplineType;
 import Reika.DragonAPI.Instantiable.Math.Noise.SimplexNoiseGenerator;
+import Reika.DragonAPI.Libraries.ReikaSpawnerHelper;
 import Reika.DragonAPI.Libraries.Java.ReikaJavaLibrary;
 import Reika.DragonAPI.Libraries.Java.ReikaRandomHelper;
 import Reika.DragonAPI.Libraries.MathSci.ReikaMathLibrary;
+import Reika.DragonAPI.Libraries.World.ReikaBlockHelper;
 
 public class UraniumCave {
 
 	public static final UraniumCave instance = new UraniumCave();
 
-	private UraniumCave() {
+	private final WeightedRandom<SpawnListEntry> caveSpawns = new WeightedRandom();
 
+	private UraniumCave() {
+		List<SpawnListEntry> li = CritterPet.pinkforest.getSpawnableList(EnumCreatureType.monster);
+		for (SpawnListEntry e : li) {
+			if (EntitySpider.class.isAssignableFrom(e.entityClass)) {
+				caveSpawns.addEntry(e, e.itemWeight);
+			}
+		}
 	}
 
 	public CentralCave generate(World world, Random rand, int x, int z, Collection<Coordinate> rivers) {
@@ -66,7 +82,8 @@ public class UraniumCave {
 					continue;
 				rootAngle = (nearestHigh+nearestLow)/2D;
 			}
-			Tunnel add = new Tunnel(cc, endpoint, rootAngle);
+			double d = cc.outerCircleRadius*ReikaRandomHelper.getRandomBetween(1.35, 1.75, rand);
+			Tunnel add = new Tunnel(cc, endpoint, d, rootAngle);
 			tunnels.add(add);
 			avg.xCoord += add.startingDX;
 			avg.zCoord += add.startingDZ;
@@ -89,7 +106,7 @@ public class UraniumCave {
 
 		carveSet.addAll(rm.carve.keySet());
 
-		Tunnel path = new Tunnel(cc, new Coordinate(rm.center), Math.toDegrees(Math.atan2(-avg.xCoord, -avg.zCoord)), 2);
+		Tunnel path = new Tunnel(cc, new Coordinate(rm.center), cc.outerCircleRadius, Math.toDegrees(Math.atan2(-avg.xCoord, -avg.zCoord)), 2);
 		path.targetY = path.endpoint.yCoord;
 		path.calculate(world, rand);
 
@@ -106,22 +123,21 @@ public class UraniumCave {
 
 		rm.generate(world);
 
-		/*
 		for (Coordinate c : carveSet) {
 			for (Coordinate c2 : c.getAdjacentCoordinates()) {
 				if (carveSet.contains(c2))
 					continue;
 				Block b = c2.getBlock(world);
-				if (c2.yCoord <= 58) {
-					if (c2.softBlock(world) || b == Blocks.planks || b == Blocks.fence || !b.getMaterial().blocksMovement() || (c2.yCoord-c.yCoord == 1 && b == Blocks.gravel)) {
-						c2.setBlock(world, Blocks.stone);
+				if (c2.yCoord <= 60) {
+					if (c2.softBlock(world) || b == Blocks.planks || !b.getMaterial().blocksMovement() || !b.isOpaqueCube() || (c2.yCoord-c.yCoord == 1 && b == Blocks.gravel)) {
+						c2.setBlock(world, Blocks.brick_block);
 					}
-					else if (b == Blocks.stone) {
-						c2.setBlock(world, Blocks.stone);
+					else if (b.isReplaceableOreGen(world, c2.xCoord, c2.yCoord, c2.zCoord, Blocks.stone) || ReikaBlockHelper.isOre(b, c.getBlockMetadata(world))) {
+						c2.setBlock(world, Blocks.mossy_cobblestone);
 					}
 				}
 			}
-		}*/
+		}
 
 		for (int i = 0; i < 20; i++) {
 			Coordinate c = ReikaJavaLibrary.getRandomCollectionEntry(rand, cc.carve.keySet());
@@ -139,6 +155,20 @@ public class UraniumCave {
 		}
 
 		return cc;
+	}
+
+	private void generateSpawnerAt(World world, int x, int y, int z, Random rand) {
+		this.generateSpawnerAt(world, x, y, z, rand, null);
+	}
+
+	private void generateSpawnerAt(World world, int x, int y, int z, Random rand, String mob) {
+		if (mob == null) {
+			caveSpawns.setRNG(rand);
+			SpawnListEntry e = caveSpawns.getRandomEntry();
+			mob = (String)EntityList.classToStringMapping.get(e.entityClass);
+		}
+		world.setBlock(x, y, z, Blocks.mob_spawner);
+		ReikaSpawnerHelper.setMobSpawnerMob((TileEntityMobSpawner)world.getTileEntity(x, y, z), mob);
 	}
 
 	private void generateOreClumpAt(World world, int x, int y, int z, Random rand) {
@@ -167,6 +197,16 @@ public class UraniumCave {
 			BlockKey ore = new BlockKey(Blocks.glowstone);
 			c.setBlock(world, ore.blockID, ore.metadata);
 		}
+
+		this.generateSpawnerAt(world, x, y, z, rand);
+	}
+
+	public boolean isInCave(World world, int x, int y, int z) {
+
+	}
+
+	public SpawnListEntry getRandomSpawn() {
+		return caveSpawns.getRandomEntry();
 	}
 
 	private static class Tunnel extends UraniumCavePiece {
@@ -174,27 +214,32 @@ public class UraniumCave {
 		private final Coordinate endpoint;
 		private final CentralCave cave;
 		private final double startingAngle;
+		private final double initialRun;
 
 		private final double startingDX;
 		private final double startingDZ;
 		private final double radius;
+		private final DecimalPosition boltStart;
 
 		private int targetY = -1;
 
-		private Tunnel(CentralCave cc, Coordinate c, double ang) {
-			this(cc, c, ang, 3);
+		private Tunnel(CentralCave cc, Coordinate c, double d, double ang) {
+			this(cc, c, d, ang, 3);
 		}
 
-		private Tunnel(CentralCave cc, Coordinate c, double ang, double r) {
+		private Tunnel(CentralCave cc, Coordinate c, double d, double ang, double r) {
 			super(cc.center);
 			cave = cc;
 			cave.tunnels.add(this);
 			endpoint = c;
+			initialRun = d;
 			startingAngle = ang;
 			radius = r;
 
 			startingDX = Math.cos(Math.toRadians(startingAngle));
 			startingDZ = Math.sin(Math.toRadians(startingAngle));
+
+			boltStart = center.offset(startingDX*initialRun, 0, startingDZ*initialRun);
 		}
 
 		@Override
@@ -206,32 +251,25 @@ public class UraniumCave {
 				}
 				targetY += 5;
 			}
+			double dyf = 0;//(targetY-boltStart.yCoord)*ReikaRandomHelper.getRandomBetween(0, 0.25, rand);
 			Coordinate end = new Coordinate(endpoint.xCoord, targetY, endpoint.zCoord);
 			double dd = ReikaMathLibrary.py3d(endpoint.xCoord-center.xCoord, 0, endpoint.zCoord-center.zCoord);
 			int n = (int)Math.max(4, dd/16);
-			LightningBolt b = new LightningBolt(new DecimalPosition(center.xCoord, center.yCoord, center.zCoord), new DecimalPosition(end), n);
+			LightningBolt b = new LightningBolt(new DecimalPosition(boltStart.xCoord, boltStart.yCoord+dyf, boltStart.zCoord), new DecimalPosition(end), n);
 			b.setRandom(rand);
 			//b.variance = 10;//15;
 			b.setVariance(10, 8, 10);
 			b.maximize();
 			Spline path = new Spline(SplineType.CENTRIPETAL);
+			if (!boltStart.equals(center))
+				path.addPoint(new BasicSplinePoint(center));
 
 			for (int i = 0; i <= b.nsteps; i++) {
 				DecimalPosition pos = b.getPosition(i);
-				if (i <= 1) {
-					pos = new DecimalPosition(pos.xCoord, center.yCoord, pos.zCoord);
-				}
-				if (i <= 2 && false) {
-					double dr = pos.getDistanceTo(center);
-					double d = i <= 1 ? 0 : 0.5;
-					double dx = pos.xCoord*d+(1-d)*(center.xCoord+dr*startingDX);
-					double dz = pos.zCoord*d+(1-d)*(center.zCoord+dr*startingDZ);
-					pos = new DecimalPosition(dx, pos.yCoord, dz);
-				}
 				path.addPoint(new BasicSplinePoint(pos));
 			}
 
-			List<DecimalPosition> li = path.get(16, false);
+			List<DecimalPosition> li = path.get(24, false);
 			int last = 0;
 			for (int i = 0; i < li.size(); i++) {
 				DecimalPosition p = li.get(i);
@@ -361,9 +399,9 @@ public class UraniumCave {
 					int floor = Integer.MAX_VALUE;
 					//	if (ReikaMathLibrary.py3d(i, 0, k) <= outerCircleRadius) {
 					//	if (ReikaMathLibrary.py3d(di, 0, dk) >= innerCircleRadius) {
-					int min = (int)(-6+MathHelper.clamp_double(floorHeightNoise.getValue(x, z)*3.2, -2, 2));
-					int max = (int)(6+MathHelper.clamp_double(ceilingHeightNoise.getValue(x, z)*2, -2, 2));
-					for (int h = min; h <= max; h++) {
+					double min = (int)(-6+MathHelper.clamp_double(floorHeightNoise.getValue(x, z)*3, -1.75, 1.75));
+					double max = (int)(6+MathHelper.clamp_double(ceilingHeightNoise.getValue(x, z)*2, -2, 2));
+					for (double h = min; h <= max; h++) {
 						/* not working
 								double d1 = 1;
 								double d2 = 1;
@@ -377,10 +415,12 @@ public class UraniumCave {
 						 */
 
 						//add noise to edges
+						if (h < -4.5)
+							continue; //flatten the floor a little
 						double dn = 4;//5;//3;
 						double r1 = outerCircleRadius;
 						double r2 = innerCircleRadius;
-						int diff = Math.min(h-min, max-h);
+						int diff = (int)Math.min(h-min, max-h);
 						if (diff <= 2) {
 							int step = 3-diff; //1-3
 							dn += step*0.7;
@@ -534,7 +574,8 @@ public class UraniumCave {
 							Coordinate c = new Coordinate(dx, dy, dz);
 							if (this.skipCarve(c))
 								continue;
-							if (c.isEmpty(world) || DecoratorPinkForest.isTerrain(world, c.xCoord, c.yCoord, c.zCoord)) {
+							Block b = c.getBlock(world);
+							if (c.isEmpty(world) || b == Blocks.cobblestone || b == Blocks.mossy_cobblestone || b == Blocks.brick_block || DecoratorPinkForest.isTerrain(world, c.xCoord, c.yCoord, c.zCoord)) {
 								if (!carve.containsKey(c)) {
 									flag = true;
 								}

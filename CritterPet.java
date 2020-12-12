@@ -31,6 +31,7 @@ import net.minecraftforge.common.BiomeManager.BiomeType;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent.AllowDespawn;
 import net.minecraftforge.event.terraingen.ChunkProviderEvent;
+import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fluids.FluidRegistry;
 
 import Reika.CritterPet.Biome.BiomePinkForest;
@@ -38,6 +39,7 @@ import Reika.CritterPet.Biome.BlockPinkGrass;
 import Reika.CritterPet.Biome.BlockPinkLeaves;
 import Reika.CritterPet.Biome.BlockPinkLog;
 import Reika.CritterPet.Biome.BlockRedBamboo;
+import Reika.CritterPet.Biome.UraniumCave;
 import Reika.CritterPet.Biome.WorldGenPinkRiver;
 import Reika.CritterPet.Biome.WorldGenUraniumCave;
 import Reika.CritterPet.Entities.Base.EntitySpiderBase;
@@ -320,9 +322,20 @@ public class CritterPet extends DragonAPIMod {
 	}
 
 	@SubscribeEvent
+	@SideOnly(Side.CLIENT)
 	public void forestWaterColor(WaterColorEvent evt) {
 		if (isPinkForest(evt.getBiome())) {
 			evt.color = pinkforest.getWaterColor(evt.access, evt.xCoord, evt.yCoord, evt.zCoord, evt.getLightLevel());
+		}
+	}
+
+	@SubscribeEvent
+	public void caveSpawns(WorldEvent.PotentialSpawns evt) {
+		if (isPinkForest(evt.world, evt.x, evt.z)) {
+			if (UraniumCave.instance.isInCave(evt.world, evt.x, evt.y, evt.z)) {
+				evt.list.clear();
+				evt.list.add(UraniumCave.instance.getRandomSpawn());
+			}
 		}
 	}
 
