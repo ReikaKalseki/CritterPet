@@ -35,6 +35,7 @@ import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fluids.FluidRegistry;
 
 import Reika.CritterPet.Biome.BiomePinkForest;
+import Reika.CritterPet.Biome.BiomewideFeatureGenerator;
 import Reika.CritterPet.Biome.BlockPinkGrass;
 import Reika.CritterPet.Biome.BlockPinkLeaves;
 import Reika.CritterPet.Biome.BlockPinkLog;
@@ -332,7 +333,7 @@ public class CritterPet extends DragonAPIMod {
 	@SubscribeEvent
 	public void caveSpawns(WorldEvent.PotentialSpawns evt) {
 		if (isPinkForest(evt.world, evt.x, evt.z)) {
-			if (UraniumCave.instance.isInCave(evt.world, evt.x, evt.y, evt.z)) {
+			if (BiomewideFeatureGenerator.instance.isInCave(evt.world, evt.x, evt.y, evt.z)) {
 				evt.list.clear();
 				evt.list.add(UraniumCave.instance.getRandomSpawn());
 			}
