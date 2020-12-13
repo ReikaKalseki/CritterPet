@@ -13,7 +13,6 @@ import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.world.World;
 import net.minecraftforge.client.MinecraftForgeClient;
 
-import Reika.CritterPet.Biome.RedBambooRenderer;
 import Reika.CritterPet.Registry.CritterType;
 import Reika.DragonAPI.Instantiable.Rendering.ItemSpriteSheetRenderer;
 
@@ -23,8 +22,6 @@ import cpw.mods.fml.client.registry.RenderingRegistry;
 public class CritterClient extends CritterCommon {
 
 	public static final SpiderRenderer critter = new SpiderRenderer();
-
-	private static final RedBambooRenderer bamboo = new RedBambooRenderer();
 
 	private ItemSpriteSheetRenderer items = new ItemSpriteSheetRenderer(CritterPet.instance, CritterPet.class, "Textures/items.png");
 
@@ -45,9 +42,6 @@ public class CritterClient extends CritterCommon {
 		}
 
 		MinecraftForgeClient.registerItemRenderer(CritterPet.tool, items);
-
-		bambooRender = RenderingRegistry.getNextAvailableRenderId();
-		RenderingRegistry.registerBlockHandler(bambooRender, bamboo);
 	}
 
 	// Override any other methods that need to be handled differently client side.
