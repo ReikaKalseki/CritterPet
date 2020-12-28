@@ -99,7 +99,7 @@ public class CritterPet extends DragonAPIMod {
 			if (type.isAvailable()) {
 				int id = EntityRegistry.findGlobalUniqueEntityId();
 				EntityRegistry.registerGlobalEntityID(type.entityClass, "critterpet."+type.name, id);
-				EntityRegistry.registerModEntity(type.entityClass, type.name, id, instance, 32, 20, true);
+				EntityRegistry.registerModEntity(type.entityClass, type.name, id, instance, 32, 1, true);
 				type.initializeMapping(id);
 				GameRegistry.addShapelessRecipe(new ItemStack(tool, 1, i+1), new ItemStack(tool, 1, 0), type.tamingItem);
 				logger.log("Loading Critter Type "+type.name());
