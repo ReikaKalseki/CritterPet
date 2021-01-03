@@ -15,7 +15,7 @@ import Reika.DragonAPI.Interfaces.Configuration.IntegerConfig;
 
 public enum CritterOptions implements BooleanConfig, IntegerConfig {
 
-	BIOMEID("Pink Forest Biome ID", 144);
+	;
 
 	private String label;
 	private boolean defaultState;
