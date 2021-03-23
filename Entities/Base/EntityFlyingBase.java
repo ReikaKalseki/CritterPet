@@ -248,8 +248,7 @@ public abstract class EntityFlyingBase extends EntityFlying implements TamedMob,
 	}
 
 	@Override
-	public void heal(float par1)
-	{
+	public void heal(float par1) {
 		super.heal(par1);
 
 		this.playLivingSound();

@@ -75,8 +75,7 @@ public class ItemTaming extends Item implements IndexedItemSprites {
 	}
 
 	@Override
-	public boolean itemInteractionForEntity(ItemStack is, EntityPlayer ep, EntityLivingBase elb)
-	{
+	public boolean itemInteractionForEntity(ItemStack is, EntityPlayer ep, EntityLivingBase elb) {
 		return TamingController.TameCritter(elb, ep);
 	}
 
