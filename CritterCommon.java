@@ -13,8 +13,6 @@ import net.minecraft.world.World;
 
 public class CritterCommon {
 
-	public static int bambooRender;
-
 	/**
 	 * Client side only register stuff...
 	 */
@@ -30,12 +28,11 @@ public class CritterCommon {
 	}
 
 	public void registerRenderInformation() {
-		// TODO Auto-generated method stub
 
 	}
 
 	public void registerSounds() {
-		// TODO Auto-generated method stub
+
 	}
 
 }

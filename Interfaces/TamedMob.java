@@ -11,12 +11,10 @@ package Reika.CritterPet.Interfaces;
 
 import net.minecraft.entity.player.EntityPlayer;
 
+import Reika.CritterPet.API.TamedCritter;
 import Reika.CritterPet.Registry.CritterType;
-import Reika.DragonAPI.Interfaces.Entity.TameHostile;
 
-public interface TamedMob extends TameHostile {
-
-	public String getMobOwner();
+public interface TamedMob extends TamedCritter {
 
 	public void setOwner(EntityPlayer ep);
 
@@ -25,11 +23,5 @@ public interface TamedMob extends TameHostile {
 	public void spawnEffects();
 
 	public CritterType getBaseCritter();
-
-	public boolean isVanillaCritter();
-
-	public boolean isModCritter();
-
-	public int getCritterMaxHealth();
 
 }

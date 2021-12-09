@@ -36,6 +36,7 @@ import Reika.CritterPet.Entities.TameSlime;
 import Reika.CritterPet.Entities.TameVanilla;
 import Reika.CritterPet.Entities.Mod.TameHeatScar;
 import Reika.CritterPet.Entities.Mod.TameLumafly;
+import Reika.CritterPet.Entities.Mod.TameSpitter;
 import Reika.CritterPet.Entities.Mod.TameWispDummy;
 import Reika.CritterPet.Entities.Mod.TF.TameFire;
 import Reika.CritterPet.Entities.Mod.TF.TameHedge;
@@ -48,8 +49,10 @@ import Reika.CritterPet.Entities.Mod.TF.TameSlimeBeetle;
 import Reika.CritterPet.Interfaces.TamedMob;
 import Reika.CritterPet.Renders.RenderCustomMagmaCube;
 import Reika.DragonAPI.ModList;
+import Reika.DragonAPI.ASM.DependentMethodStripper.ModDependent;
 import Reika.DragonAPI.Exception.RegistrationException;
 import Reika.DragonAPI.Libraries.ReikaEntityHelper;
+import Reika.Satisforestry.Entity.EntitySpitter;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -70,7 +73,8 @@ public enum CritterType {
 	MINIGHAST("Carminite Ghastling", TameMinighast.class,												CritterClass.FLYING,	ModList.TWILIGHT,		20, 1.5F,	"minighast",	0xf0f0f0, 0xB87878,	Items.redstone),
 	SLIME("Slime",					TameSlime.class,													CritterClass.SLIME,		null,					32, 3F,		"",				0x416345, 0x57DB67,	Items.reeds),
 	ICECORE("Ice Core", 			TameIceCore.class,													CritterClass.FLYING,	ModList.TWILIGHT,		20, 1,		"icecore",		0x0094FF, 0x00FFFF,	Items.snowball),
-	LUMAFLY("Lumafly", 				TameLumafly.class,													CritterClass.FLYING,	ModList.CHROMATICRAFT,	12, 0.6F,	"",				0x8E4C3E, 0xFFB900,	Items.feather);
+	LUMAFLY("Lumafly", 				TameLumafly.class,													CritterClass.FLYING,	ModList.CHROMATICRAFT,	12, 0.6F,	"",				0x8E4C3E, 0xFFB900,	Items.feather),
+	SPITTER("Spitter", 				TameSpitter.class,													CritterClass.WOLF,		ModList.SATISFORESTRY,	20, 1F,		"",				0x9B8B53, 0xFFFD5A,	Items.gunpowder);
 
 	public final CritterClass type;
 	public final int classIndex;
@@ -141,11 +145,27 @@ public enum CritterType {
 			TamedMob es = this.construct(world);
 			((Entity)es).setLocationAndAngles(e.posX, e.posY, e.posZ, e.rotationYaw, e.rotationPitch);
 			((EntityLivingBase)es).rotationYawHead = ((EntityLivingBase)e).rotationYawHead;
+			this.specialCreate(e, es);
 			return es;
 		}
 		catch (Exception e1) {
 			return null;
 		}
+	}
+
+	private void specialCreate(Entity src, TamedMob es) {
+		switch(this) {
+			case SPITTER:
+				this.copySpitterType(src, es);
+				break;
+			default:
+				break;
+		}
+	}
+
+	@ModDependent(ModList.SATISFORESTRY)
+	private void copySpitterType(Entity src, TamedMob es) {
+		((TameSpitter)es).setSpitterType(((EntitySpitter)src).getSpitterType());
 	}
 
 	private TamedMob construct(World world) throws Exception {
@@ -195,6 +215,9 @@ public enum CritterType {
 				case LUMAFLY:
 					Class c11 = Class.forName("Reika.ChromatiCraft.Render.Entity.RenderTunnelNuker");
 					return (Render)c11.newInstance();
+				case SPITTER:
+					Class c12 = Class.forName("Reika.Satisforestry.Render.RenderSpitter");
+					return (Render)c12.newInstance();
 				default:
 					return CritterClient.critter;
 			}
@@ -239,6 +262,8 @@ public enum CritterType {
 				return c == EntitySlime.class;
 			case LUMAFLY:
 				return n.equals("EntityTunnelNuker");
+			case SPITTER:
+				return n.equals("EntitySpitter");
 		}
 		return false;
 	}
