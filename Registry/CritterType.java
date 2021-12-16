@@ -216,7 +216,7 @@ public enum CritterType {
 					Class c11 = Class.forName("Reika.ChromatiCraft.Render.Entity.RenderTunnelNuker");
 					return (Render)c11.newInstance();
 				case SPITTER:
-					Class c12 = Class.forName("Reika.Satisforestry.Render.RenderSpitter");
+					Class c12 = Class.forName("Reika.CritterPet.Renders.RenderTameSpitter");
 					return (Render)c12.newInstance();
 				default:
 					return CritterClient.critter;

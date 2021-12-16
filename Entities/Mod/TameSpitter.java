@@ -28,6 +28,7 @@ import net.minecraft.util.Vec3;
 import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeHooks;
+import net.minecraftforge.common.util.ForgeDirection;
 
 import Reika.CritterPet.Interfaces.TamedMob;
 import Reika.CritterPet.Registry.CritterType;
@@ -38,8 +39,12 @@ import Reika.DragonAPI.Libraries.Java.ReikaRandomHelper;
 import Reika.DragonAPI.Libraries.Registry.ReikaItemHelper;
 import Reika.DragonAPI.Libraries.Registry.ReikaParticleHelper;
 import Reika.DragonAPI.Libraries.World.ReikaWorldHelper;
+import Reika.Satisforestry.SFAux;
+import Reika.Satisforestry.Blocks.BlockPowerSlug.TilePowerSlug;
 import Reika.Satisforestry.Entity.EntitySpitter;
+import Reika.Satisforestry.Entity.AI.EntityAISpitterFireball;
 import Reika.Satisforestry.Entity.AI.EntityAISpitterReposition;
+import Reika.Satisforestry.Registry.SFBlocks;
 
 public class TameSpitter extends EntitySpitter implements TamedMob, TameHostile {
 
@@ -117,6 +122,14 @@ public class TameSpitter extends EntitySpitter implements TamedMob, TameHostile 
 				else
 					this.fireFireballAt(target);
 			}
+
+			//ReikaJavaLibrary.pConsole("TT W "+this.getEquipmentInSlot(4));
+		}
+		else if (riddenByEntity == null) {
+			int tier = this.getSlugTier();
+			if (tier >= 0) {
+				TilePowerSlug.doFX(worldObj, posX, posY+0.675+this.getMountedYOffset(), posZ, tier, ForgeDirection.DOWN, this);
+			}
 		}
 	}
 
@@ -173,7 +186,7 @@ public class TameSpitter extends EntitySpitter implements TamedMob, TameHostile 
 	@Override
 	public final double getMountedYOffset()
 	{
-		return this.getSpitterType().isAlpha() ? 1.7 : 0;
+		return this.getSpitterType().isAlpha() ? 1.7 : 1.2;
 	}
 
 	@Override
@@ -250,8 +263,38 @@ public class TameSpitter extends EntitySpitter implements TamedMob, TameHostile 
 	@Override
 	protected final void entityInit() {
 		super.entityInit();
+
+		//dataWatcher.addObject(16, new Byte((byte)0));
+
 		dataWatcher.addObject(30, ""); //Set empty owner
 		dataWatcher.addObject(31, Byte.valueOf((byte)0)); //Set not sitting
+	}
+
+	public int getSlugTier() {
+		return SFAux.getSlugHelmetTier(this)-1;
+		//return dataWatcher.getWatchableObjectByte(16)-1;
+	}
+
+	private void setSlugTier(ItemStack slug) {
+		this.setCurrentItemOrArmor(4, ReikaItemHelper.getSizedItemStack(slug, 1));
+		//dataWatcher.updateObject(16, (byte)(1+slug.getItemDamage()%3));
+	}
+
+	private void dropCurrentSlug() {
+		int tier = this.getSlugTier();
+		if (tier >= 0) {
+			ReikaItemHelper.dropItem(this, SFBlocks.SLUG.getStackOfMetadata(tier));
+		}
+	}
+
+	@Override
+	public float getDamageScale(EntityLivingBase tgt) {
+		return (float)(super.getDamageScale(tgt)+0.125*Math.pow(2, this.getSlugTier()+1)); //x1.25, x1.5, x2.0
+	}
+
+	@Override
+	public float getFireRateScale(EntityAISpitterFireball ai) {
+		return (float)(super.getFireRateScale(ai)+0.25*Math.pow(2, this.getSlugTier()+1)); //x1.5, x2.0, x3.0
 	}
 
 	private void setOwner(String owner) {
@@ -356,6 +399,17 @@ public class TameSpitter extends EntitySpitter implements TamedMob, TameHostile 
 				}
 				if (is.getItem() == Items.bone) {
 					this.setSitting(!this.isSitting());
+					return true;
+				}
+				if (!worldObj.isRemote && SFBlocks.SLUG.matchWith(is)) {
+					this.dropCurrentSlug();
+					if (ep.isSneaking()) {
+						this.setSlugTier(null);
+					}
+					else {
+						this.setSlugTier(is);
+						is.stackSize--;
+					}
 					return true;
 				}
 				if (is.getItem() == Items.name_tag) {
