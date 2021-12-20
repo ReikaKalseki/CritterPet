@@ -23,6 +23,7 @@ import net.minecraft.entity.monster.EntityMagmaCube;
 import net.minecraft.entity.monster.EntitySilverfish;
 import net.minecraft.entity.monster.EntitySlime;
 import net.minecraft.entity.monster.EntitySpider;
+import net.minecraft.entity.passive.EntityWolf;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
@@ -74,7 +75,7 @@ public enum CritterType {
 	SLIME("Slime",					TameSlime.class,													CritterClass.SLIME,		null,					32, 3F,		"",				0x416345, 0x57DB67,	Items.reeds),
 	ICECORE("Ice Core", 			TameIceCore.class,													CritterClass.FLYING,	ModList.TWILIGHT,		20, 1,		"icecore",		0x0094FF, 0x00FFFF,	Items.snowball),
 	LUMAFLY("Lumafly", 				TameLumafly.class,													CritterClass.FLYING,	ModList.CHROMATICRAFT,	12, 0.6F,	"",				0x8E4C3E, 0xFFB900,	Items.feather),
-	SPITTER("Spitter", 				TameSpitter.class,													CritterClass.WOLF,		ModList.SATISFORESTRY,	20, 1F,		"",				0x9B8B53, 0xFFFD5A,	Items.gunpowder);
+	SPITTER("Spitter", 				"Reika.CritterPet.Entities.Mod.TameSpitter",EntityWolf.class,		CritterClass.WOLF,		ModList.SATISFORESTRY,	20, 1F,		"",				0x9B8B53, 0xFFFD5A,	Items.gunpowder);
 
 	public final CritterClass type;
 	public final int classIndex;

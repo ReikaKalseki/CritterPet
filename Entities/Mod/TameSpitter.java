@@ -128,7 +128,7 @@ public class TameSpitter extends EntitySpitter implements TamedMob, TameHostile 
 		else if (riddenByEntity == null) {
 			int tier = this.getSlugTier();
 			if (tier >= 0) {
-				TilePowerSlug.doFX(worldObj, posX, posY+0.675+this.getMountedYOffset(), posZ, tier, ForgeDirection.DOWN, this);
+				TilePowerSlug.doFX(worldObj, posX, posY+0.375+this.getMountedYOffset(), posZ, tier, ForgeDirection.DOWN, this);
 			}
 		}
 	}
